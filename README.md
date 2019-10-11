@@ -1,2 +1,1 @@
-# glacier_mapping
-Segmenting glacier objects 
+# glacier_mapping 

@@ -118,9 +118,10 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, borders_path=None, basin_pa
 def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
     sat_data = pd.read_csv(sat_data_file)
    
-    sat_data['valid_data'] = 'invalid'
-    sat_data.loc[valid_cond_f(sat_data), 'valid_data'] = 'valid'
-    sat_data['train'] = 'train'
+    sat_data['valid_data'] =  False
+    sat_data.loc[valid_cond_f(sat_data), 'valid_data'] = True
+    sat_data['train'] = 'invalid'
+    sat_data.loc[sat_data.valid_data, 'train'] = 'train'
     test_cond = test_cond_f(sat_data) & (sat_data.valid_data)
     sat_data.loc[test_cond, 'train'] = 'test'
     

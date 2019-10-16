@@ -8,6 +8,14 @@ import matplotlib.pyplot as plt
 import rasterio
 from rasterio.mask import mask as rasterio_mask
 
+def crop_raster(raster_img, vector_data):
+    vector_crs = rasterio.crs.CRS(vector_data.crs)
+    if vector_crs != raster_img.meta['crs']:
+        vector_data = vector_data.to_crs(raster_img.meta['crs'].data)
+    
+    mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
+    return mask
+
 def get_mask(raster_img, vector_data, nan_value=0):
     # check if both have the same crs
     # follow the raster data as it's easier, faster

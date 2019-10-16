@@ -26,8 +26,7 @@ def save_slice(data, save_loc, slice_type, img_name, num):
   return relative_path
 
 def chunck_satelitte(img_path, labels, data_df, base_dir,
-                     borders=None, basin=None, size=(512, 512)):
- 
+                     borders=None, basin=None, size=(512, 512), crop=True):
   img_name = os.path.splitext(os.path.basename(img_path))[0]
   logging.info('Image name :{} '.format(img_name))
   img = rasterio.open(img_path)
@@ -39,11 +38,15 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
   
   # mask and slice borders if provided 
   if borders is not None:
-    _, borders_slices = get_sliced_mask(img, borders, size=size, nan_value=1)
+      _, borders_slices = get_sliced_mask(img, borders, size=size, nan_value=1)
+      if crop:
+          cropped_img = utils.crop_raster(img, borders)
+          cropped_img = np.moveaxis(cropped_img, 0, 2)
+          cropped_slices = utils.slice_image(cropped_img, size=size)
     
   # mask and slice basin if provided 
   if basin is not None:
-    _, basin_slices = get_sliced_mask(img, basin, size=size)
+     _, basin_slices = get_sliced_mask(img, basin, size=size)
   
   # save slices and fill metadata
   for i, img_slice in enumerate(img_slices):
@@ -52,7 +55,7 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
     # paths
     save_loc = os.path.join(base_dir, 'slices')
     if not os.path.exists(save_loc):
-      os.mkdir(save_loc)
+        os.mkdir(save_loc)
     
     # save valid images only
     filled_img_slice = np.nan_to_num(img_slice)
@@ -70,18 +73,26 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
 
     if borders is not None:
       is_border = borders_slices[i] == 1
-      data_dict['border_path'] = save_slice(borders_slices[i], save_loc, 'borders', img_name, i)
+      data_dict['border_path'] = save_slice(borders_slices[i], save_loc,
+                                                             'borders', img_name, i)
       data_dict['in_border_perc'] = is_border.sum() / is_border.size
       data_dict['labels_in_border'] = (is_border & is_label).sum() / is_label.sum()
-      
+            
+      if crop:
+        data_dict['cropped_path'] = save_slice(cropped_slices[i], save_loc,
+                                                                'cropped_img', img_name, i)
+        cropped_label = np.logical_and(mask_slices[i], borders_slices[i])
+        data_dict['cropped_label'] = save_slice(cropped_label, save_loc,
+                                                                'cropped_label', img_name, i)      
+    
     if basin is not None:
       is_basin = basin_slices[i] == 1
-      data_dict['basin_perc'] = is_basin.sum() / is_basin.size    
-    
+      data_dict['basin_perc'] = is_basin.sum() / is_label.sum()  
+
     data_df = data_df.append(data_dict, ignore_index=True)
 
   return data_df 
-      
+    
 
 def chunck_sat_files(sat_dir, labels_path, save_loc, borders_path=None, basin_path=None):
     labels = geopandas.read_file(labels_path)

@@ -53,7 +53,7 @@ class GlacierDataset(Dataset):
 
 
                          
-    return img, np.load(mask_path)
+    return img, np.load(mask_path).astype(np.float32)
     
   def __len__(self):
     return len(self.data)

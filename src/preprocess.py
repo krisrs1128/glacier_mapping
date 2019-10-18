@@ -79,7 +79,8 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
       data_dict['labels_in_border'] = (is_border & is_label).sum() / is_label.sum()
             
       if crop:
-        data_dict['cropped_path'] = save_slice(cropped_slices[i], save_loc,
+        filled_img_slice = np.nan_to_num(cropped_slices[i])
+        data_dict['cropped_path'] = save_slice(filled_img_slice, save_loc,
                                                                 'cropped_img', img_name, i)
         cropped_label = np.logical_and(mask_slices[i], borders_slices[i])
         data_dict['cropped_label'] = save_slice(cropped_label, save_loc,

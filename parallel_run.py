@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 from pathlib import Path
 from textwrap import dedent
+from src.cluster_utils import env_to_path, increasable_name
 import yaml
 
 def write_conf(run_dir, param):
-    """Write config file from params to config/conf_name
-    If conf_name exisits, increments a counter in the name:
+    """Write config file from params
+
+    If conf_name exists, increments a counter in the name:
     explore.yaml -> explore (1).yaml -> explore (2).yaml ...
     """
     cname = param["sbatch"].get("conf_name", "overwritable_conf")
@@ -18,6 +20,12 @@ def write_conf(run_dir, param):
 
 
 def zip_for_tmpdir(conf_path):
+    """
+    Copy files to Local Tmpdir
+
+    Reading and writing is much faster when you copy them to the cluster's
+    local tmpdir.
+    """
     cmd = ""
     original_path = Path(conf_path).resolve()
     zip_name = original_path.name + ".zip"
@@ -69,30 +77,95 @@ def template(param, conf_path, run_dir):
                 python3 -m src.train \\
                 -m "{sbp["message"]}" \\
                 -c "{str(conf_path)}"\\
-                -o "{str(run_dir)}" \\
-                {"-n" if sbp["no_comet"] else "-f" if sbp["offline"] else ""}
+                -o "{str(run_dir)}"
         """
     )
 
-
-def env_to_path(path):
-    """Transorms an environment variable mention in a conf file
-    into its actual value. E.g. $HOME/clouds -> /home/vsch/clouds
-
-    Args:
-        path (str): path potentially containing the env variable
-
-    """
-    if not isinstance(path, str):
-        return path
-
-    path_elements = path.split("/")
-    for i, d in enumerate(path_elements):
-        if "$" in d:
-            path_elements[i] = os.environ.get(d.replace("$", ""))
-    if any(d is None for d in path_elements):
-        return ""
-    return "/".join(path_elements)
+if __name__ == '__main__':
+    param = yaml.load(open("/Users/krissankaran/Desktop/glacier_mapping/conf/defaults.yaml"))
+    param["data"]["original_path"] = param["data"]["path"]
 
 
+    # Parse arguments to this file
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-e",
+        "--exploration_file",
+        type=str,
+        default="explore.yaml",
+        help="Where to find the exploration file",
+    )
+    parser.add_argument(
+        "-d",
+        "--exp_dir",
+        type=str,
+        help="Where to store the experiment, overrides what's in the exp file",
+    )
+    opts = parser.parse_args()
 
+    # get configuration parameters for this collection of experiments
+    default_yaml = yaml.safe_load(open("shared/defaults.yaml"))
+    sbatch_yaml = yaml.safe_load(open("shared/sbatch.yaml"))
+
+    with open(opts.exploration_file, "r") as f:
+        exploration_params = yaml.safe_load(f)
+        assert isinstance(exploration_params, dict)
+
+    # setup the experiment directory
+    exp_dir = Path(
+        env_to_path(exploration_params["experiment"]["exp_dir"])
+    ).resolve()
+
+    exp_name = exploration_params["experiment"].get("name", "explore-experiment")
+    exp_dir = EXP_ROOT_DIR / exp_name
+    exp_dir = increasable_name(exp_dir)
+    exp_dir.mkdir()
+
+    # -----------------------------------------
+    # Get parameters corresponding to each experiment
+    #
+    # params: List[Dict[tr, Any]] = []
+    params = []
+    exp_runs = exploration_params["runs"]
+    if "repeat" in exploration_params["experiment"]:
+        exp_runs *= int(exploration_params["experiment"]["repeat"]) or 1
+    for p in exp_runs:
+        params.append(
+            {
+                "sbatch": {**sbatch_yaml, **p["sbatch"]},
+                "config": {
+                    "model": {
+                        **default_yaml["model"],
+                        **(p["config"]["model"] if "model" in p["config"] else {}),
+                    },
+                    "train": {
+                        **default_yaml["train"],
+                        **(p["config"]["train"] if "train" in p["config"] else {}),
+                    },
+                    "data": {
+                        **default_yaml["data"],
+                        **(p["config"]["data"] if "data" in p["config"] else {}),
+                    },
+                },
+            }
+        )
+
+    # -----------------------------------------
+    # Launch a collection of jobs, indexed by params
+    for i, param in enumerate(params):
+        run_dir = exp_dir / f"run_{i}"
+        run_dir.mkdir()
+        sbp = param["sbatch"]
+
+        original_data_path = param["config"]["data"]["path"]
+        param["config"]["data"]["path"] = "$SLURM_TMPDIR"
+        param["config"]["data"]["original_path"] = original_data_path
+        conf_path = write_conf(run_dir, param)  # returns Path() from pathlib
+        template = get_template(param, conf_path, run_dir, opts.template_name)
+
+        file = run_dir / f"run-{sbp['conf_name']}.sh"
+        with file.open("w") as f:
+            f.write(template)
+
+        print(subprocess.check_output(f"sbatch {str(file)}", shell=True))
+        print("In", str(run_dir), "\n")

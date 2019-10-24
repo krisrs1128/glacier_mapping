@@ -1,0 +1,7 @@
+cpus: 8
+mem: 32
+runtime: "12:00:00"
+slurm_out: "$HOME/logs/glaciers-%j.out"
+message: "glaciers mapping"
+conf_name: "explore"
+singularity_path: "/scratch/sankarak/images/glaciers.img"

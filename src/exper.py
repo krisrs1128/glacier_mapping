@@ -1,38 +1,65 @@
-import logging
-
+#!/usr/bin/env python
+from comet_ml import OfflineExperiment
+import argparse
+import pathlib
 import torch
 
-from trainer import Config, Trainer
-from dataset import GlacierDataset
-from unet import Unet
+from src.trainer import Trainer
+from src.dataset import GlacierDataset
+from src.unet import Unet
 
 
 if __name__ == '__main__':
-	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-	channels, classes, depth = 11, 1, 4
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+            "-m",
+            "--message",
+            type=str,
+            default="",
+            help="Add a message to the commet experiment",
+    )
+    parser.add_argument(
+            "-c",
+            "--conf_name",
+            type=str,
+            default="defaults",
+            help="name of conf file in config/ | may ommit the .yaml extension",
+    )
+    parser.add_argument(
+            "-o",
+            "--output_dir",
+            type=str,
+            help="where the run's data should be stored ; used to resume",
+    )
 
-	model = Unet(channels, classes, depth)
-	model.to(device)
+    # setup directories for output
+    parsed_opts = parser.parse_args()
+    output_path = pathlib.Path(parsed_opts.output_dir).resolve()
+    if not output_path.exists():
+        output_path.mkdir()
 
-	config = Config(lr=0.0001, epochs=1, save_dir='./', save_freq=1)
+    opts = get_opts(parsed_opts.conf_name)
+    exp = OfflineExperiment(offline_directory=str(output_path))
+    self.exp.log_parameters(opts)
 
-	base_dir = '../data'
-	data_file = 'sat_data.csv'
-	borders = True
-	batch_size = 4
+    model = Unet(
+            opts["model"]["channels"],
+            opts["model"]["classes"],
+            opts["model"]["net_depth"]
+    )
 
-	train_dataset = GlacierDataset(base_dir, data_file, mode='train', borders=borders)
-	train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
-                                          	  shuffle=True, num_workers=1)
+    train_loader = loader(opts["data"], opts["train"], mode="train")
+    dev_loader = loader(opts["data"], opts["train"], mode="dev")
 
-	dev_dataset = GlacierDataset(base_dir, data_file, mode='dev', borders=borders)
-	dev_loader = torch.utils.data.DataLoader(dev_dataset, batch_size=batch_size,
-                                          	  shuffle=True, num_workers=1)
 	# only dev as a start
-	test_loader = None
+    test_loader = None
+    trainer = Trainer(
+            exp,
+            model,
+            opts["train"],
+			train_loader,
+            dev_loader,
+            test_loader
+    )
 
-	trainer = Trainer(model, config,
-					  train_loader, dev_loader, test_loader,
-					  device)
-
-	trainer.train()
+    trainer.train()

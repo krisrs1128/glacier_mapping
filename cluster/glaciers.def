@@ -1,0 +1,19 @@
+BootStrap: docker
+From: ubuntu:18.04
+
+# To run in this shell pointing to data at some path, you can execute
+# singularity shell -B /path/to/data glaciers.sif
+#
+# This recipe can be built on any machine where you are root, the command
+# sudo singularity build glacier.sif glacier.def
+
+%post
+    apt -y update
+    apt -y upgrade
+    apt -y install software-properties-common
+    apt -y install python3-pip
+    apt -y install build-essential libssl-dev libffi-dev python3-dev
+    apt -y install nano vim
+
+    pip3 install numpy pandas comet_ml Pillow addict pyyaml
+    pip3 install --no-cache-dir torch torchvision matplotlib ipython seaborn

@@ -1,0 +1,27 @@
+experiment:
+    name: explore-lr-experiment
+    exp_dir: $SCRATCH/clouds
+    repeat: 1
+
+runs:
+  - sbatch:
+      runtime: "24:00:00"
+      message: learning rate exploration
+      conf_name: explore-lr
+    config:
+      model: {} # empty dictionnary, don't change anything
+      data: {}
+      train:
+          lr_d: 0.001 # overwrite config.train.lr_d
+
+  - sbatch:
+      runtime: "24:00:00"
+      message: learning rate exploration
+      conf_name: explore-lr
+      config:
+        model: {}
+        data: {}
+        train:
+          lr_d:
+            sample: uniform
+            from: [0.00001, 0.01]

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import logging
 
@@ -42,18 +43,18 @@ class Trainer:
     self.model.train()
     epoch_losses = []
 
-    for img, mask in self.train_data:      
+    for img, mask in self.train_data:
       op.zero_grad()
 
       img, mask = img.to(self.device), mask.to(self.device)
-      
+
       pred = self.model(img)
       loss = loss_f(pred, mask)
       epoch_losses.append(loss.item())
 
       loss.backward()
       op.step()
-    
+
     mean_loss = sum(epoch_losses) / len(epoch_losses)
     return epoch_losses, mean_loss
 
@@ -81,7 +82,7 @@ class Trainer:
 
       if metric_f is not None:
         return (epoch_loss / n), (epoch_metric / n)
-      else: 
+      else:
         return (epoch_loss / n)
 
   def predict(self, data, thresh=0.5):

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import math
 
@@ -19,7 +20,7 @@ class GlacierDataset(Dataset):
     self.borders = borders
     self.use_cropped = use_cropped
     self.mode = mode
-    
+
   def __getitem__(self, i):
     pathes = ['img_path', 'mask_path', 'border_path']
     image_path, mask_path, border_path = self.data.iloc[i][pathes]
@@ -37,14 +38,14 @@ class GlacierDataset(Dataset):
       mask_path = cropped_label_path if (self.mode == 'train') else mask_path
       image_path = cropped_img_path
 
-    
+
     img = np.load(image_path)
     if self.img_transform is not None:
       img = self.img_transform(img)
     else:
       img = T.ToTensor()(img)
-      
-    
+
+
     if (self.borders) and (not pd.isnull(border_path)):
       border_path = os.path.join(self.base_dir, border_path)
       border = np.load(border_path)
@@ -52,8 +53,8 @@ class GlacierDataset(Dataset):
       img = np.concatenate((img, border), axis=0)
 
 
-                         
+
     return img, np.load(mask_path).astype(np.float32)
-    
+
   def __len__(self):
     return len(self.data)

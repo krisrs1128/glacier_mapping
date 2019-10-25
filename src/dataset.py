@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-import os
-import math
-
 import numpy as np
+import os
 import pandas as pd
 
 from torch.utils.data import Dataset, Dataloader

@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-import os
-from pathlib import Path
-import numpy as np
-import torch
 import comet_ml
+import numpy as np
+import pathlib
+import torch
 
 
 class Trainer:

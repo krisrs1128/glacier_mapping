@@ -1,11 +1,7 @@
 #!/usr/bin/env python
-import os
 import math
-
-import numpy as np
 import matplotlib.pyplot as plt
-
-
+import numpy as np
 import rasterio
 from rasterio.mask import mask as rasterio_mask
 
@@ -16,6 +12,7 @@ def crop_raster(raster_img, vector_data):
 
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
     return mask
+
 
 def get_mask(raster_img, vector_data, nan_value=0):
     # check if both have the same crs
@@ -31,6 +28,7 @@ def get_mask(raster_img, vector_data, nan_value=0):
     binary_mask[binary_mask > 0] = 1
 
     return binary_mask
+
 
 def slice_image(img, size=(512, 512)):
     if img.ndim == 2:

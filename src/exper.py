@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-import logging
+from comet_ml import OfflineExperiment
 import argparse
 import torch
 
-from trainer import Config, Trainer
-from dataset import GlacierDataset
-from unet import Unet
-from comet_ml import OfflineExperiment
+from src.trainer import Config, Trainer
+from src.dataset import GlacierDataset
+from src.unet import Unet
 
 
 if __name__ == '__main__':

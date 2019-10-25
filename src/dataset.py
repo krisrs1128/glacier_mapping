@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 
-from torch.utils.data import Dataset, Dataloader
+from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
 
 class GlacierDataset(Dataset):

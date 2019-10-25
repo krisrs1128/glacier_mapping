@@ -6,6 +6,7 @@ import torch
 from trainer import Config, Trainer
 from dataset import GlacierDataset
 from unet import Unet
+from comet_ml import OfflineExperiment
 
 
 if __name__ == '__main__':
@@ -18,11 +19,11 @@ if __name__ == '__main__':
             help="Add a message to the commet experiment",
     )
     parser.add_argument(
-        "-c",
-        "--conf_name",
-        type=str,
-        default="defaults",
-        help="name of conf file in config/ | may ommit the .yaml extension",
+            "-c",
+            "--conf_name",
+            type=str,
+            default="defaults",
+            help="name of conf file in config/ | may ommit the .yaml extension",
     )
     parser.add_argument(
         "-o",
@@ -36,34 +37,29 @@ if __name__ == '__main__':
     output_path = Path(parsed_opts.output_dir).resolve()
     if not output_path.exists():
         output_path.mkdir()
-    exp = OfflineExperiment(offline_directory=str(output_path))
+
     opts = get_opts(parsed_opts.conf_name)
+    exp = OfflineExperiment(offline_directory=str(output_path))
+    self.exp.log_parameters(opts)
 
-	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-	channels, classes, depth = 11, 1, 4
+    model = Unet(
+            opts["model"]["channels"],
+            opts["model"]["classes"],
+            opts["model"]["net_depth"]
+    )
 
-	model = Unet(channels, classes, depth)
-	model.to(device)
+    train_loader = loader(opts["data"], opts["train"], mode="train")
+    dev_loader = loader(opts["data"], opts["train"], mode="dev")
 
-	config = Config(lr=0.0001, epochs=1, save_dir='./', save_freq=1)
-
-	base_dir = '../data'
-	data_file = 'sat_data.csv'
-	borders = True
-	batch_size = 4
-
-	train_dataset = GlacierDataset(base_dir, data_file, mode='train', borders=borders)
-	train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
-                                          	  shuffle=True, num_workers=1)
-
-	dev_dataset = GlacierDataset(base_dir, data_file, mode='dev', borders=borders)
-	dev_loader = torch.utils.data.DataLoader(dev_dataset, batch_size=batch_size,
-                                          	  shuffle=True, num_workers=1)
 	# only dev as a start
-	test_loader = None
-
-	trainer = Trainer(model, config,
-					  train_loader, dev_loader, test_loader,
-					  device)
+    test_loader = None
+    trainer = Trainer(
+            exp,
+            model,
+            opts["train"],
+			train_loader,
+            dev_loader,
+            test_loader
+    )
 
 	trainer.train()

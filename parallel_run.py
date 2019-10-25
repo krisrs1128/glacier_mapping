@@ -114,7 +114,7 @@ if __name__ == '__main__':
     ).resolve()
 
     exp_name = exploration_params["experiment"].get("name", "explore-experiment")
-    exp_dir = EXP_ROOT_DIR / exp_name
+    exp_dir = opts.exp_dir / exp_name
     exp_dir = increasable_name(exp_dir)
     exp_dir.mkdir()
 

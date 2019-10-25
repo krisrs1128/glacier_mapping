@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import logging
-
+import argparse
 import torch
 
 from trainer import Config, Trainer
@@ -9,6 +9,36 @@ from unet import Unet
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+            "-m",
+            "--message",
+            type=str,
+            default="",
+            help="Add a message to the commet experiment",
+    )
+    parser.add_argument(
+        "-c",
+        "--conf_name",
+        type=str,
+        default="defaults",
+        help="name of conf file in config/ | may ommit the .yaml extension",
+    )
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        type=str,
+        help="where the run's data should be stored ; used to resume",
+    )
+
+    # setup directories for output
+    parsed_opts = parser.parse_args()
+    output_path = Path(parsed_opts.output_dir).resolve()
+    if not output_path.exists():
+        output_path.mkdir()
+    exp = OfflineExperiment(offline_directory=str(output_path))
+    opts = get_opts(parsed_opts.conf_name)
+
 	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 	channels, classes, depth = 11, 1, 4
 

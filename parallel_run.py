@@ -4,6 +4,7 @@ from textwrap import dedent
 from src.cluster_utils import env_to_path, increasable_name
 import yaml
 
+
 def write_conf(run_dir, param):
     """Write config file from params
 
@@ -51,7 +52,6 @@ def zip_for_tmpdir(conf_path):
     return cmd
 
 
-
 def template(param, conf_path, run_dir):
     zip_command = zip_for_tmpdir(param["config"]["data"]["original_path"])
     sbp = param["sbatch"]
@@ -74,7 +74,7 @@ def template(param, conf_path, run_dir):
         echo "Starting job"
         singularity exec --nv --bind {param["config"]["data"]["path"]},{str(run_dir)}\\
                 {sbp["singularity_path"]}\\
-                python3 -m src.train \\
+                python3 -m src.exper \\
                 -m "{sbp["message"]}" \\
                 -c "{str(conf_path)}"\\
                 -o "{str(run_dir)}"

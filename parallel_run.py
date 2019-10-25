@@ -89,7 +89,7 @@ if __name__ == '__main__':
         "-e",
         "--exploration_file",
         type=str,
-        default="explore.yaml",
+        default="conf/explore-lr.yaml",
         help="Where to find the exploration file",
     )
     parser.add_argument(

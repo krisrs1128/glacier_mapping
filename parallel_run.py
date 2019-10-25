@@ -92,12 +92,6 @@ if __name__ == '__main__':
         default="conf/explore-lr.yaml",
         help="Where to find the exploration file",
     )
-    parser.add_argument(
-        "-d",
-        "--exp_dir",
-        type=str,
-        help="Where to store the experiment, overrides what's in the exp file",
-    )
     opts = parser.parse_args()
 
     # get configuration parameters for this collection of experiments
@@ -113,8 +107,8 @@ if __name__ == '__main__':
         env_to_path(exploration_params["experiment"]["exp_dir"])
     ).resolve()
 
-    exp_name = exploration_params["experiment"].get("name", "explore-experiment")
-    exp_dir = opts.exp_dir / exp_name
+    exp_name = exploration_params["experiment"].get("name", "exp")
+    exp_dir = exploration_params["experiment"].get("exp_dir", ".") / exp_name
     exp_dir = increasable_name(exp_dir)
     exp_dir.mkdir()
 

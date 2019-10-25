@@ -110,7 +110,8 @@ if __name__ == '__main__':
     exp_name = exploration_params["experiment"].get("name", "exp")
     exp_dir = env_to_path(exploration_params["experiment"]["exp_dir"])
     exp_dir = Path(exp_dir).resolve()
-    exp_dir = exp_dir / increasable_name(exp_dir)
+    exp_dir = exp_dir / exp_name
+    exp_dir = increasable_name(exp_dir)
     exp_dir.mkdir()
 
     # -----------------------------------------

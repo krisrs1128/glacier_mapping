@@ -3,6 +3,7 @@ from pathlib import Path
 from src.cluster_utils import env_to_path, increasable_name
 from textwrap import dedent
 import argparse
+import subprocess
 import yaml
 
 
@@ -92,6 +93,13 @@ if __name__ == '__main__':
         default="conf/explore-lr.yaml",
         help="Where to find the exploration file",
     )
+    parser.add_argument(
+        "-t",
+        "--template_name",
+        type=str,
+        default="default",
+        help="what template to use to write the sbatch files",
+    )
     opts = parser.parse_args()
 
     # get configuration parameters for this collection of experiments
@@ -154,11 +162,11 @@ if __name__ == '__main__':
         param["config"]["data"]["path"] = "$SLURM_TMPDIR"
         param["config"]["data"]["original_path"] = original_data_path
         conf_path = write_conf(run_dir, param)  # returns Path() from pathlib
-        template = get_template(param, conf_path, run_dir, opts.template_name)
+        template_str = template(param, conf_path, run_dir)
 
         file = run_dir / f"run-{sbp['conf_name']}.sh"
         with file.open("w") as f:
-            f.write(template)
+            f.write(template_str)
 
         print(subprocess.check_output(f"sbatch {str(file)}", shell=True))
         print("In", str(run_dir), "\n")

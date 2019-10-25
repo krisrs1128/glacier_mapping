@@ -3,7 +3,7 @@ from comet_ml import OfflineExperiment
 import argparse
 import torch
 
-from src.trainer import Config, Trainer
+from src.trainer import Trainer
 from src.dataset import GlacierDataset
 from src.unet import Unet
 

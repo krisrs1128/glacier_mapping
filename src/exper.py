@@ -26,10 +26,10 @@ if __name__ == '__main__':
             help="name of conf file in config/ | may ommit the .yaml extension",
     )
     parser.add_argument(
-        "-o",
-        "--output_dir",
-        type=str,
-        help="where the run's data should be stored ; used to resume",
+            "-o",
+            "--output_dir",
+            type=str,
+            help="where the run's data should be stored ; used to resume",
     )
 
     # setup directories for output

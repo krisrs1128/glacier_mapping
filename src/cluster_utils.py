@@ -2,6 +2,22 @@
 from pathlib import Path
 
 
+def increasable_name(file_path):
+    f = Path(file_path)
+    while f.exists():
+        name = f.name
+        s = list(re.finditer(r"--\d+", name))
+        if s:
+            s = s[-1]
+            d = int(s.group().replace("--", "").replace(".", ""))
+            d += 1
+            i, j = s.span()
+            name = name[:i] + f"--{d}" + name[j:]
+        else:
+            name = f.stem + "--1" + f.suffix
+        f = f.parent / name
+    return f
+
 def env_to_path(path):
     """Transorms an environment variable mention in a conf file
     into its actual value. E.g. $HOME/clouds -> /home/vsch/clouds

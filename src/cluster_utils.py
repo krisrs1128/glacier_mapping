@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from pathlib import Path
-import os.environ
+import os
 
 def increasable_name(file_path):
     f = Path(file_path)

@@ -108,8 +108,8 @@ if __name__ == '__main__':
     ).resolve()
 
     exp_name = exploration_params["experiment"].get("name", "exp")
-    exp_dir = exploration_params["experiment"].get("exp_dir", ".") / exp_name
-    exp_dir = increasable_name(exp_dir)
+    exp_dir = Path(exploration_params["experiment"]["exp_dir"]).resolve()
+    exp_dir = exp_dir / increasable_name(exp_dir)
     exp_dir.mkdir()
 
     # -----------------------------------------

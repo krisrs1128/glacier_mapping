@@ -1,6 +1,6 @@
 experiment:
     name: explore-lr-experiment
-    exp_dir: $SCRATCH/clouds
+    exp_dir: $SCRATCH/glaciers/
     repeat: 1
 
 runs:

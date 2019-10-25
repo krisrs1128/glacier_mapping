@@ -82,10 +82,6 @@ def template(param, conf_path, run_dir):
     )
 
 if __name__ == '__main__':
-    param = yaml.load(open("/Users/krissankaran/Desktop/glacier_mapping/conf/defaults.yaml"))
-    param["data"]["original_path"] = param["data"]["path"]
-
-
     # Parse arguments to this file
     parser = argparse.ArgumentParser()
     parser.add_argument(

@@ -5,7 +5,7 @@ import math
 import numpy as np
 import pandas as pd
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Dataloader
 import torchvision.transforms as T
 
 class GlacierDataset(Dataset):
@@ -52,9 +52,25 @@ class GlacierDataset(Dataset):
       border = np.expand_dims(border, axis=0)
       img = np.concatenate((img, border), axis=0)
 
-
-
     return img, np.load(mask_path).astype(np.float32)
 
   def __len__(self):
     return len(self.data)
+
+
+def loader(data_opts, train_opts, mode="train"):
+  """
+  Loader for Experiment
+  """
+  dataset = GlacierDataset(
+    data_opts["path"],
+    data_opts["metadata"],
+    mode=mode,
+    borders=data_opts["borders"]
+  )
+  return DataLoader(
+    dataset,
+    batch_size=train_opts["batch_size"],
+    shuffle=train_opts["shuffle"],
+    num_workers=train_opts["num_workers"]
+  )

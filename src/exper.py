@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from comet_ml import OfflineExperiment
 import argparse
+import pathlib
 import torch
 
 from src.trainer import Trainer
@@ -33,7 +34,7 @@ if __name__ == '__main__':
 
     # setup directories for output
     parsed_opts = parser.parse_args()
-    output_path = Path(parsed_opts.output_dir).resolve()
+    output_path = pathlib.Path(parsed_opts.output_dir).resolve()
     if not output_path.exists():
         output_path.mkdir()
 

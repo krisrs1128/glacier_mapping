@@ -5,23 +5,23 @@ experiment:
 
 runs:
   - sbatch:
-      runtime: "24:00:00"
-      message: learning rate exploration
+      runtime: "00:30:00"
+      message: fixed rate
       conf_name: explore-lr
-      config:
-        model: {} # empty dictionnary, don't change anything
-        data: {}
-        train:
-          lr_d: 0.001 # overwrite config.train.lr_d
+    config:
+      model: {} # empty dictionnary, don't change anything
+      data: {}
+      train:
+        lr: 0.001 # overwrite config.train.lr
 
   - sbatch:
-      runtime: "24:00:00"
-      message: learning rate exploration
-      conf_name: explore-lr
-      config:
-        model: {}
-        data: {}
-        train:
-          lr_d:
-            sample: uniform
-            from: [0.00001, 0.01]
+      runtime: "00:30:00"
+      message: some random rates
+      conf_name: random-rates
+    config:
+      model: {}
+      data: {}
+      train:
+        lr:
+          sample: uniform
+          from: [0.00001, 0.01]

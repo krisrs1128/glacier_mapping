@@ -3,6 +3,7 @@ from pathlib import Path
 from src.cluster_utils import env_to_path, increasable_name
 from textwrap import dedent
 import argparse
+import subprocess
 import yaml
 
 
@@ -66,10 +67,11 @@ def template(param, conf_path, run_dir):
         #SBATCH --cpus-per-task={sbp["cpus"]}       # Ask for 6 CPUs
         #SBATCH --gres=gpu:1                        # Ask for 1 GPU
         #SBATCH --mem={sbp["mem"]}G                 # Ask for 32 GB of RAM
-        #SBATCH --time={sbp.get("runtime", "24:00:00")}
+        #SBATCH --time={sbp.get("runtime")}
         #SBATCH -o {env_to_path(sbp["slurm_out"])}  # Write the log in $SCRATCH
 
         {zip_command}
+        cd {sbp["repo_path"]}
 
         module load singularity/3.4
         echo "Starting job"
@@ -154,11 +156,11 @@ if __name__ == '__main__':
         param["config"]["data"]["path"] = "$SLURM_TMPDIR"
         param["config"]["data"]["original_path"] = original_data_path
         conf_path = write_conf(run_dir, param)  # returns Path() from pathlib
-        template = get_template(param, conf_path, run_dir, opts.template_name)
+        template_str = template(param, conf_path, run_dir)
 
         file = run_dir / f"run-{sbp['conf_name']}.sh"
         with file.open("w") as f:
-            f.write(template)
+            f.write(template_str)
 
         print(subprocess.check_output(f"sbatch {str(file)}", shell=True))
         print("In", str(run_dir), "\n")

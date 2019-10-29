@@ -1,9 +1,11 @@
 #!/usr/bin/env python
-import math
+from rasterio.mask import mask as rasterio_mask
+from addict import Dict
 import matplotlib.pyplot as plt
 import numpy as np
+import pathlib
 import rasterio
-from rasterio.mask import mask as rasterio_mask
+import yaml
 
 def crop_raster(raster_img, vector_data):
     vector_crs = rasterio.crs.CRS(vector_data.crs)
@@ -102,3 +104,40 @@ def display_sat_mask(sat_img, mask, borders=None):
 
     fig.tight_layout()
     display_sat_bands(sat_img)
+
+
+def load_conf(path):
+    path = pathlib.Path(path).resolve()
+    print("Loading conf from", str(path))
+    with open(path, "r") as stream:
+        try:
+            return Dict(yaml.safe_load(stream))
+        except yaml.YAMLError as exc:
+            print(exc)
+
+
+def merge_defaults(extra_opts, conf_path):
+    print("Loading params from", conf_path)
+    result = load_conf(conf_path)
+    for group in ["model", "train", "data"]:
+        if group in extra_opts:
+            for k, v in extra_opts[group].items():
+                result[group][k] = v
+    for group in ["model", "train", "data"]:
+        for k, v in result[group].items():
+            if isinstance(v, dict):
+                v = sample_param(v)
+            result[group][k] = v
+
+    return Dict(result)
+
+
+def get_opts(conf_path):
+    if not pathlib.Path(conf_path).exists():
+        conf_name = conf_path
+        if not conf_name.endswith(".yaml"):
+            conf_name += ".yaml"
+        conf_path = Path(__file__).parent.parent / "shared" / conf_name
+        assert conf_path.exists()
+
+    return merge_defaults({"model": {}, "train": {}, "data": {}}, conf_path)

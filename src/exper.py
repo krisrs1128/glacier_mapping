@@ -5,8 +5,9 @@ import pathlib
 import torch
 
 from src.trainer import Trainer
-from src.dataset import GlacierDataset
+from src.dataset import GlacierDataset, loader
 from src.unet import Unet
+from src.utils import  get_opts
 
 
 if __name__ == '__main__':
@@ -40,7 +41,8 @@ if __name__ == '__main__':
 
     opts = get_opts(parsed_opts.conf_name)
     exp = OfflineExperiment(offline_directory=str(output_path))
-    self.exp.log_parameters(opts)
+    exp.log_parameters(opts["model"])
+    exp.log_parameters(opts["train"])
 
     model = Unet(
             opts["model"]["channels"],

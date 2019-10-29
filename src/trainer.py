@@ -23,7 +23,7 @@ class Trainer:
     op = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
     loss_f = torch.nn.BCEWithLogitsLoss()
 
-    for epoch in range(self.config.epochs):
+    for epoch in range(self.config.n_epochs):
       epoch_losses, mean_loss = self.train_epoch(op, loss_f)
       dev_loss = self.evaluate(loss_f)
       self.exp.log_metrics({

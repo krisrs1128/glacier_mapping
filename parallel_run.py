@@ -94,6 +94,13 @@ if __name__ == '__main__':
         default="conf/explore-lr.yaml",
         help="Where to find the exploration file",
     )
+    parser.add_argument(
+        "-t",
+        "--template_name",
+        type=str,
+        default="default",
+        help="what template to use to write the sbatch files",
+    )
     opts = parser.parse_args()
 
     # get configuration parameters for this collection of experiments

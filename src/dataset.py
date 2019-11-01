@@ -7,9 +7,11 @@ import pandas as pd
 from torch.utils.data import Dataset
 import torchvision.transforms as T
 
+import utils
+
 class GlacierDataset(Dataset):
   def __init__(self, base_dir, data_file, img_transform=None, mode='train',
-               borders=False, use_cropped=True):
+               borders=False, use_cropped=True, use_snow_i=True):
     super().__init__()
     self.base_dir = base_dir
     data_path = os.path.join(base_dir, data_file)
@@ -18,6 +20,7 @@ class GlacierDataset(Dataset):
     self.img_transform = img_transform
     self.borders = borders
     self.use_cropped = use_cropped
+    self.use_snow_i = use_snow_i
     self.mode = mode
     
   def __getitem__(self, i):
@@ -37,6 +40,7 @@ class GlacierDataset(Dataset):
       mask_path = cropped_label_path if (self.mode == 'train') else mask_path
       image_path = cropped_img_path
 
+
     
     img = np.load(image_path)
     if self.img_transform is not None:
@@ -51,7 +55,10 @@ class GlacierDataset(Dataset):
       border = np.expand_dims(border, axis=0)
       img = np.concatenate((img, border), axis=0)
 
-
+    if self.use_snow_i:
+      snow_index = utils.get_snow_index(img)
+      snow_index = np.expand_dims(snow_index, axis=0)
+      img = np.concatenate((img, snow_index), axis=0)
                          
     return img, np.load(mask_path).astype(np.float32)
     

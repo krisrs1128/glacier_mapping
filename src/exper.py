@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	logger.setLevel(logging.INFO)
 
 	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-	channels, classes, depth = 10, 1, 4
+	channels, classes, depth = 11, 1, 4
 
 	model = Unet(channels, classes, depth)
 	model.to(device)

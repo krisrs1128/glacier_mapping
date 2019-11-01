@@ -24,7 +24,7 @@ if __name__ == '__main__':
             "--conf_name",
             type=str,
             default="defaults",
-            help="name of conf file in config/ | may ommit the .yaml extension",
+            help="name of conf file in config/",
     )
     parser.add_argument(
             "-o",
@@ -40,6 +40,7 @@ if __name__ == '__main__':
         output_path.mkdir()
 
     opts = get_opts(parsed_opts.conf_name)
+    opts["train"]["output_path"] = output_path
     exp = OfflineExperiment(offline_directory=str(output_path))
     exp.log_parameters(opts["model"])
     exp.log_parameters(opts["train"])
@@ -59,7 +60,7 @@ if __name__ == '__main__':
             exp,
             model,
             opts["train"],
-			train_loader,
+            train_loader,
             dev_loader,
             test_loader
     )

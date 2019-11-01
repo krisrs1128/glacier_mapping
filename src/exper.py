@@ -23,7 +23,8 @@ if __name__ == '__main__':
 	logger.setLevel(logging.INFO)
 
 	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-	channels, classes, depth = 11, 1, 4
+	sat_channels_to_include = [0, 1, 2, 3, 4]
+	channels, classes, depth = len(sat_channels_to_include) + 1, 1, 4
 
 	model = Unet(channels, classes, depth)
 	model.to(device)
@@ -34,15 +35,18 @@ if __name__ == '__main__':
 	borders = False
 	batch_size = 2
 
-	train_dataset = GlacierDataset(base_dir, data_file, mode='train', borders=borders)
+	train_dataset = GlacierDataset(base_dir, data_file, mode='train', borders=borders,
+								   channels_to_inc=sat_channels_to_include)
 	train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
                                           	  shuffle=True, num_workers=1)
 
-	dev_dataset = GlacierDataset(base_dir, data_file, mode='dev', borders=borders)
+	dev_dataset = GlacierDataset(base_dir, data_file, mode='dev', borders=borders,
+								 channels_to_inc=sat_channels_to_include)
 	dev_loader = torch.utils.data.DataLoader(dev_dataset, batch_size=batch_size,
                                           	  shuffle=False, num_workers=1)
 
-	test_dataset = GlacierDataset(base_dir, data_file, mode='test', borders=borders)
+	test_dataset = GlacierDataset(base_dir, data_file, mode='test', borders=borders,
+								  channels_to_inc=sat_channels_to_include)
 	test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                           	  shuffle=False, num_workers=1)
 

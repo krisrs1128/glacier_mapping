@@ -14,7 +14,7 @@ train:
     shuffle:  true
     infer_every_steps: 5000 # How often to infer validation images
     n_epochs: 100 # How many training epochs
-    save_every_steps: 5000 # How often to save  the model's weights
+    save_freq: 2 # How often to save  the model's weights
     store_images: false # Do you want to write infered images to disk
     num_workers: 1 # How many workers for the dataloader
 # ---------------------------

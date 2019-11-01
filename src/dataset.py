@@ -73,5 +73,6 @@ def loader(data_opts, train_opts, mode="train"):
     dataset,
     batch_size=train_opts["batch_size"],
     shuffle=train_opts["shuffle"],
-    num_workers=train_opts["num_workers"]
+    num_workers=train_opts["num_workers"],
+    drop_last=True
   )

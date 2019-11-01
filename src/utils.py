@@ -16,9 +16,11 @@ def crop_raster(raster_img, vector_data):
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
     return mask
 
-def get_snow_index(img):
+def get_snow_index(img, thresh=None):
     # channels first
-    index =  (img[1, :, :] - img[4, :, :]) / (img[1, :, :] + img[4, :, :]) 
+    index =  (img[1, :, :] - img[4, :, :]) / (img[1, :, :] + img[4, :, :])
+    if thresh is not None:
+        return index > thresh
     return index
 
 

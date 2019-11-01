@@ -56,7 +56,7 @@ class GlacierDataset(Dataset):
       img = np.concatenate((img, border), axis=0)
 
     if self.use_snow_i:
-      snow_index = utils.get_snow_index(img)
+      snow_index = utils.get_snow_index(img, thresh=0.6)
       snow_index = np.expand_dims(snow_index, axis=0)
       img = np.concatenate((img, snow_index), axis=0)
                          

@@ -1,9 +1,12 @@
 import os
 import logging
+from collections import defaultdict
 
 import numpy as np
 
 import torch
+
+from metrics import pixel_acc, dice, IoU
 
 class Config:
   def __init__(self, lr, epochs, save_dir, save_freq=1):
@@ -26,11 +29,12 @@ class Trainer:
   def train(self):
     op = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
     loss_f = torch.nn.BCEWithLogitsLoss()
+    metrics = {'pixel_acc': pixel_acc, 'dice': dice, 'iou':IoU}
     for epoch in range(self.config.epochs):
       epoch_losses, mean_loss = self.train_epoch(op, loss_f)
-      dev_loss = self.evaluate(loss_f)
-      logging.info('Epoch {}: training loss = {}, dev loss = {}'.format(
-                    epoch, mean_loss, dev_loss))
+      dev_loss, dev_metrics = self.evaluate(loss_f, metrics)
+      logging.info('Epoch {}: training loss = {}, dev loss = {}, dev_metrics = {}'.format(
+                    epoch, mean_loss, dev_loss, dev_metrics))
       if (epoch % self.config.save_freq) == 0:
         save_path = os.path.join(self.config.save_dir,
                                  'model_{}.pt'.format(epoch))
@@ -58,9 +62,9 @@ class Trainer:
     return epoch_losses, mean_loss
 
 
-  def evaluate(self, loss_f, metric_f=None, mode='dev'):
+  def evaluate(self, loss_f, metric_fs=None, mode='dev'):
       epoch_loss = 0
-      epoch_metric = 0
+      epoch_metrics = defaultdict(int)
       self.model.eval()
 
       if mode == 'test':
@@ -74,13 +78,14 @@ class Trainer:
               pred = self.model(img)
               loss = loss_f(pred, mask)
               epoch_loss += loss.item()
-              if metric_f is not None:
+              if metric_fs is not None:
                 _, binary_pred = Trainer.get_pred_mask(pred)
-                metric = metric_f(binary_pred, mask)
-                epoch_metric += metric
+                for name, fn in metric_fs.items():
+                  metric = fn(binary_pred, mask)
+                  epoch_metrics[name] += metric
 
-      if metric_f is not None:
-        return (epoch_loss / n), (epoch_metric / n)
+      if metric_fs is not None:
+        return (epoch_loss / n), {name: value/n for name, value in epoch_metrics.items()} 
       else: 
         return (epoch_loss / n)
 

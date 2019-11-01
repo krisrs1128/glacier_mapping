@@ -32,7 +32,7 @@ class Trainer:
       }, step=epoch)
 
       if (epoch % self.config.save_freq) == 0:
-        save_path = pathlib.Path(self.config.save_dir, f"model_{epoch}.pt")
+        save_path = pathlib.Path(self.config.output_path, f"model_{epoch}.pt")
         torch.save(self.model.state_dict(), save_path)
 
 
@@ -72,12 +72,12 @@ class Trainer:
               pred = self.model(img)
               loss = loss_f(pred, mask)
               epoch_loss += loss.item()
-              if not metric_f:
+              if metric_f is not None:
                 _, binary_pred = Trainer.get_pred_mask(pred)
                 metric = metric_f(binary_pred, mask)
                 epoch_metric += metric
 
-      if not metric_f:
+      if metric_f is not None:
         return epoch_loss / len(data), epoch_metric / len(data)
       else:
         return epoch_loss / len(data)

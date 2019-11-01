@@ -1,0 +1,4 @@
+data/
+notebooks/
+models/
+*.pyc

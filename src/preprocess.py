@@ -95,7 +95,8 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
   return data_df 
     
 
-def chunck_sat_files(sat_dir, labels_path, save_loc, borders_path=None, basin_path=None):
+def chunck_sat_files(sat_dir, labels_path, save_loc, borders_path=None, basin_path=None,
+                     size=(512, 512)):
     labels = geopandas.read_file(labels_path)
     borders = geopandas.read_file(borders_path) if borders_path is not None else None
     basin = geopandas.read_file(basin_path) if basin_path is not None else None
@@ -112,7 +113,7 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, borders_path=None, basin_pa
       img_path = os.path.join(sat_dir, f)
       img = rasterio.open(img_path)
       
-      sat_data = chunck_satelitte(img_path, labels, sat_data, save_loc ,borders, basin)
+      sat_data = chunck_satelitte(img_path, labels, sat_data, save_loc ,borders, basin, size=size)
     
     sat_data.to_csv(os.path.join(save_loc, 'sat_data.csv'), index=False)
 
@@ -132,7 +133,7 @@ def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
       sat_data.to_csv(sat_data_file, index=False)
 
 
-def split_train_dev(sat_data_file, perc=0.2, save=True):
+def split_train_test(sat_data_file, perc=0.2, save=True, label='dev'):
   sat_data = pd.read_csv(sat_data_file)
   
   n = len(sat_data[sat_data.train == 'train'])
@@ -141,7 +142,7 @@ def split_train_dev(sat_data_file, perc=0.2, save=True):
   train_idx = list(sat_data[sat_data.train == 'train'].index)
   shuffle(train_idx)
   
-  sat_data.loc[train_idx[:dev_size], 'train'] = 'dev'
+  sat_data.loc[train_idx[:dev_size], 'train'] = label
   
   
   if not save:

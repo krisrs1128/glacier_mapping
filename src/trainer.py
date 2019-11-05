@@ -6,7 +6,7 @@ import numpy as np
 
 import torch
 
-from metrics import pixel_acc, dice, IoU
+from metrics import pixel_acc, dice, IoU, precision, recall
 
 class Config:
   def __init__(self, lr, epochs, save_dir, save_freq=1):
@@ -29,12 +29,15 @@ class Trainer:
   def train(self):
     op = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
     loss_f = torch.nn.BCEWithLogitsLoss()
-    metrics = {'pixel_acc': pixel_acc, 'dice': dice, 'iou':IoU}
+    metrics = {'pixel_acc': pixel_acc, 'per': precision, 'recall': recall,
+               'dice': dice, 'iou':IoU}
     for epoch in range(self.config.epochs):
       epoch_losses, mean_loss = self.train_epoch(op, loss_f)
       dev_loss, dev_metrics = self.evaluate(loss_f, metrics)
-      logging.info('Epoch {}: training loss = {}, dev loss = {}, dev_metrics = {}'.format(
-                    epoch, mean_loss, dev_loss, dev_metrics))
+      train_loss, train_metrics = self.evaluate(loss_f, metrics, mode='train')
+      logging.info('''Epoch {}: training loss = {}, train_metrics = {},
+                      dev loss = {}, dev_metrics = {}'''.format(
+                    epoch, train_loss, train_metrics, dev_loss, dev_metrics))
       if (epoch % self.config.save_freq) == 0:
         save_path = os.path.join(self.config.save_dir,
                                  'model_{}.pt'.format(epoch))
@@ -69,6 +72,8 @@ class Trainer:
 
       if mode == 'test':
         data = self.test_data
+      elif mode == 'train':
+        data = self.train_data
       else:
         data = self.dev_data
       n = len(data)

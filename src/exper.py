@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import logging
 
 import torch
+from torch.utils.data.sampler import SubsetRandomSampler
 
 from trainer import Config, Trainer
 from dataset import GlacierDataset
@@ -38,12 +39,13 @@ if __name__ == '__main__':
 	train_dataset = GlacierDataset(base_dir, data_file, mode='train', borders=borders,
 								   channels_to_inc=sat_channels_to_include)
 	train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
-                                          	  shuffle=True, num_workers=1)
+                                          	   num_workers=1,
+                                          	   sampler=SubsetRandomSampler(range(5)))
 
 	dev_dataset = GlacierDataset(base_dir, data_file, mode='dev', borders=borders,
 								 channels_to_inc=sat_channels_to_include)
 	dev_loader = torch.utils.data.DataLoader(dev_dataset, batch_size=batch_size,
-                                          	  shuffle=False, num_workers=1)
+                                          	 shuffle=False, num_workers=1)
 
 	test_dataset = GlacierDataset(base_dir, data_file, mode='test', borders=borders,
 								  channels_to_inc=sat_channels_to_include)

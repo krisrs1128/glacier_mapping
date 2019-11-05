@@ -50,7 +50,7 @@ class Unet(nn.Module):
       self.upblocks.append(upconv)
       in_channels, out_channels = out_channels, int(out_channels / 2)
     
-    self.seg_layer = nn.Conv2d(2*out_channels, outchannels, kernel_size=1)
+    self.seg_layer = nn.Conv2d(2 * out_channels, outchannels, kernel_size=1)
      
    
   def forward(self, x):
@@ -66,6 +66,6 @@ class Unet(nn.Module):
       x = op(x, decoder_outputs.pop())
     
     x = self.seg_layer(x)
-    x = x.squeeze()
+    x = x.squeeze(dim=1)
     
     return x

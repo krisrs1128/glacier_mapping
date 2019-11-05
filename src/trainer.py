@@ -19,6 +19,7 @@ class Trainer:
     Train Across Epochs
     """
     self.model.to(self.device)
+    wandb.watch(self.model)
     op = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
     loss_f = torch.nn.BCEWithLogitsLoss()
 
@@ -26,7 +27,6 @@ class Trainer:
       epoch_losses, mean_loss = self.train_epoch(op, loss_f)
       dev_loss = self.evaluate(loss_f)
 
-      wandb.watch(self.model)
       wandb.log({
         "loss/train": mean_loss,
         "loss/dev": dev_loss

@@ -1,45 +1,46 @@
-import os
-import math
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-
-import rasterio
+#!/usr/bin/env python
 from rasterio.mask import mask as rasterio_mask
+from addict import Dict
+import matplotlib.pyplot as plt
+import numpy as np
+import pathlib
+import rasterio
+import yaml
 
 def crop_raster(raster_img, vector_data):
     vector_crs = rasterio.crs.CRS(vector_data.crs)
     if vector_crs != raster_img.meta['crs']:
         vector_data = vector_data.to_crs(raster_img.meta['crs'].data)
-    
+
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
     return mask
+
 
 def get_mask(raster_img, vector_data, nan_value=0):
     # check if both have the same crs
     # follow the raster data as it's easier, faster
-    # and doesn't involve saving huge new raster data 
+    # and doesn't involve saving huge new raster data
     vector_crs = rasterio.crs.CRS(vector_data.crs)
     if vector_crs != raster_img.meta['crs']:
         vector_data = vector_data.to_crs(raster_img.meta['crs'].data)
-    
+
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
     binary_mask = mask[0, :, :]
     binary_mask[np.isnan(binary_mask)] = nan_value
     binary_mask[binary_mask > 0] = 1
-    
+
     return binary_mask
-    
+
+
 def slice_image(img, size=(512, 512)):
     if img.ndim == 2:
         h, w = img.shape
     else:
         h, w, _ = img.shape
-        
+
     h_slices = math.ceil(h / size[0])
     w_slices = math.ceil(w / size[1])
-    
+
     slices = []
     for i in range(h_slices):
         for j in range(w_slices):
@@ -61,7 +62,7 @@ def slice_image(img, size=(512, 512)):
 def display_sat_image(sat_img):
     plt.imshow(sat_rgb(sat_img))
     display_sat_bands(sat_img)
-    
+
 def sat_rgb(sat_img, indeces=(0, 1, 2)):
     rgb = np.stack([sat_img[:, :, indeces[0]],
                     sat_img[:, :, indeces[1]],
@@ -78,7 +79,7 @@ def display_sat_bands(sat_img, bands=10, band_names=None, l7=True):
                       'High-gain Thermal Infrared',
                       'Shortwave infrared 2','Panchromatic','BQA']
     elif band_names is None:
-        band_names = [str(i + 1) for i in range(bands)]         
+        band_names = [str(i + 1) for i in range(bands)]
 
     for i in range(rows):
         for j in range(cols):
@@ -92,12 +93,12 @@ def display_sat_mask(sat_img, mask, borders=None):
     cols = 3 if borders is not None else 2
 
     fig, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(30, int(30/rows)))
-    
+
     ax[0].imshow(sat_rgb(sat_img))
     ax[0].title.set_text('RGB')
     ax[1].imshow(mask)
     ax[1].title.set_text('Binary Mask')
-    if borders is not None: 
+    if borders is not None:
         ax[2].imshow(borders)
         ax[2].title.set_text('Country Borders')
 
@@ -105,3 +106,38 @@ def display_sat_mask(sat_img, mask, borders=None):
     display_sat_bands(sat_img)
 
 
+def load_conf(path):
+    path = pathlib.Path(path).resolve()
+    print("Loading conf from", str(path))
+    with open(path, "r") as stream:
+        try:
+            return Dict(yaml.safe_load(stream))
+        except yaml.YAMLError as exc:
+            print(exc)
+
+
+def merge_defaults(extra_opts, conf_path):
+    print("Loading params from", conf_path)
+    result = load_conf(conf_path)
+    for group in ["model", "train", "data"]:
+        if group in extra_opts:
+            for k, v in extra_opts[group].items():
+                result[group][k] = v
+    for group in ["model", "train", "data"]:
+        for k, v in result[group].items():
+            if isinstance(v, dict):
+                v = sample_param(v)
+            result[group][k] = v
+
+    return Dict(result)
+
+
+def get_opts(conf_path):
+    if not pathlib.Path(conf_path).exists():
+        conf_name = conf_path
+        if not conf_name.endswith(".yaml"):
+            conf_name += ".yaml"
+        conf_path = Path(__file__).parent.parent / "shared" / conf_name
+        assert conf_path.exists()
+
+    return merge_defaults({"model": {}, "train": {}, "data": {}}, conf_path)

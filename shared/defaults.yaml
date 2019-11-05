@@ -2,8 +2,8 @@
 # -----    Model    -----
 # -----------------------
 model:
-  channels: 11
-  classes: 1
+  inchannels: 11
+  outchannels: 1
   net_depth: 4
 # ------------------------------
 # -----    Train Params    -----

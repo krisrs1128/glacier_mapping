@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from comet_ml import OfflineExperiment
+import wandb
 import argparse
 import pathlib
 import torch
@@ -41,9 +41,9 @@ if __name__ == '__main__':
 
     opts = get_opts(parsed_opts.conf_name)
     opts["train"]["output_path"] = output_path
-    exp = OfflineExperiment(offline_directory=str(output_path))
-    exp.log_parameters(opts["model"])
-    exp.log_parameters(opts["train"])
+    wandb.init()
+    wandb.config.update(opts.to_dict())
+    wandb.config.update({"__message": parsed_opts.message})
 
     model = Unet(
             opts["model"]["channels"],

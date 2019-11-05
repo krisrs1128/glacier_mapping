@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-import comet_ml
 import numpy as np
 import pathlib
 import torch
+import wandb
 
 
 class Trainer:
-  def __init__(self, exp, model, config, train_data, dev_data, test_data):
-    self.exp = exp
+  def __init__(self, model, config, train_data, dev_data, test_data):
     self.model = model
     self.config = config
     self.train_data = train_data
@@ -26,7 +25,9 @@ class Trainer:
     for epoch in range(self.config.n_epochs):
       epoch_losses, mean_loss = self.train_epoch(op, loss_f)
       dev_loss = self.evaluate(loss_f)
-      self.exp.log_metrics({
+
+      wandb.watch(self.model)
+      wandb.log({
         "loss/train": mean_loss,
         "loss/dev": dev_loss
       }, step=epoch)

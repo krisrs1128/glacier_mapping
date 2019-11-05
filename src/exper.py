@@ -1,23 +1,24 @@
 #!/usr/bin/env python
-from comet_ml import OfflineExperiment
 import argparse
+import os
 import pathlib
 import torch
+import wandb
 
-from src.trainer import Trainer
 from src.dataset import GlacierDataset, loader
+from src.trainer import Trainer
 from src.unet import Unet
 from src.utils import  get_opts
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
             "-m",
             "--message",
             type=str,
             default="",
-            help="Add a message to the commet experiment",
+            help="Add a message to the experiment",
     )
     parser.add_argument(
             "-c",
@@ -30,7 +31,7 @@ if __name__ == '__main__':
             "-o",
             "--output_dir",
             type=str,
-            help="where the run's data should be stored ; used to resume",
+            help="where the runs data should be stored"
     )
 
     # setup directories for output
@@ -41,23 +42,18 @@ if __name__ == '__main__':
 
     opts = get_opts(parsed_opts.conf_name)
     opts["train"]["output_path"] = output_path
-    exp = OfflineExperiment(offline_directory=str(output_path))
-    exp.log_parameters(opts["model"])
-    exp.log_parameters(opts["train"])
+    os.environ["WANDB_MODE"] = "dryrun"
+    wandb.init(dir=str(output_path))
+    wandb.config.update(opts.to_dict())
+    wandb.config.update({"__message": parsed_opts.message})
 
-    model = Unet(
-            opts["model"]["channels"],
-            opts["model"]["classes"],
-            opts["model"]["net_depth"]
-    )
-
+    model = Unet(**opts["model"])
     train_loader = loader(opts["data"], opts["train"], mode="train")
     dev_loader = loader(opts["data"], opts["train"], mode="dev")
 
 	# only dev as a start
     test_loader = None
     trainer = Trainer(
-            exp,
             model,
             opts["train"],
             train_loader,

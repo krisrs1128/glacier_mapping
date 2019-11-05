@@ -106,6 +106,35 @@ def display_sat_mask(sat_img, mask, borders=None):
     display_sat_bands(sat_img)
 
 
+def sample_param(sample_dict):
+    """sample a value (hyperparameter) from the instruction in the
+    sample dict:
+    {
+        "sample": "range | list",
+        "from": [min, max, step] | [v0, v1, v2 etc.]
+    }
+    if range, as np.arange is used, "from" MUST be a list, but may contain
+    only 1 (=min) or 2 (min and max) values, not necessarily 3
+
+    Args:
+        sample_dict (dict): instructions to sample a value
+
+    Returns:
+        scalar: sampled value
+    """
+    if "sample" not in sample_dict:
+        return sample_dict
+    if sample_dict["sample"] == "range":
+        value = np.random.choice(np.arange(*sample_dict["from"]))
+    elif sample_dict["sample"] == "list":
+        value = np.random.choice(sample_dict["from"])
+    elif sample_dict["sample"] == "uniform":
+        value = np.random.uniform(*sample_dict["from"])
+    else:
+        raise ValueError("Unknonw sample type in dict " + str(sample_dict))
+    return value
+
+
 def load_conf(path):
     path = pathlib.Path(path).resolve()
     print("Loading conf from", str(path))

@@ -1,0 +1,23 @@
+var image_ids = ["139041_20111225", "139041_20100120", "140041_20091108",
+            "141040_20101220", "141040_20101001", "141040_20111207",
+            "141040_20101204", "142040_20101211", "143040_20101218",
+            "143040_20081212", "143039_20111018", "143039_20101202",
+            "143039_20111221", "144039_20111212", "144039_20101209",
+            "144039_20101225",];
+
+var arrayLength = image_ids.length;
+for (var i = 0; i < arrayLength; i++) {
+  var image_id = 'LANDSAT/LE07/C01/T1_RT/LE07_'+image_ids[i];
+  var image = ee.Image(image_id);
+  image = image.float();
+  var geometry = image.geometry();
+  // Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 255}, 'image'+i);
+  console.log(image_id);
+  Export.image.toDrive({
+    image: image,
+    folder: 'EEImages/imagesUsedForLabelling/Nepal/2010',
+    description: 'Nepal_'+image_ids[i],
+    region: geometry,
+    scale: 30
+  });
+}

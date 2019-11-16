@@ -10,7 +10,8 @@ runs:
       conf_name: explore-lr
     config:
       model: {} # empty dictionnary, don't change anything
-      data: {}
+      data:
+        path: "/scratch/sankarak/data/glaciers/"
       train:
         lr: 0.001 # overwrite config.train.lr
 
@@ -20,7 +21,8 @@ runs:
       conf_name: random-rates
     config:
       model: {}
-      data: {}
+      data: 
+        path: "/scratch/sankarak/data/glaciers/"
       train:
         lr:
           sample: uniform

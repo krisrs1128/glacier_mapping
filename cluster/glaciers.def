@@ -15,5 +15,5 @@ From: ubuntu:18.04
     apt -y install build-essential libssl-dev libffi-dev python3-dev
     apt -y install nano vim
 
-    pip3 install numpy pandas wandb Pillow addict pyyaml
+    pip3 install numpy pandas wandb Pillow addict pyyaml rasterio
     pip3 install --no-cache-dir torch torchvision matplotlib ipython seaborn

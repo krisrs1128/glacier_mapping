@@ -11,5 +11,6 @@ sudo apt -y install python3-pip
 sudo apt -y install build-essential libssl-dev libffi-dev python3-dev
 sudo apt -y install nano vim ipython3
 
-pip3 install numpy pandas wandb Pillow addict pyyaml rasterio
+pip3 install numpy==1.14.*
+pip3 install pandas wandb Pillow addict pyyaml rasterio
 pip3 install --no-cache-dir torch torchvision matplotlib seaborn

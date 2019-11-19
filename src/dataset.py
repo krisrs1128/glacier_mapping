@@ -36,11 +36,11 @@ class GlacierDataset(Dataset):
       cropped_img_path = Path(self.base_dir, cropped_img_path)
       cropped_label_path = Path(self.base_dir, cropped_label_path)
 
-      cropped_img = np.load(cropped_img_path)
+      cropped_img = np.load(cropped_img_path, allow_pickle=True)
       mask_path = cropped_label_path if (self.mode == 'train') else mask_path
       image_path = cropped_img_path
 
-    img = np.load(image_path)
+    img = np.load(image_path, allow_pickle=True)
     if self.img_transform is not None:
       img = self.img_transform(img)
     else:
@@ -48,11 +48,11 @@ class GlacierDataset(Dataset):
 
     if (self.borders) and (not pd.isnull(border_path)):
       border_path = Path(self.base_dir, border_path)
-      border = np.load(border_path)
+      border = np.load(border_path, allow_pickle=True)
       border = np.expand_dims(border, axis=0)
       img = np.concatenate((img, border), axis=0)
 
-    return img, np.load(mask_path).astype(np.float32)
+    return img, np.load(mask_path, allow_pickle=True).astype(np.float32)
 
   def __len__(self):
     return len(self.data)

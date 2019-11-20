@@ -1,0 +1,17 @@
+var image_ids = ["139041_20001226","137041_20001228","138041_20000930"];
+var arrayLength = image_ids.length;
+for (var i = 0; i < arrayLength; i++) {
+  var image_id = 'LANDSAT/LE07/C01/T1_RT/LE07_'+image_ids[i];
+  var image = ee.Image(image_id);
+  image = image.float();
+  var geometry = image.geometry();
+  Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 255}, 'image'+i);
+  console.log(image);
+  Export.image.toDrive({
+    image: image,
+    folder: 'EEImages/remainingImages/Bhutan/2000',
+    description: 'Bhutan_'+image_ids[i],
+    region: geometry,
+    scale: 30
+  });
+}

@@ -2,6 +2,7 @@ import os
 import math
 
 import numpy as np
+import cv2
 import matplotlib.pyplot as plt
 
 
@@ -20,11 +21,43 @@ def crop_raster(raster_img, vector_data):
 
 def get_snow_index(img, thresh=None):
     # channels first
-    index = (img[1, :, :] - img[4, :, :]) / (img[1, :, :] + img[4, :, :])
+    index = np.zeros_like(img[0])
+    # for division by zero errors
+    mask = (img[1, :, :] + img[4, :, :]) != 0
+    values = (img[1, :, :] - img[4, :, :]) / (img[1, :, :] + img[4, :, :])
+    index[mask] = values[mask]
+    
     if thresh is not None:
         return index > thresh
     return index
 
+def get_debris_glaciers(img, mask, thresh=0.6):
+    snow_i = np.array(get_snow_index(img, thresh=thresh))
+    mask = np.array(mask)
+    debris_mask = np.zeros_like(mask)
+    debris_mask[(snow_i == 0) & (mask == 1)] = 1
+
+    return debris_mask
+
+
+def merge_mask_snow_i(img, mask, thresh=0.6):
+    snow_i = get_snow_index(img, thresh=thresh)
+    hybrid_mask = np.zeros_like(mask)
+    hybrid_mask[(snow_i == 1) & (mask == 1)] = 1
+    hybrid_mask[(snow_i == 0) & (mask == 1)] = 2
+
+    return hybrid_mask
+
+def get_bg(mask):
+    '''Adds extra channel to a mask to represent background,
+       to make it one hot vector'''
+    if len(mask.shape) == 2:
+        fg = mask
+    else:
+        fg = np.logical_or.reduce(mask, axis=2)
+    bg = np.logical_not(fg)
+    
+    return np.stack((fg, bg))
 
 def get_mask(raster_img, vector_data, nan_value=0):
     # check if both have the same crs
@@ -75,7 +108,9 @@ def display_sat_image(sat_img):
     display_sat_bands(sat_img)
 
 
-def sat_rgb(sat_img, indeces=(0, 1, 2)):
+def sat_rgb(sat_img, indeces=(0, 1, 2), channel_first=False):
+    if channel_first:
+        sat_img = np.moveaxis(sat_img, 0, 2)
     rgb = np.stack([sat_img[:, :, indeces[0]],
                     sat_img[:, :, indeces[1]],
                     sat_img[:, :, indeces[2]]], 2).astype('int32')

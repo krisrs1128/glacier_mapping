@@ -2,6 +2,7 @@ import logging
 import os
 from random import shuffle
 
+import torch
 import numpy as np
 import pandas as pd
 
@@ -159,3 +160,27 @@ def split_train_test(sat_data_file, perc=0.2, save=True, label='dev'):
         return sat_data
     else:
         sat_data.to_csv(sat_data_file, index=False)
+
+
+def online_mean_and_sd(loader, channels):
+    """Compute the mean and sd in an online fashion
+
+        Var[x] = E[X^2] - E^2[X]
+    """
+    cnt = 0
+    fst_moment = torch.empty(channels)
+    snd_moment = torch.empty(channels)
+
+    for img, _ in loader:
+
+        b, _, h, w = img.shape
+        nb_pixels = b * h * w
+        sum_ = torch.sum(img, dim=[0, 2, 3])
+        sum_of_square = torch.sum(img ** 2, dim=[0, 2, 3])
+        fst_moment = (cnt * fst_moment + sum_) / (cnt + nb_pixels)
+        snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
+
+        cnt += nb_pixels
+
+    return fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)
+

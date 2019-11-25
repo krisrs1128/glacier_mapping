@@ -4,6 +4,7 @@ import math
 import numpy as np
 import pandas as pd
 
+import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as T
 
@@ -11,19 +12,24 @@ import utils
 
 
 class GlacierDataset(Dataset):
-    def __init__(self, base_dir, data_file, channels_to_inc=None, img_transform=None, mode='train',
-                 borders=False, use_cropped=True, use_snow_i=True):
+    def __init__(self, base_dir, data_file, channels_to_inc=None, img_transform=None,
+                 mode='train', borders=False, use_cropped=True, use_snow_i=False,
+                 mask_used='glacier'):
         super().__init__()
         self.base_dir = base_dir
         data_path = os.path.join(base_dir, data_file)
         self.data = pd.read_csv(data_path)
         self.data = self.data[self.data.train == mode]
+        if mask_used == 'debris_glaciers':
+            # TODO: fix spelling mistake
+            self.data = self.data[self.data.depris_perc > 0]
         self.img_transform = img_transform
         self.borders = borders
         self.use_cropped = use_cropped
         self.use_snow_i = use_snow_i
         self.channels_to_inc = channels_to_inc
         self.mode = mode
+        self.mask_used = mask_used
 
     def __getitem__(self, i):
         pathes = ['img_path', 'mask_path', 'border_path']
@@ -45,10 +51,7 @@ class GlacierDataset(Dataset):
             image_path = cropped_img_path
 
         img = np.load(image_path)
-        if self.img_transform is not None:
-            img = self.img_transform(img)
-        else:
-            img = T.ToTensor()(img)
+        img = T.ToTensor()(img)
 
         if self.channels_to_inc is not None:
             img = img[self.channels_to_inc]
@@ -58,13 +61,30 @@ class GlacierDataset(Dataset):
             border = np.load(border_path)
             border = np.expand_dims(border, axis=0)
             img = np.concatenate((img, border), axis=0)
+            img = torch.from_numpy(img)
+
 
         if self.use_snow_i:
             snow_index = utils.get_snow_index(img, thresh=0.6)
             snow_index = np.expand_dims(snow_index, axis=0)
             img = np.concatenate((img, snow_index), axis=0)
+            img = torch.from_numpy(img)
 
-        return img, np.load(mask_path).astype(np.float32)
+
+        if self.img_transform is not None:
+            img = self.img_transform(img)
+
+        
+
+        # default is 'all glaciers' 
+        # if self.mask_used == 'glaciers': mask = mask
+        mask = np.load(mask_path)
+        if self.mask_used == 'debris_glaciers':
+            mask = utils.get_debris_glaciers(img, mask)
+            return img, mask.astype(np.float32)
+        elif self.mask_used == 'multi_class_glaciers':
+            mask = utils.merge_mask_snow_i(img, mask.astype(np.int64))
+        return img, mask.astype(np.float32)
 
     def __len__(self):
         return len(self.data)

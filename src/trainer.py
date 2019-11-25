@@ -6,15 +6,16 @@ import numpy as np
 
 import torch
 
-from metrics import pixel_acc, dice, IoU, precision, recall
+from metrics import pixel_acc, dice, IoU, precision, recall, diceloss
 
 
 class Config:
-    def __init__(self, lr, epochs, save_dir, save_freq=1):
+    def __init__(self, lr, epochs, save_dir, save_freq=1, multi_class=False):
         self.lr = lr
         self.epochs = epochs
         self.save_dir = save_dir
         self.save_freq = save_freq
+        self.multi_class = multi_class
 
 
 class Trainer:
@@ -30,7 +31,12 @@ class Trainer:
 
     def train(self):
         op = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
-        loss_f = torch.nn.BCEWithLogitsLoss()
+        if self.config.multi_class:
+            loss_f = torch.nn.CrossEntropyLoss()
+        else:
+            # loss_f = torch.nn.BCEWithLogitsLoss()
+            loss_f = diceloss()
+        
         metrics = {'pixel_acc': pixel_acc, 'per': precision, 'recall': recall,
                    'dice': dice, 'iou': IoU}
         for epoch in range(self.config.epochs):
@@ -84,7 +90,11 @@ class Trainer:
                 loss = loss_f(pred, mask)
                 epoch_loss += loss.item()
                 if metric_fs is not None:
-                    _, binary_pred = Trainer.get_pred_mask(pred)
+                    if self.config.multi_class:
+                        act = torch.nn.Softmax(dim=1)
+                    else:
+                        act = torch.nn.Sigmoid()
+                    _, binary_pred = Trainer.get_pred_mask(pred, act=act)
                     for name, fn in metric_fs.items():
                         metric = fn(binary_pred, mask)
                         epoch_metrics[name] += metric
@@ -97,12 +107,16 @@ class Trainer:
     def predict(self, data, thresh=0.5):
         with torch.no_grad():
             pred = self.model(data)
-            pred, binary_pred = Trainer.get_pred_mask(pred, thresh=thresh)
+            if self.config.multi_class:
+                act = torch.nn.Softmax(dim=1)
+            else:
+                act = torch.nn.Sigmoid()
+            pred, binary_pred = Trainer.get_pred_mask(pred,
+                act=act, thresh=thresh)
             return pred, binary_pred
 
     @staticmethod
-    def get_pred_mask(pred, thresh=0.5):
-        act = torch.nn.Sigmoid()
+    def get_pred_mask(pred, act=torch.nn.Sigmoid(), thresh=0.5):
         pred = act(pred)
         binary_pred = pred.clone().detach()
         binary_pred[binary_pred >= thresh] = 1

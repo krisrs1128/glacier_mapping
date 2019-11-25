@@ -22,8 +22,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.toy_data:
         base_dir = '../data/toy_data'
+        sampler = SubsetRandomSampler(range(5))
     else:
         base_dir = '../data'
+        sampler = None
 
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -61,7 +63,7 @@ if __name__ == '__main__':
                                  channels_to_inc=sat_channels_to_include, mask_used=mask_used)
     train_loader = DataLoader(train_dataset, batch_size=batch_size,
                                                num_workers=1,
-                                               sampler=SubsetRandomSampler(range(5)))
+                                               sampler=sampler)
 
 
     dev_dataset = GlacierDataset(base_dir, data_file, mode='dev', borders=borders,

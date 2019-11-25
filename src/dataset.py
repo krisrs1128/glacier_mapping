@@ -21,8 +21,7 @@ class GlacierDataset(Dataset):
         self.data = pd.read_csv(data_path)
         self.data = self.data[self.data.train == mode]
         if mask_used == 'debris_glaciers':
-            # TODO: fix spelling mistake
-            self.data = self.data[self.data.depris_perc > 0]
+            self.data = self.data[self.data.debris_perc > 0]
         self.img_transform = img_transform
         self.borders = borders
         self.use_cropped = use_cropped

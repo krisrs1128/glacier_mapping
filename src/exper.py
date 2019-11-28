@@ -4,6 +4,9 @@ import os
 import pathlib
 import torch
 import wandb
+import pickle
+
+import torchvision.transforms as T
 
 from src.dataset import GlacierDataset, loader
 from src.trainer import Trainer
@@ -47,12 +50,17 @@ if __name__ == "__main__":
     wandb.config.update(opts.to_dict())
     wandb.config.update({"__message": parsed_opts.message})
 
-    model = Unet(**opts["model"])
-    train_loader = loader(opts["data"], opts["train"], mode="train")
-    dev_loader = loader(opts["data"], opts["train"], mode="dev")
+    # load normalization
+    norm_data_file = os.path.join(base_dir, "normalization_data.pkl")
+    norm_data = pickle.load(open(norm_data_file, "rb"))
+    img_transform = T.Normalize(norm_data['mean'], norm_data['std'])
 
-	# only dev as a start
-    test_loader = None
+
+    model = Unet(**opts["model"])
+    train_loader = loader(opts["data"], opts["train"], mode="train", img_transform=img_transform)
+    dev_loader = loader(opts["data"], opts["train"], mode="dev", img_transform=img_transform)
+	test_loader = loader(opts["data"], opts["train"], mode="test", img_transform=img_transform)
+
     trainer = Trainer(
             model,
             opts["train"],
@@ -60,5 +68,4 @@ if __name__ == "__main__":
             dev_loader,
             test_loader
     )
-
     trainer.train()

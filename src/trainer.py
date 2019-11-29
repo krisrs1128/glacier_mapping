@@ -45,8 +45,8 @@ class Trainer:
         "loss/dev": dev_loss
       }, step=epoch)
 
-      wandb.log({'train_' + k: for k, v in train_metrics.items()})
-      wandb.log({'dev_' + k: for k, v in dev_metrics.items()})
+      wandb.log({'train_' + k: v for k, v in train_metrics.items()})
+      wandb.log({'dev_' + k: v for k, v in dev_metrics.items()})
 
       if (epoch % self.config.save_freq) == 0:
         save_path = pathlib.Path(self.config.output_path, f"model_{epoch}.pt")

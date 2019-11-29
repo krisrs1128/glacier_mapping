@@ -8,8 +8,7 @@ import torch
 from torch.utils.data import Dataset, Dataloader
 import torchvision.transforms as T
 
-import src.utils
-
+import utils
 torch.manual_seed(10)
 
 class GlacierDataset(Dataset):

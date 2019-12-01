@@ -11,7 +11,7 @@ from src.dataset import GlacierDataset
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--base_dir", default="./data", type=str,
-                        help="path of sat_data file to filter")
+                        help="path of sat_data to normalize")
     args = parser.parse_args()
     base_dir = Path(args.base_dir)
 

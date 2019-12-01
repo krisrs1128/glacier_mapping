@@ -5,10 +5,11 @@ import pandas as pd
 import pdb
 
 import torch
-from torch.utils.data import Dataset, Dataloader
+from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
 import torchvision.transforms as T
 
-import utils
+import src.utils as utils
 torch.manual_seed(10)
 
 class GlacierDataset(Dataset):
@@ -21,7 +22,7 @@ class GlacierDataset(Dataset):
         self.data = pd.read_csv(data_path)
         self.data = self.data[self.data.train == mode]
         if mask_used == 'debris_glaciers':
-            self.data = self.data[self.data.debris_perc > 0]
+            self.data = self.data[self.data.pseudo_debris_perc > 0]
         self.img_transform = img_transform
         self.borders = borders
         self.use_cropped = use_cropped
@@ -61,21 +62,16 @@ class GlacierDataset(Dataset):
             img = np.concatenate((img, border), axis=0)
             img = torch.from_numpy(img)
 
-
         if self.use_snow_i:
-            snow_index = utils.get_snow_index(img, thresh=0.6)
+            snow_index = utils.get_snow_index(img)
             snow_index = np.expand_dims(snow_index, axis=0)
             img = np.concatenate((img, snow_index), axis=0)
             img = torch.from_numpy(img)
 
-
         if self.img_transform is not None:
             img = self.img_transform(img)
 
-        
-
-        # default is 'all glaciers' 
-        # if self.mask_used == 'glaciers': mask = mask
+        # default is 'glaciers' for original labels 
         mask = np.load(mask_path)
         if self.mask_used == 'debris_glaciers':
             mask = utils.get_debris_glaciers(img, mask)
@@ -104,10 +100,16 @@ def loader(data_opts, train_opts, img_transform, mode="train"):
     borders=data_opts["borders"]
   )
 
+  if data_opts.load_limit == -1:
+    sampler, shuffle = None, train_opts["shuffle"]
+  else:
+    sampler, shuffle = SubsetRandomSampler(range(data_opts.load_limit)), False
+
   return DataLoader(
     dataset,
+    sampler=sampler,
     batch_size=train_opts["batch_size"],
-    shuffle=train_opts["shuffle"],
+    shuffle=shuffle,
     num_workers=train_opts["num_workers"],
     drop_last=True
   )

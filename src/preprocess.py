@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 import logging
 import os
-from random import shuffle
+import pathlib
+import pickle
+import random
 
-import torch
 import numpy as np
 import pandas as pd
-
 import geopandas
 import rasterio
+import torch
+import torchvision.transforms as T
 
-import utils
+import src.utils as utils
 
 
 def get_sliced_mask(img, label, size=(512, 512), nan_value=0):
@@ -31,7 +33,8 @@ def save_slice(data, save_loc, slice_type, img_name, num):
 
 
 def chunck_satelitte(img_path, labels, data_df, base_dir,
-                     borders=None, basin=None, size=(512, 512), crop=True):
+                     borders=None, basin=None, size=(512, 512), crop=True,
+                     country=None, year=None):
     img_name = os.path.splitext(os.path.basename(img_path))[0]
     logging.info('Image name :{} '.format(img_name))
     img = rasterio.open(img_path)
@@ -75,6 +78,8 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
         is_label = mask_slices[i] == 1
 
         data_dict['img_id'] = img_name
+        data_dict['country'] = country
+        data_dict['year'] = year
         data_dict['is_nan_perc'] = is_nan.sum() / is_nan.size
         data_dict['labels_perc'] = is_label.sum() / is_label.size
         data_dict['labeled_nan'] = (is_nan & is_label).sum() / is_label.sum()
@@ -105,14 +110,14 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
     return data_df
 
 
-def chunck_sat_files(sat_dir, labels_path, save_loc, borders_path=None,
-                     basin_path=None, size=(512, 512)):
+def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
+                     basin_path=None, size=(512, 512), year=None, country=None):
     labels = geopandas.read_file(labels_path)
     borders = geopandas.read_file(
         borders_path) if borders_path is not None else None
     basin = geopandas.read_file(basin_path) if basin_path is not None else None
 
-    columns = ['img_id', 'img_path', 'mask_path', 'border_path',
+    columns = ['img_id', 'year', 'country', 'img_path', 'mask_path', 'border_path',
                'is_nan_perc', 'labels_perc', 'labeled_nan', 'in_border_perc',
                'labels_in_border', 'basin_perc']
     sat_data = pd.DataFrame(columns=columns)
@@ -125,9 +130,10 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, borders_path=None,
         img = rasterio.open(img_path)
 
         sat_data = chunck_satelitte(
-            img_path, labels, sat_data, save_loc, borders, basin, size=size)
+            img_path, labels, sat_data, save_loc, borders, basin, size=size,
+            year=year, country=country)
 
-    sat_data.to_csv(os.path.join(save_loc, 'sat_data.csv'), index=False)
+    sat_data.to_csv(os.path.join(df_loc, 'sat_data.csv'), index=False)
 
 
 def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
@@ -152,7 +158,8 @@ def split_train_test(sat_data_file, perc=0.2, save=True, label='dev'):
     dev_size = int(n * perc)
 
     train_idx = list(sat_data[sat_data.train == 'train'].index)
-    shuffle(train_idx)
+    random.seed(0)
+    random.shuffle(train_idx)
 
     sat_data.loc[train_idx[:dev_size], 'train'] = label
 
@@ -183,3 +190,19 @@ def online_mean_and_sd(loader, channels):
         cnt += nb_pixels
 
     return fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)
+
+
+def get_normalization(data_config):
+    norm_data_file = pathlib.Path(data_config.path, "normalization_data.pkl")
+    norm_data = pickle.load(open(norm_data_file, "rb"))
+    mean, std = norm_data["mean"], norm_data["std"]
+    channels_mean = [mean[i] for i in data_config.channels_to_inc]
+    channels_std = [std[i] for i in data_config.channels_to_inc] 
+
+    if data_config.use_snow_i:
+        channels_mean.append(mean[10])
+        channels_std.append(std[10])
+
+    img_transform = T.Normalize(channels_mean, channels_std)
+
+    return img_transform

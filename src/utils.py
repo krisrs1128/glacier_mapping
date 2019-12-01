@@ -19,9 +19,8 @@ def crop_raster(raster_img, vector_data):
         vector_data = vector_data.to_crs(raster_img.meta['crs'].data)
 
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
+
     return mask
-
-
 
 def get_snow_index(img, thresh=None):
     # channels first
@@ -33,6 +32,7 @@ def get_snow_index(img, thresh=None):
     
     if thresh is not None:
         return index > thresh
+        
     return index
 
 def get_debris_glaciers(img, mask, thresh=0.6):
@@ -220,7 +220,7 @@ def get_opts(conf_path):
         conf_name = conf_path
         if not conf_name.endswith(".yaml"):
             conf_name += ".yaml"
-        conf_path = Path(__file__).parent.parent / "shared" / conf_name
+        conf_path = pathlib.Path(__file__).parent.parent / "shared" / conf_name
         assert conf_path.exists()
 
     return merge_defaults({"model": {}, "train": {}, "data": {}}, conf_path)

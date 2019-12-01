@@ -4,14 +4,23 @@ import os
 import pathlib
 import torch
 import wandb
-import pickle
 
-import torchvision.transforms as T
-
+from src.preprocess import get_normalization
 from src.dataset import GlacierDataset, loader
 from src.trainer import Trainer
 from src.unet import Unet
 from src.utils import  get_opts
+
+def induce_config(data_config):
+    inchannels = (len(data_config.channels_to_inc) +
+                  data_config.borders +
+                  data_config.use_snow_i)
+
+    if data_config.mask_used == "multi_class_glaciers":
+        outchannels, multiclass = 2, True
+    else: outchannels, multiclass = 1, False
+
+    return inchannels, outchannels, multiclass
 
 
 if __name__ == "__main__":
@@ -45,21 +54,22 @@ if __name__ == "__main__":
 
     opts = get_opts(parsed_opts.conf_name)
     opts["train"]["output_path"] = output_path
+    inchannels, outchannels, multiclass = induce_config(opts["data"]) 
+    opts["model"]["inchannels"] = inchannels
+    opts["model"]["outchannels"] = outchannels
+    opts["train"]["multiclass"] = multiclass
+
+                                      
     os.environ["WANDB_MODE"] = "dryrun"
     wandb.init(dir=str(output_path))
     wandb.config.update(opts.to_dict())
     wandb.config.update({"__message": parsed_opts.message})
-
-    # load normalization
-    norm_data_file = os.path.join(base_dir, "normalization_data.pkl")
-    norm_data = pickle.load(open(norm_data_file, "rb"))
-    img_transform = T.Normalize(norm_data['mean'], norm_data['std'])
-
-
+    
+    img_transform = get_normalization(opts["data"])
     model = Unet(**opts["model"])
     train_loader = loader(opts["data"], opts["train"], mode="train", img_transform=img_transform)
     dev_loader = loader(opts["data"], opts["train"], mode="dev", img_transform=img_transform)
-	test_loader = loader(opts["data"], opts["train"], mode="test", img_transform=img_transform)
+    test_loader = loader(opts["data"], opts["train"], mode="test", img_transform=img_transform)
 
     trainer = Trainer(
             model,

@@ -35,7 +35,7 @@ class Trainer:
                    'dice': dice, 'iou': IoU}
 
     for epoch in range(self.config.n_epochs):
-      _, _ = self.train_epoch(op, loss_f)
+      self.train_epoch(op, loss_f)
 
       dev_loss, dev_metrics = self.evaluate(loss_f, metrics)
       train_loss, train_metrics = self.evaluate(loss_f, metrics, mode='train')
@@ -45,8 +45,8 @@ class Trainer:
         "loss/dev": dev_loss
       }, step=epoch)
 
-      wandb.log({'train_' + k: v for k, v in train_metrics.items()})
-      wandb.log({'dev_' + k: v for k, v in dev_metrics.items()})
+      wandb.log({f'{k}/train': v for k, v in train_metrics.items()}, step=epoch)
+      wandb.log({f'{k}/dev': v for k, v in dev_metrics.items()}, step=epoch)
 
       if (epoch % self.config.save_freq) == 0:
         save_path = pathlib.Path(self.config.output_path, f"model_{epoch}.pt")
@@ -73,7 +73,7 @@ class Trainer:
     return epoch_losses, np.mean(epoch_losses)
 
 
-  def evaluate(self, loss_f, metric_fs=None, mode='dev'):
+  def evaluate(self, loss_f, metric_fs={}, mode='dev'):
     epoch_loss = 0
     epoch_metrics = defaultdict(int)
     self.model.eval()
@@ -101,10 +101,7 @@ class Trainer:
             metric = fn(binary_pred, mask)
             epoch_metrics[name] += metric
 
-    if metric_fs is not None:
-      return (epoch_loss / n), {name: value/n for name, value in epoch_metrics.items()}
-    else:
-      return (epoch_loss / n)
+    return (epoch_loss / n), {name: value/n for name, value in epoch_metrics.items()}
   
   def predict(self, data, thresh=0.5):
     with torch.no_grad():

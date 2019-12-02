@@ -39,6 +39,7 @@ class Trainer:
       train_loss, train_metrics = self.evaluate(loss_f, metrics, mode='train')
 
       print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {mean_loss}\tdev loss: {dev_loss}")
+      wandb.log({"loss/train": train_loss, "loss/dev": dev_loss}, step=epoch) 
       wandb.log({f'{k}/train': v for k, v in train_metrics.items()}, step=epoch)
       wandb.log({f'{k}/dev': v for k, v in dev_metrics.items()}, step=epoch)
 
@@ -67,7 +68,6 @@ class Trainer:
     return epoch_losses, np.mean(epoch_losses)
 
 
-<<<<<<< HEAD
   def evaluate(self, loss_f, metric_f=None, mode="dev"):
       epoch_loss = 0
       epoch_metric = 0
@@ -97,7 +97,6 @@ class Trainer:
         return epoch_loss / len(data)
 
 
-=======
   def evaluate(self, loss_f, metric_fs={}, mode='dev'):
     """Evaluate a dataset and return loss and metrics."""
 

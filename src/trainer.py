@@ -68,35 +68,6 @@ class Trainer:
     return epoch_losses, np.mean(epoch_losses)
 
 
-  def evaluate(self, loss_f, metric_f=None, mode="dev"):
-      epoch_loss = 0
-      epoch_metric = 0
-      self.model.eval()
-
-      if mode == "test":
-        data = self.test_data
-      else:
-        data = self.dev_data
-
-      wandb_imgs = []
-      for i, (img, mask) in enumerate(data):
-          with torch.no_grad():
-              img, mask = img.to(self.device), mask.to(self.device)
-              pred = self.model(img)
-              loss = loss_f(pred, mask)
-              epoch_loss += loss.item()
-              if metric_f is not None:
-                _, binary_pred = Trainer.get_pred_mask(pred)
-                metric = metric_f(binary_pred, mask)
-                epoch_metric += metric
-
-
-      if metric_f is not None:
-        return epoch_loss / len(data), epoch_metric / len(data)
-      else:
-        return epoch_loss / len(data)
-
-
   def evaluate(self, loss_f, metric_fs={}, mode='dev'):
     """Evaluate a dataset and return loss and metrics."""
 

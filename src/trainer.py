@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 from collections import defaultdict
 from src.metrics import pixel_acc, dice, IoU, precision, recall, diceloss
-import logging
 import numpy as np
-import os
 import pathlib
 import src.utils
 import torch

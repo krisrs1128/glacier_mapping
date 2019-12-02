@@ -7,7 +7,6 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy as np
-import os
 import pathlib
 import rasterio
 import wandb
@@ -304,6 +303,7 @@ def update_metrics(epoch_metrics, metric_fs,  multi_class=False):
         epoch_metrics[name] += fn(binary_pred, mask)
 
     return epoch_metrics
+
 
 def merged_image(img, mask, pred):
     img, pred, mask = img.median(axis=1).cpu(), pred.cpu(), mask.cpu()

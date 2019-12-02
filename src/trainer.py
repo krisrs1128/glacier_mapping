@@ -4,7 +4,6 @@ import pathlib
 import torch
 import wandb
 
-
 class Trainer:
   def __init__(self, model, config, train_data, dev_data, test_data):
     self.model = model
@@ -27,10 +26,8 @@ class Trainer:
       epoch_losses, mean_loss = self.train_epoch(op, loss_f)
       dev_loss = self.evaluate(loss_f)
 
-      wandb.log({
-        "loss/train": mean_loss,
-        "loss/dev": dev_loss
-      }, step=epoch)
+      print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {mean_loss}\tdev loss: {dev_loss}")
+      wandb.log({"loss/train": mean_loss, "loss/dev": dev_loss}, step=epoch)
 
       if (epoch % self.config.save_freq) == 0:
         save_path = pathlib.Path(self.config.output_path, f"model_{epoch}.pt")
@@ -44,7 +41,7 @@ class Trainer:
     self.model.train()
     epoch_losses = []
 
-    for img, mask in self.train_data:
+    for i, (img, mask) in enumerate(self.train_data):
       op.zero_grad()
 
       img, mask = img.to(self.device), mask.to(self.device)
@@ -53,6 +50,11 @@ class Trainer:
       epoch_losses.append(loss.item())
       loss.backward()
       op.step()
+
+      if  i > 3:
+        break
+
+      print(f"batch {i}/{len(self.train_data)}\tloss: {loss}", end="\r")
 
     return epoch_losses, np.mean(epoch_losses)
 
@@ -67,7 +69,8 @@ class Trainer:
       else:
         data = self.dev_data
 
-      for img, mask in data:
+      wandb_imgs = []
+      for i, (img, mask) in enumerate(data):
           with torch.no_grad():
               img, mask = img.to(self.device), mask.to(self.device)
               pred = self.model(img)
@@ -77,6 +80,14 @@ class Trainer:
                 _, binary_pred = Trainer.get_pred_mask(pred)
                 metric = metric_f(binary_pred, mask)
                 epoch_metric += metric
+
+              if i % 10 == 0:
+                img, pred, mask = img.median(axis=1).cpu(), pred.cpu(), mask.cpu()
+                for j in range(img.shape[0]):
+                  merged = np.concatenate([img[j], pred[j], mask[j]], axis=1)
+                  wandb_imgs.append(wandb.Image(merged))
+
+      wandb.log({"dev_images": wandb_imgs})
 
       if metric_f is not None:
         return epoch_loss / len(data), epoch_metric / len(data)

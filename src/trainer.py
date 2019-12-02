@@ -36,7 +36,7 @@ class Trainer:
       dev_loss, dev_metrics = self.evaluate(loss_f, metrics)
       train_loss, train_metrics = self.evaluate(loss_f, metrics, mode='train')
 
-      wandb.log({"loss/train": train_loss, "loss/dev": dev_loss}, step=epoch) 
+      wandb.log({"loss/train": train_loss, "loss/dev": dev_loss}, step=epoch)
       wandb.log({f'{k}/train': v for k, v in train_metrics.items()}, step=epoch)
       wandb.log({f'{k}/dev': v for k, v in dev_metrics.items()}, step=epoch)
       print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {mean_loss}\tdev loss: {dev_loss}")

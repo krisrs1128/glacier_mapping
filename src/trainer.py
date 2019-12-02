@@ -20,9 +20,8 @@ class Trainer:
     self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
   def train(self):
-    """
-    Train Across Epochs
-    """
+    """Train Across Epochs"""
+
     self.model.to(self.device)
     wandb.watch(self.model)
     op = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
@@ -54,9 +53,8 @@ class Trainer:
 
 
   def train_epoch(self, op, loss_f):
-    """
-    Train a Single Epoch
-    """
+    """Train a Single Epoch"""
+
     self.model.train()
     epoch_losses = []
 
@@ -74,6 +72,8 @@ class Trainer:
 
 
   def evaluate(self, loss_f, metric_fs={}, mode='dev'):
+    """Evaluate a dataset and return loss and metrics."""
+
     epoch_loss = 0
     epoch_metrics = defaultdict(int)
     self.model.eval()
@@ -104,6 +104,8 @@ class Trainer:
     return (epoch_loss / n), {name: value/n for name, value in epoch_metrics.items()}
   
   def predict(self, data, thresh=0.5):
+    """Given an image segment it."""
+
     with torch.no_grad():
       pred = self.model(data)
       if self.config.multi_class:
@@ -116,6 +118,8 @@ class Trainer:
 
   @staticmethod
   def get_pred_mask(pred, act=torch.nn.Sigmoid(), thresh=0.5):
+    """Given the logits of a model predict a segmentation mask."""
+
     pred = act(pred)
     binary_pred = pred.clone().detach()
     binary_pred[binary_pred >= thresh] = 1

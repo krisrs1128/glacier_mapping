@@ -16,6 +16,17 @@ import src.utils as utils
 
 
 def get_sliced_mask(img, label, size=(512, 512), nan_value=0):
+    """Given an image and label, return the mask and the its slices.
+    Args:
+        raster_img (rasterio dataset object): the rater image to mask
+        vector_data (iterable polygon data): the labels to mask according to
+        size (int, int): size of the resulting slices
+        nan_value (int): the value to fill nan areas with
+    Returns:
+        mask (numpy.array): a binary mask of img according to labels
+        slices [numpy.array]: list of numpy slices of the mask
+    """
+
     mask = utils.get_mask(img, label, nan_value=nan_value)
     slices = utils.slice_image(mask, size=size)
 
@@ -23,6 +34,16 @@ def get_sliced_mask(img, label, size=(512, 512), nan_value=0):
 
 
 def save_slice(data, save_loc, slice_type, img_name, num):
+    """Construct the path to save and save a given slice.
+    Args:
+        data (numpy.array): the slice to save
+        save_loc (str): the base folder to save all slices
+        slice_type (str): type of slice, like mask, img or cropped_img
+        img_name (str): the id of the image the slice belongs to
+        num (int): the number of the slice, relative to all the slices in the same image
+    Returns:
+        relative_path (str): the saving location of the slice relative to the base directory"""
+
     slice_name = '_'.join([slice_type, img_name, 'slice', str(num)]) + '.npy'
     slice_path = os.path.join(save_loc, slice_name)
     np.save(slice_path, data)
@@ -35,6 +56,21 @@ def save_slice(data, save_loc, slice_type, img_name, num):
 def chunck_satelitte(img_path, labels, data_df, base_dir,
                      borders=None, basin=None, size=(512, 512), crop=True,
                      country=None, year=None):
+    """Chunck a given satelitte image with the related labels and save metadata.
+    Args:
+        img_path (str): the path to the image to chunck
+        labels (iterable polygon data): the labels of interest to mask with
+        data_df (pandas.Dataframe): the metadata dataframe to use
+        base_dir (str): the base directory to save the slices in
+        borders (iterable polygon data): borders data to mask
+        basin (iterable polygon data): basin of interest data to mask
+        size (int, int): the size to slice with
+        crop (bool): whether to crop areas outside of borders
+        country (str): the name of the country the image belongs to, for metadata
+        year (str): the year the image belongs to, for metadata
+    Returns:
+        pandas.Dataframe: a dataframe with all the realtive pathes and metadata"""
+
     img_name = os.path.splitext(os.path.basename(img_path))[0]
     logging.info('Image name :{} '.format(img_name))
     img = rasterio.open(img_path)
@@ -112,6 +148,19 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
 
 def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
                      basin_path=None, size=(512, 512), year=None, country=None):
+    """Chunck all the images in a folder and construct their metadata.
+    Args:
+        sat_dir (str): the path of the directory
+        labels_path (str): the path to the labels to mask with
+        save_loc (str): where to save the data after chuncking
+        df_loc (str): the location of a dataframe to save the metadata
+        basin_path (str): the path to a basin of interst for test labels
+        size (int, int): the size of resulting slices
+        year (str): the year the images belong to
+        country (str): the country the images belong to
+    Returns: None
+    """
+
     labels = geopandas.read_file(labels_path)
     borders = geopandas.read_file(
         borders_path) if borders_path is not None else None
@@ -137,6 +186,15 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
 
 
 def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
+    """filter image according to metadata.
+    Args:
+        sat_data_file (str): path to satlitte imagery metadata
+        valid_cond_f (function): function that returns if a slice is a valid slice or should be ignored
+        valid_cond_f (function): function that returns if a slice is a test slice
+        save (bool): whether to save the resulting dataframe
+    Returns:
+        None or pd.Dataframe (metadata with column for train/test labels)
+    """
     sat_data = pd.read_csv(sat_data_file)
     sat_data['valid_data'] = False
     sat_data.loc[valid_cond_f(sat_data), 'valid_data'] = True
@@ -152,6 +210,14 @@ def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
 
 
 def split_train_test(sat_data_file, perc=0.2, save=True, label='dev'):
+    """Split satelitte metadat into train and dev/test.
+    Args:
+        sat_data_file (str): path to metadata file
+        perc (float): the percentage of the dev/test in data
+        save (bool): whether to save the resulting dataframe
+        label (str): the name of the minority label (should be dev or test)
+    Returns:
+        None or pd.Dataframe (metadata with column for dev/test labels)"""
     sat_data = pd.read_csv(sat_data_file)
 
     n = len(sat_data[sat_data.train == 'train'])
@@ -170,10 +236,14 @@ def split_train_test(sat_data_file, perc=0.2, save=True, label='dev'):
 
 
 def online_mean_and_sd(loader, channels):
-    """Compute the mean and sd in an online fashion
+    """Compute the mean and sd in an online fashion.
+    Var[x] = E[X^2] - E^2[X]
+    Args:
+        loader (torch.data.utils.DataLoader): the training dataloader to get normalization from
+        channels (int): how many channels to use
+    Returns:
+        (torch.tensor, torch.tensor): (mean, std)"""
 
-        Var[x] = E[X^2] - E^2[X]
-    """
     cnt = 0
     fst_moment = torch.empty(channels)
     snd_moment = torch.empty(channels)
@@ -193,6 +263,12 @@ def online_mean_and_sd(loader, channels):
 
 
 def get_normalization(data_config):
+    """Returns the normalization transformation to use according to configuration
+    Args:
+        data_config (dict): configuration of the data
+    Returns:
+        torchvision.transforms"""
+        
     norm_data_file = pathlib.Path(data_config.path, "normalization_data.pkl")
     norm_data = pickle.load(open(norm_data_file, "rb"))
     mean, std = norm_data["mean"], norm_data["std"]

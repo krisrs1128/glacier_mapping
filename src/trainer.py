@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-import os
-import logging
 from collections import defaultdict
-
+from src.metrics import pixel_acc, dice, IoU, precision, recall, diceloss
+import logging
 import numpy as np
+import os
 import pathlib
+import src.utils
 import torch
 import wandb
-from src.metrics import pixel_acc, dice, IoU, precision, recall, diceloss
 
 class Trainer:
   def __init__(self, model, config, train_data, dev_data, test_data):
@@ -30,7 +30,7 @@ class Trainer:
       loss_f = diceloss()
 
     metrics = {'pixel_acc': pixel_acc, 'per': precision, 'recall': recall,
-                   'dice': dice, 'iou': IoU}
+               'dice': dice, 'iou': IoU}
 
     for epoch in range(self.config.n_epochs):
       self.train_epoch(op, loss_f)
@@ -72,38 +72,26 @@ class Trainer:
     """Evaluate a dataset and return loss and metrics."""
 
     epoch_loss = 0
-    epoch_metrics = defaultdict(int)
     self.model.eval()
 
-    if mode == 'test':
-      data = self.test_data
-    elif mode == 'train':
-      data = self.train_data
-    else:
-      data = self.dev_data
-
+    data = get_attr(self, f"{mode}_data")
+    epoch_metrics = defaultdict(int)
     wandb_imgs = []
+
     for i, (img, mask) in enumerate(data):
       with torch.no_grad():
         img, mask = img.to(self.device), mask.to(self.device)
         pred = self.model(img)
         loss = loss_f(pred, mask)
         epoch_loss += loss.item()
-        if metric_fs is not None:
-          if self.config.multi_class:
-            act = torch.nn.Softmax(dim=1)
-          else:
-            act = torch.nn.Sigmoid()
-          _, binary_pred = Trainer.get_pred_mask(pred, act=act)
-          for name, fn in metric_fs.items():
-            metric = fn(binary_pred, mask)
-            epoch_metrics[name] += metric
 
+        epoch_metrics = utils.update_metrics(
+          epoch_metrics,
+          metric_fs,
+          self.config.multi_class
+        )
         if self.config.store_images and i % 10  == 0:
-          img, pred, mask = img.median(axis=1).cpu(), pred.cpu(), mask.cpu()
-          for j in range(img.shape[0]):
-            merged = np.concatenate([img[j], pred[j], mask[j]], axis=1)
-            wandb_imgs.append(wandb.Image(merged))
+          wandb_images.append(utils.merged_image(img, mask, pred))
 
     wandb.log({f"{mode}_images": wandb_imgs})
     return (epoch_loss / len(data)), {name: value/len(data) for name, value in epoch_metrics.items()}
@@ -113,21 +101,5 @@ class Trainer:
 
     with torch.no_grad():
       pred = self.model(data)
-      if self.config.multi_class:
-        act = torch.nn.Softmax(dim=1)
-      else:
-        act = torch.nn.Sigmoid()
-      pred, binary_pred = Trainer.get_pred_mask(pred,
-        act=act, thresh=thresh)
-      return pred, binary_pred
-
-  @staticmethod
-  def get_pred_mask(pred, act=torch.nn.Sigmoid(), thresh=0.5):
-    """Given the logits of a model predict a segmentation mask."""
-
-    pred = act(pred)
-    binary_pred = pred.clone().detach()
-    binary_pred[binary_pred >= thresh] = 1
-    binary_pred[binary_pred < thresh] = 0
-
-    return pred, binary_pred
+      act = matching_act(self.config.mluti_class)
+      return utils.get_pred_mask(pred, act=act, thresh=thresh)

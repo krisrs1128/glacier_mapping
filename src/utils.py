@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-from rasterio.mask import mask as rasterio_mask
 from addict import Dict
-import os
-import math
-
-import numpy as np
+from collections import defaultdict
+from rasterio.mask import mask as rasterio_mask
 import cv2
+import math
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy as np
+import os
 import pathlib
 import rasterio
+import wandb
 import yaml
-
 
 def crop_raster(raster_img, vector_data):
     """Crop a raster image according to given vector data and
@@ -275,3 +275,42 @@ def get_opts(conf_path):
         assert conf_path.exists()
 
     return merge_defaults({"model": {}, "train": {}, "data": {}}, conf_path)
+
+
+def get_pred_mask(pred, act=torch.nn.Sigmoid(), thresh=0.5):
+    """Given the logits of a model predict a segmentation mask."""
+    pred = act(pred)
+    binary_pred = pred.clone().detach()
+    binary_pred[binary_pred >= thresh] = 1
+    binary_pred[binary_pred < thresh] = 0
+
+    return pred, binary_pred
+
+def matching_act(multi_class=False):
+    if multi_class:
+        act = torch.nn.Softmax(dim=1)
+    else:
+        act = torch.nn.Sigmoid()
+    return act
+
+
+def update_metrics(epoch_metrics, metric_fs,  multi_class=False):
+    if metric_fs is None:
+        return defaultdict(int)
+
+    act = matching_act(multi_class)
+    _, binary_pred = get_pred_mask(pred, act=act)
+    for name, fn in metric_fs.items():
+        epoch_metrics[name] += fn(binary_pred, mask)
+
+    return epoch_metrics
+
+def merged_image(img, mask, pred):
+    img, pred, mask = img.median(axis=1).cpu(), pred.cpu(), mask.cpu()
+
+    result = []
+    for j in range(img.shape[0]):
+        merged = np.concatenate([img[j], pred[j], mask[j]], axis=1)
+        result.append(wandb.Image(merged))
+
+    return result

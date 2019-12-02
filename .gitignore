@@ -4,3 +4,7 @@
 *.png
 *.txt
 *pycache*
+data/
+notebooks/
+models/
+*.pyc

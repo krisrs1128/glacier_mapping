@@ -1,22 +1,90 @@
 #!/usr/bin/env python
 from rasterio.mask import mask as rasterio_mask
 from addict import Dict
+import os
+import math
+
+import numpy as np
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pathlib
 import rasterio
 import yaml
 
+
 def crop_raster(raster_img, vector_data):
+    """Crop a raster image according to given vector data and
+       return the cropped version as numpy array"""
+
     vector_crs = rasterio.crs.CRS(vector_data.crs)
     if vector_crs != raster_img.meta['crs']:
         vector_data = vector_data.to_crs(raster_img.meta['crs'].data)
 
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
+
     return mask
 
+def get_snow_index(img, thresh=None):
+    """Given a satelitte image return the snow index,
+       default is cahnnels first landsat7 format"""
+
+    # channels first
+    index = np.zeros_like(img[0])
+    # for division by zero errors
+    mask = (img[1, :, :] + img[4, :, :]) != 0
+    values = (img[1, :, :] - img[4, :, :]) / (img[1, :, :] + img[4, :, :])
+    index[mask] = values[mask]
+    
+    if thresh is not None:
+        return index > thresh
+        
+    return index
+
+def get_debris_glaciers(img, mask, thresh=0.6):
+    """Given an image and labels construct pseudo labels of the debris glaciers,
+       as any labels doesn't captured by snow index"""
+
+    snow_i = np.array(get_snow_index(img, thresh=thresh))
+    mask = np.array(mask)
+    debris_mask = np.zeros_like(mask)
+    debris_mask[(snow_i == 0) & (mask == 1)] = 1
+
+    return debris_mask
+
+
+def merge_mask_snow_i(img, mask, thresh=0.6):
+    """Return multi-class of a binary class mask,
+       using snow_index to construct pseudo labels."""
+
+    snow_i = get_snow_index(img, thresh=thresh)
+    hybrid_mask = np.zeros_like(mask)
+    hybrid_mask[(snow_i == 1) & (mask == 1)] = 1
+    hybrid_mask[(snow_i == 0) & (mask == 1)] = 2
+
+    return hybrid_mask
+
+def get_bg(mask):
+    """"Adds extra channel to a mask to represent background,
+       to make it one hot vector"""
+
+    if len(mask.shape) == 2:
+        fg = mask
+    else:
+        fg = np.logical_or.reduce(mask, axis=2)
+    bg = np.logical_not(fg)
+    
+    return np.stack((fg, bg))
 
 def get_mask(raster_img, vector_data, nan_value=0):
+    """Get a mask from a raster for a given vector data.
+    Args:
+        raster_img (rasterio dataset object): the rater image to mask
+        vector_data (iterable polygon data): the labels to mask according to
+        nan_value (int): the value to fill nan areas with
+    Returns:
+        a binary mask (np.array)"""
+
     # check if both have the same crs
     # follow the raster data as it's easier, faster
     # and doesn't involve saving huge new raster data
@@ -33,6 +101,13 @@ def get_mask(raster_img, vector_data, nan_value=0):
 
 
 def slice_image(img, size=(512, 512)):
+    """Given an image slice according to size with no overlapping.
+    Args:
+        img (np.array): image to be sliced
+        size tuple(int, int): size of the slice
+    Returns:
+        list of slices [np.array]"""
+
     if img.ndim == 2:
         h, w = img.shape
     else:
@@ -59,17 +134,39 @@ def slice_image(img, size=(512, 512)):
 
     return slices
 
+
 def display_sat_image(sat_img):
+    """Display the RGB and bands of satelitte image"""
+
     plt.imshow(sat_rgb(sat_img))
     display_sat_bands(sat_img)
 
-def sat_rgb(sat_img, indeces=(0, 1, 2)):
+
+def sat_rgb(sat_img, indeces=(0, 1, 2), channel_first=False):
+    """Given a 3d array return a 3 channels combination (default is rgb)
+    Args:
+        sat_img (nmupy.array): the image to use
+        indeces (int, int, int): what are the channels of interest
+        channels_first (bool): if sat_image has channels as last or first
+    Returns:
+        numpy.array: the three channels (rgb)"""
+
+    if channel_first:
+        sat_img = np.moveaxis(sat_img, 0, 2)
     rgb = np.stack([sat_img[:, :, indeces[0]],
                     sat_img[:, :, indeces[1]],
                     sat_img[:, :, indeces[2]]], 2).astype('int32')
     return rgb
 
+
 def display_sat_bands(sat_img, bands=10, band_names=None, l7=True):
+    """Given a satelitte image displat all bands
+    Args:
+        sat_img (numpy.array): the satelittle image to display
+        bands (int): how many bands in the image
+        band_names [str]: names of the bands
+        l7 (bool): whether to use landsat7 band names """
+
     cols = 5
     rows = int(bands/cols)
     fig, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(30, int(30/rows)))
@@ -77,18 +174,25 @@ def display_sat_bands(sat_img, bands=10, band_names=None, l7=True):
         band_names = ['Blue', 'Green', 'Red', 'Near infrared',
                       'Shortwave infrared 1', 'Low-gain Thermal Infrared',
                       'High-gain Thermal Infrared',
-                      'Shortwave infrared 2','Panchromatic','BQA']
+                      'Shortwave infrared 2', 'Panchromatic', 'BQA']
     elif band_names is None:
         band_names = [str(i + 1) for i in range(bands)]
 
     for i in range(rows):
         for j in range(cols):
             ax[i, j].imshow(sat_img[:, :, i * cols + j])
-            ax[i, j].set_title('{} band'.format(band_names[i * cols + j]), size=20)
+            ax[i, j].set_title('{} band'.format(
+                band_names[i * cols + j]), size=20)
     fig.tight_layout()
 
 
 def display_sat_mask(sat_img, mask, borders=None):
+    """Given a satelitte image and mask display the RGB and the band beside the mask
+    Args:
+        sat_img (numpy.array): channels last image
+        mask (numpy.array): a mask
+        borders (numpy.array): an extra mask for the border """
+
     rows = 1
     cols = 3 if borders is not None else 2
 
@@ -104,6 +208,7 @@ def display_sat_mask(sat_img, mask, borders=None):
 
     fig.tight_layout()
     display_sat_bands(sat_img)
+
 
 
 def sample_param(sample_dict):

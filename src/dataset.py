@@ -45,8 +45,7 @@ class GlacierDataset(Dataset):
             cropped_label_path = Path(self.base_dir, cropped_label_path)
 
             cropped_img = np.load(cropped_img_path)
-            mask_path = cropped_label_path if (
-                self.mode == 'train') else mask_path
+            mask_path = cropped_label_path
             image_path = cropped_img_path
 
         img = np.load(image_path)

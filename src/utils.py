@@ -166,7 +166,7 @@ def get_opts(conf_path):
         conf_name = conf_path
         if not conf_name.endswith(".yaml"):
             conf_name += ".yaml"
-        conf_path = Path(__file__).parent.parent / "shared" / conf_name
+        conf_path = pathlib.Path(__file__).parent.parent / "shared" / conf_name
         assert conf_path.exists()
 
     return merge_defaults({"model": {}, "train": {}, "data": {}}, conf_path)

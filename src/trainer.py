@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 from collections import defaultdict
-from src.metrics import pixel_acc, dice, IoU, precision, recall, diceloss
 import numpy as np
 import pathlib
+import src.metrics as mtr
 import src.utils
 import torch
 import wandb
@@ -27,8 +27,8 @@ class Trainer:
     else:
       loss_f = diceloss()
 
-    metrics = {'pixel_acc': pixel_acc, 'per': precision, 'recall': recall,
-               'dice': dice, 'iou': IoU}
+    metrics = {'pixel_acc': mtr.pixel_acc, 'per': mtr.precision, 'recall':
+               mtr.recall, 'dice': mtr.dice, 'iou': mtr.IoU}
 
     for epoch in range(self.config.n_epochs):
       self.train_epoch(op, loss_f)
@@ -36,19 +36,17 @@ class Trainer:
       dev_loss, dev_metrics = self.evaluate(loss_f, metrics)
       train_loss, train_metrics = self.evaluate(loss_f, metrics, mode='train')
 
-      print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {mean_loss}\tdev loss: {dev_loss}")
       wandb.log({"loss/train": train_loss, "loss/dev": dev_loss}, step=epoch) 
       wandb.log({f'{k}/train': v for k, v in train_metrics.items()}, step=epoch)
       wandb.log({f'{k}/dev': v for k, v in dev_metrics.items()}, step=epoch)
+      print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {mean_loss}\tdev loss: {dev_loss}")
 
       if (epoch % self.config.save_freq) == 0:
         save_path = pathlib.Path(self.config.output_path, f"model_{epoch}.pt")
         torch.save(self.model.state_dict(), save_path)
 
-
   def train_epoch(self, op, loss_f):
     """Train a Single Epoch"""
-
     self.model.train()
     epoch_losses = []
 
@@ -65,10 +63,8 @@ class Trainer:
 
     return epoch_losses, np.mean(epoch_losses)
 
-
   def evaluate(self, loss_f, metric_fs={}, mode='dev'):
     """Evaluate a dataset and return loss and metrics."""
-
     epoch_loss = 0
     self.model.eval()
 
@@ -96,7 +92,6 @@ class Trainer:
 
   def predict(self, data, thresh=0.5):
     """Given an image segment it."""
-
     with torch.no_grad():
       pred = self.model(data)
       act = matching_act(self.config.mluti_class)

@@ -15,7 +15,6 @@ import yaml
 def crop_raster(raster_img, vector_data):
     """Crop a raster image according to given vector data and
        return the cropped version as numpy array"""
-
     vector_crs = rasterio.crs.CRS(vector_data.crs)
     if vector_crs != raster_img.meta['crs']:
         vector_data = vector_data.to_crs(raster_img.meta['crs'].data)
@@ -27,23 +26,21 @@ def crop_raster(raster_img, vector_data):
 def get_snow_index(img, thresh=None):
     """Given a satelitte image return the snow index,
        default is cahnnels first landsat7 format"""
-
     # channels first
     index = np.zeros_like(img[0])
     # for division by zero errors
     mask = (img[1, :, :] + img[4, :, :]) != 0
     values = (img[1, :, :] - img[4, :, :]) / (img[1, :, :] + img[4, :, :])
     index[mask] = values[mask]
-    
+
     if thresh is not None:
         return index > thresh
-        
+
     return index
 
 def get_debris_glaciers(img, mask, thresh=0.6):
     """Given an image and labels construct pseudo labels of the debris glaciers,
        as any labels doesn't captured by snow index"""
-
     snow_i = np.array(get_snow_index(img, thresh=thresh))
     mask = np.array(mask)
     debris_mask = np.zeros_like(mask)
@@ -63,6 +60,7 @@ def merge_mask_snow_i(img, mask, thresh=0.6):
 
     return hybrid_mask
 
+
 def get_bg(mask):
     """"Adds extra channel to a mask to represent background,
        to make it one hot vector"""
@@ -72,8 +70,9 @@ def get_bg(mask):
     else:
         fg = np.logical_or.reduce(mask, axis=2)
     bg = np.logical_not(fg)
-    
+
     return np.stack((fg, bg))
+
 
 def get_mask(raster_img, vector_data, nan_value=0):
     """Get a mask from a raster for a given vector data.
@@ -106,7 +105,6 @@ def slice_image(img, size=(512, 512)):
         size tuple(int, int): size of the slice
     Returns:
         list of slices [np.array]"""
-
     if img.ndim == 2:
         h, w = img.shape
     else:
@@ -136,7 +134,6 @@ def slice_image(img, size=(512, 512)):
 
 def display_sat_image(sat_img):
     """Display the RGB and bands of satelitte image"""
-
     plt.imshow(sat_rgb(sat_img))
     display_sat_bands(sat_img)
 
@@ -165,7 +162,6 @@ def display_sat_bands(sat_img, bands=10, band_names=None, l7=True):
         bands (int): how many bands in the image
         band_names [str]: names of the bands
         l7 (bool): whether to use landsat7 band names """
-
     cols = 5
     rows = int(bands/cols)
     fig, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(30, int(30/rows)))
@@ -191,7 +187,6 @@ def display_sat_mask(sat_img, mask, borders=None):
         sat_img (numpy.array): channels last image
         mask (numpy.array): a mask
         borders (numpy.array): an extra mask for the border """
-
     rows = 1
     cols = 3 if borders is not None else 2
 
@@ -207,7 +202,6 @@ def display_sat_mask(sat_img, mask, borders=None):
 
     fig.tight_layout()
     display_sat_bands(sat_img)
-
 
 
 def sample_param(sample_dict):

@@ -16,5 +16,5 @@ From: ubuntu:18.04
     apt -y install nano vim
 
     pip3 install numpy==1.14.*
-    pip3 install pandas wandb Pillow addict pyyaml rasterio
+    pip3 install pandas graphql-core==2.0 wandb Pillow addict pyyaml rasterio  geopandas
     pip3 install --no-cache-dir torch torchvision matplotlib ipython seaborn

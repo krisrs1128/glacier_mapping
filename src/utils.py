@@ -82,8 +82,8 @@ def get_mask(raster_img, vector_data, nan_value=0):
         a binary mask (np.array)"""
 
     # check if both have the same crs
-    # follow the raster data as it"s easier, faster
-    # and doesn"t involve saving huge new raster data
+    # follow the raster data as its easier, faster
+    # and doesn't involve saving huge new raster data
     vector_crs = rasterio.crs.CRS(vector_data.crs)
     if vector_crs != raster_img.meta["crs"]:
         vector_data = vector_data.to_crs(raster_img.meta["crs"].data)

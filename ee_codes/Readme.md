@@ -3,16 +3,16 @@
 The files can be found in: https://drive.google.com/open?id=1UQ2QSKkt-hcZOwzCpwZ7rWnURptEx-0F
 
     EEImages/
-            Nepal/
-				2000/
-				2010/
-				Slope/
-				Elevation/
-			Bhutan/
-				2000/
-				2010/
-				Slope/
-				Elevation/
+    	Nepal/
+		2000/
+		2010/
+		Slope/
+		Elevation/
+	Bhutan/
+		2000/
+		2010/
+		Slope/
+		Elevation/
 
 - 2010 GEE images are corrected
 - usedForLabeling folder has the exact images used for creating labels

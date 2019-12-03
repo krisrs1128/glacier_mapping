@@ -1,0 +1,19 @@
+data:
+  borders: true
+  load_limit: -1
+  metadata: sat_data.csv
+  original_path: /scratch/sankarak/data/glaciers/
+  path: $SLURM_TMPDIR
+model:
+  inchannels: 11
+  net_depth: 4
+  outchannels: 1
+train:
+  batch_size: 4
+  infer_every_steps: 5000
+  lr: 0.001
+  n_epochs: 100
+  num_workers: 1
+  save_freq: 2
+  shuffle: true
+  store_images: false

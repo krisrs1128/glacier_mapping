@@ -1,10 +1,10 @@
-# glacier_mapping 
+# glacier_mapping
 
 _This only works for the Mila cluster... need to setup for Azure._
 
 ## environment
 
-To load all the necessary software, you can load the [singularity image](https://drive.google.com/open?id=1Dbd1Wae_Jf6BdhV2LkMaGjO8MwK5Lw4r) like so, 
+To load all the necessary software, you can load the [singularity image](https://drive.google.com/open?id=1Dbd1Wae_Jf6BdhV2LkMaGjO8MwK5Lw4r) like so,
 
 ```
 module load singularity/3.4; singularity shell --nv --bind /scratch/sankarak/data/glaciers,/scratch/sankarak/glaciers /scratch/sankarak/images/glaciers.sif
@@ -14,7 +14,7 @@ We'll just replace the [recipe](https://github.com/Sh-imaa/glacier_mapping/blob/
 
 ## parallel training runs
 
-To run many experiments in parallel, you can use the parallel run command. 
+To run many experiments in parallel, you can use the parallel run command.
 
 ```
 python3 parallel_run.py -e conf/explore-lr.yaml

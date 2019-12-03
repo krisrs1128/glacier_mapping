@@ -1,8 +1,0 @@
-var countries = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017');
-var nepal = countries.filter(ee.Filter.eq('country_na', 'Nepal'));
-Map.centerObject(nepal, 7);
-
-var dataset = ee.Image('USGS/SRTMGL1_003');
-var elevation = dataset.select('elevation');
-var slope = ee.Terrain.slope(elevation);
-Map.addLayer(slope.clip(nepal), {min: 0, max: 60}, 'slope');

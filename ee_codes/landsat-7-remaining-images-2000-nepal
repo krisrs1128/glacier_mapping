@@ -1,3 +1,8 @@
+// Elevation data
+var dataset = ee.Image('CGIAR/SRTM90_V4');
+var elevation = dataset.select('elevation');
+var slope = ee.Terrain.slope(elevation);
+
 var image_ids = ["141040_20011227","144039_20011013",];
 
 var arrayLength = image_ids.length;
@@ -8,10 +13,27 @@ for (var i = 0; i < arrayLength; i++) {
   var geometry = image.geometry();
   Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 255}, 'image'+i);
   console.log(image);
+  // image
   Export.image.toDrive({
     image: image,
-    folder: 'EEImages/remainingImages/Nepal/2000',
+    folder: 'EEImages/Nepal/2000/remainingImages/',
     description: 'Nepal_'+image_ids[i],
+    region: geometry,
+    scale: 30
+  });
+  // elevation
+  Export.image.toDrive({
+    image: elevation,
+    folder: 'EEImages/Nepal/Elevation/',
+    description: 'Nepal_' + image_ids[i],
+    region: geometry,
+    scale: 30
+  });
+  // slope
+  Export.image.toDrive({
+    image: slope,
+    folder: 'EEImages/Nepal/Slope/',
+    description: 'Nepal_' + image_ids[i],
     region: geometry,
     scale: 30
   });

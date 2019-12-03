@@ -24,7 +24,7 @@ The files can be found in: https://drive.google.com/open?id=1UQ2QSKkt-hcZOwzCpwZ
 
 #### Files present
 
-    landsat-7-images-used-for-labelling-2000-nepal (Download actual images used for labelling in 2000 for Nepal with elevation and slopes)
+	landsat-7-images-used-for-labelling-2000-nepal (Download actual images used for labelling in 2000 for Nepal with elevation and slopes)
 	landsat-7-images-used-for-labelling-2010-nepal (Download actual images used for labelling in 2010 for Nepal)
 	landsat-7-remaining-images-2000-bhutan (Download images in 2000 for Bhutan with elevation and slopes)
 	landsat-7-remaining-images-2000-nepal (Download images in 2000 for Nepal with elevation and slopes)

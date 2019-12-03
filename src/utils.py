@@ -4,13 +4,13 @@ from rasterio.mask import mask as rasterio_mask
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy as np
-import numpy as np
 import os
 import pathlib
 import rasterio
+import torch
 import wandb
 import yaml
+
 
 def crop_raster(raster_img, vector_data):
     """Crop a raster image according to given vector data and
@@ -283,7 +283,7 @@ def matching_act(multi_class=False):
     return act
 
 
-def update_metrics(epoch_metrics, metric_fs, multi_class=False):
+def update_metrics(epoch_metrics, pred, mask, metric_fs, multi_class=False):
     if metric_fs:
         act = matching_act(multi_class)
         _, binary_pred = get_pred_mask(pred, act=act)

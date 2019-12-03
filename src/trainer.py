@@ -3,7 +3,7 @@ from collections import defaultdict
 import numpy as np
 import pathlib
 import src.metrics as mtr
-import src.utils
+import src.utils as utils
 import torch
 import wandb
 
@@ -25,7 +25,7 @@ class Trainer:
     if self.config.multi_class:
       loss_f = torch.nn.CrossEntropyLoss()
     else:
-      loss_f = diceloss()
+      loss_f = mtr.diceloss()
 
     metrics = {'pixel_acc': mtr.pixel_acc, 'per': mtr.precision, 'recall':
                mtr.recall, 'dice': mtr.dice, 'iou': mtr.IoU}
@@ -36,14 +36,10 @@ class Trainer:
       dev_loss, dev_metrics = self.evaluate(loss_f, metrics)
       train_loss, train_metrics = self.evaluate(loss_f, metrics, mode='train')
 
-<<<<<<< HEAD
-=======
       print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {train_loss}\tdev loss: {dev_loss}")
->>>>>>> logging
       wandb.log({"loss/train": train_loss, "loss/dev": dev_loss}, step=epoch)
       wandb.log({f'{k}/train': v for k, v in train_metrics.items()}, step=epoch)
       wandb.log({f'{k}/dev': v for k, v in dev_metrics.items()}, step=epoch)
-      print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {mean_loss}\tdev loss: {dev_loss}")
 
       if (epoch % self.config.save_freq) == 0:
         save_path = pathlib.Path(self.config.output_path, f"model_{epoch}.pt")
@@ -72,7 +68,7 @@ class Trainer:
     epoch_loss = 0
     self.model.eval()
 
-    data = get_attr(self, f"{mode}_data")
+    data = getattr(self, f"{mode}_data")
     epoch_metrics = defaultdict(int)
     wandb_imgs = []
 
@@ -85,12 +81,14 @@ class Trainer:
 
         epoch_metrics = utils.update_metrics(
           epoch_metrics,
+          pred,
+          mask,
           metric_fs,
           self.config.multi_class
         )
         if self.config.store_images and i % 10  == 0:
-          act = matching_act(self.config.multi_class)
-          wandb_images += utils.merged_image(img, mask, pred, act)
+          act = utils.matching_act(self.config.multi_class)
+          wandb_imgs += utils.merged_image(img, mask, pred, act)
 
     wandb.log({f"{mode}_images": wandb_imgs})
     return (epoch_loss / len(data)), {name: value/len(data) for name, value in epoch_metrics.items()}

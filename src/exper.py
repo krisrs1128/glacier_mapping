@@ -77,4 +77,4 @@ if __name__ == "__main__":
         dev_loader,
         test_loader
     )
-    trainer.train()
+    trainer.run()

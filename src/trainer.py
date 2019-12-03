@@ -33,8 +33,8 @@ class Trainer:
     for epoch in range(self.config.n_epochs):
       self.train_epoch(op, loss_f)
 
-      dev_loss, dev_metrics = self.evaluate(loss_f, metrics)
-      train_loss, train_metrics = self.evaluate(loss_f, metrics, mode='train')
+      dev_loss, dev_metrics = self.evaluate(loss_f, metrics, "dev", epoch)
+      train_loss, train_metrics = self.evaluate(loss_f, metrics, 'train', epoch)
 
       print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {train_loss}\tdev loss: {dev_loss}")
       wandb.log({"loss/train": train_loss, "loss/dev": dev_loss}, step=epoch)
@@ -63,7 +63,7 @@ class Trainer:
 
     return epoch_losses, np.mean(epoch_losses)
 
-  def evaluate(self, loss_f, metric_fs={}, mode='dev'):
+  def evaluate(self, loss_f, metric_fs={}, mode='dev', epoch=-1):
     """Evaluate a dataset and return loss and metrics."""
     epoch_loss = 0
     self.model.eval()
@@ -90,7 +90,7 @@ class Trainer:
           act = utils.matching_act(self.config.multi_class)
           wandb_imgs += utils.merged_image(img, mask, pred, act)
 
-    wandb.log({f"{mode}_images": wandb_imgs})
+    wandb.log({f"{mode}_images": wandb_imgs}, step=epoch)
     return (epoch_loss / len(data)), {name: value/len(data) for name, value in epoch_metrics.items()}
 
   def predict(self, data, thresh=0.5):

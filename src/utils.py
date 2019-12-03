@@ -40,7 +40,7 @@ def get_snow_index(img, thresh=None):
 
 def get_debris_glaciers(img, mask, thresh=0.6):
     """Given an image and labels construct pseudo labels of the debris glaciers,
-       as any labels doesn"t captured by snow index"""
+       as any labels doesn't captured by snow index"""
     snow_i = np.array(get_snow_index(img, thresh=thresh))
     mask = np.array(mask)
     debris_mask = np.zeros_like(mask)

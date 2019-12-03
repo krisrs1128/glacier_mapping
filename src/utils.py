@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 from addict import Dict
-from collections import defaultdict
 from rasterio.mask import mask as rasterio_mask
-import cv2
 import math
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy as np
+import numpy as np
+import os
 import pathlib
 import rasterio
 import wandb
@@ -52,7 +52,6 @@ def get_debris_glaciers(img, mask, thresh=0.6):
 def merge_mask_snow_i(img, mask, thresh=0.6):
     """Return multi-class of a binary class mask,
        using snow_index to construct pseudo labels."""
-
     snow_i = get_snow_index(img, thresh=thresh)
     hybrid_mask = np.zeros_like(mask)
     hybrid_mask[(snow_i == 1) & (mask == 1)] = 1
@@ -64,7 +63,6 @@ def merge_mask_snow_i(img, mask, thresh=0.6):
 def get_bg(mask):
     """"Adds extra channel to a mask to represent background,
        to make it one hot vector"""
-
     if len(mask.shape) == 2:
         fg = mask
     else:
@@ -295,12 +293,13 @@ def update_metrics(epoch_metrics, metric_fs, multi_class=False):
     return epoch_metrics
 
 
-def merged_image(img, mask, pred):
-    img, pred, mask = img.median(axis=1).cpu(), pred.cpu(), mask.cpu()
-
+def merged_image(img, mask, pred, act):
+    img, pred, mask = img[:, :3].cpu(), pred.unsqueeze(1).cpu(), mask.unsqueeze(1).cpu()
+    pred = act(pred)
     result = []
     for j in range(img.shape[0]):
-        merged = np.concatenate([img[j], pred[j], mask[j]], axis=1)
+        merged = np.concatenate([img[j], pred[j, [0, 0, 0]], mask[j, [0, 0, 0]]], axis=1)
+        merged = (merged.transpose(2, 1, 0) - np.min(merged))/ np.ptp(merged)
         result.append(wandb.Image(merged))
 
     return result

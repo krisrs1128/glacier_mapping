@@ -7,7 +7,6 @@ import numpy as np
 import pathlib
 import torch
 import wandb
-
 from src.metrics import pixel_acc, dice, IoU, precision, recall, diceloss
 
 class Trainer:
@@ -39,11 +38,8 @@ class Trainer:
       dev_loss, dev_metrics = self.evaluate(loss_f, metrics)
       train_loss, train_metrics = self.evaluate(loss_f, metrics, mode='train')
 
-      wandb.log({
-        "loss/train": train_loss,
-        "loss/dev": dev_loss
-      }, step=epoch)
-
+      print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {train_loss}\tdev loss: {dev_loss}")
+      wandb.log({"loss/train": train_loss, "loss/dev": dev_loss}, step=epoch)
       wandb.log({f'{k}/train': v for k, v in train_metrics.items()}, step=epoch)
       wandb.log({f'{k}/dev': v for k, v in dev_metrics.items()}, step=epoch)
 
@@ -58,7 +54,7 @@ class Trainer:
     self.model.train()
     epoch_losses = []
 
-    for img, mask in self.train_data:
+    for i, (img, mask) in enumerate(self.train_data):
       op.zero_grad()
 
       img, mask = img.to(self.device), mask.to(self.device)
@@ -67,6 +63,7 @@ class Trainer:
       epoch_losses.append(loss.item())
       loss.backward()
       op.step()
+      print(f"batch {i}/{len(self.train_data)}\tloss: {loss}", end="\r")
 
     return epoch_losses, np.mean(epoch_losses)
 
@@ -84,8 +81,9 @@ class Trainer:
       data = self.train_data
     else:
       data = self.dev_data
-    n = len(data)
-    for img, mask in data:
+
+    wandb_imgs = []
+    for i, (img, mask) in enumerate(data):
       with torch.no_grad():
         img, mask = img.to(self.device), mask.to(self.device)
         pred = self.model(img)
@@ -101,8 +99,17 @@ class Trainer:
             metric = fn(binary_pred, mask)
             epoch_metrics[name] += metric
 
-    return (epoch_loss / n), {name: value/n for name, value in epoch_metrics.items()}
-  
+        if self.config.store_images and i % 10  == 0:
+          img, pred, mask = img[:, :3].cpu(), pred.unsqueeze(1).cpu(), mask.unsqueeze(1).cpu()
+          pred = act(pred)
+          for j in range(img.shape[0]):
+            merged = np.concatenate([img[j], pred[j, [0, 0, 0]], mask[j, [0, 0, 0]]], axis=1)
+            merged = (merged.transpose(2, 1, 0) - np.min(merged))/ np.ptp(merged)
+            wandb_imgs.append(wandb.Image(merged))
+
+    wandb.log({f"{mode}_images": wandb_imgs})
+    return (epoch_loss / len(data)), {name: value/len(data) for name, value in epoch_metrics.items()}
+
   def predict(self, data, thresh=0.5):
     """Given an image segment it."""
 

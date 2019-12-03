@@ -27,19 +27,19 @@ class Trainer:
     else:
       loss_f = mtr.diceloss()
 
-    metrics = {'pixel_acc': mtr.pixel_acc, 'per': mtr.precision, 'recall':
-               mtr.recall, 'dice': mtr.dice, 'iou': mtr.IoU}
+    metrics = {"pixel_acc": mtr.pixel_acc, "per": mtr.precision, "recall":
+               mtr.recall, "dice": mtr.dice, "iou": mtr.IoU}
 
     for epoch in range(self.config.n_epochs):
       self.train_epoch(op, loss_f)
 
       dev_loss, dev_metrics = self.evaluate(loss_f, metrics, "dev", epoch)
-      train_loss, train_metrics = self.evaluate(loss_f, metrics, 'train', epoch)
+      train_loss, train_metrics = self.evaluate(loss_f, metrics, "train", epoch)
 
       print(f"epoch {epoch}/{self.config.n_epochs}\ttrain loss: {train_loss}\tdev loss: {dev_loss}")
       wandb.log({"loss/train": train_loss, "loss/dev": dev_loss}, step=epoch)
-      wandb.log({f'{k}/train': v for k, v in train_metrics.items()}, step=epoch)
-      wandb.log({f'{k}/dev': v for k, v in dev_metrics.items()}, step=epoch)
+      wandb.log({f"{k}/train": v for k, v in train_metrics.items()}, step=epoch)
+      wandb.log({f"{k}/dev": v for k, v in dev_metrics.items()}, step=epoch)
 
       if (epoch % self.config.save_freq) == 0:
         save_path = pathlib.Path(self.config.output_path, f"model_{epoch}.pt")
@@ -63,7 +63,7 @@ class Trainer:
 
     return epoch_losses, np.mean(epoch_losses)
 
-  def evaluate(self, loss_f, metric_fs={}, mode='dev', epoch=-1):
+  def evaluate(self, loss_f, metric_fs={}, mode="dev", epoch=-1):
     """Evaluate a dataset and return loss and metrics."""
     epoch_loss = 0
     self.model.eval()

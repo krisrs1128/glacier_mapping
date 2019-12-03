@@ -16,8 +16,8 @@ def crop_raster(raster_img, vector_data):
     """Crop a raster image according to given vector data and
        return the cropped version as numpy array"""
     vector_crs = rasterio.crs.CRS(vector_data.crs)
-    if vector_crs != raster_img.meta['crs']:
-        vector_data = vector_data.to_crs(raster_img.meta['crs'].data)
+    if vector_crs != raster_img.meta["crs"]:
+        vector_data = vector_data.to_crs(raster_img.meta["crs"].data)
 
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
 
@@ -40,7 +40,7 @@ def get_snow_index(img, thresh=None):
 
 def get_debris_glaciers(img, mask, thresh=0.6):
     """Given an image and labels construct pseudo labels of the debris glaciers,
-       as any labels doesn't captured by snow index"""
+       as any labels doesn"t captured by snow index"""
     snow_i = np.array(get_snow_index(img, thresh=thresh))
     mask = np.array(mask)
     debris_mask = np.zeros_like(mask)
@@ -82,11 +82,11 @@ def get_mask(raster_img, vector_data, nan_value=0):
         a binary mask (np.array)"""
 
     # check if both have the same crs
-    # follow the raster data as it's easier, faster
-    # and doesn't involve saving huge new raster data
+    # follow the raster data as it"s easier, faster
+    # and doesn"t involve saving huge new raster data
     vector_crs = rasterio.crs.CRS(vector_data.crs)
-    if vector_crs != raster_img.meta['crs']:
-        vector_data = vector_data.to_crs(raster_img.meta['crs'].data)
+    if vector_crs != raster_img.meta["crs"]:
+        vector_data = vector_data.to_crs(raster_img.meta["crs"].data)
 
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
     binary_mask = mask[0, :, :]
@@ -149,7 +149,7 @@ def sat_rgb(sat_img, indeces=(0, 1, 2), channel_first=False):
         sat_img = np.moveaxis(sat_img, 0, 2)
     rgb = np.stack([sat_img[:, :, indeces[0]],
                     sat_img[:, :, indeces[1]],
-                    sat_img[:, :, indeces[2]]], 2).astype('int32')
+                    sat_img[:, :, indeces[2]]], 2).astype("int32")
     return rgb
 
 
@@ -164,17 +164,17 @@ def display_sat_bands(sat_img, bands=10, band_names=None, l7=True):
     rows = int(bands/cols)
     fig, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(30, int(30/rows)))
     if l7:
-        band_names = ['Blue', 'Green', 'Red', 'Near infrared',
-                      'Shortwave infrared 1', 'Low-gain Thermal Infrared',
-                      'High-gain Thermal Infrared',
-                      'Shortwave infrared 2', 'Panchromatic', 'BQA']
+        band_names = ["Blue", "Green", "Red", "Near infrared",
+                      "Shortwave infrared 1", "Low-gain Thermal Infrared",
+                      "High-gain Thermal Infrared",
+                      "Shortwave infrared 2", "Panchromatic", "BQA"]
     elif band_names is None:
         band_names = [str(i + 1) for i in range(bands)]
 
     for i in range(rows):
         for j in range(cols):
             ax[i, j].imshow(sat_img[:, :, i * cols + j])
-            ax[i, j].set_title('{} band'.format(
+            ax[i, j].set_title("{} band".format(
                 band_names[i * cols + j]), size=20)
     fig.tight_layout()
 
@@ -191,12 +191,12 @@ def display_sat_mask(sat_img, mask, borders=None):
     fig, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(30, int(30/rows)))
 
     ax[0].imshow(sat_rgb(sat_img))
-    ax[0].title.set_text('RGB')
+    ax[0].title.set_text("RGB")
     ax[1].imshow(mask)
-    ax[1].title.set_text('Binary Mask')
+    ax[1].title.set_text("Binary Mask")
     if borders is not None:
         ax[2].imshow(borders)
-        ax[2].title.set_text('Country Borders')
+        ax[2].title.set_text("Country Borders")
 
     fig.tight_layout()
     display_sat_bands(sat_img)

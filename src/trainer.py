@@ -100,9 +100,11 @@ class Trainer:
             epoch_metrics[name] += metric
 
         if self.config.store_images and i % 10  == 0:
-          img, pred, mask = img.median(axis=1).cpu(), pred.cpu(), mask.cpu()
+          img, pred, mask = img[:, :3].cpu(), pred.unsqueeze(1).cpu(), mask.unsqueeze(1).cpu()
+          pred = act(pred)
           for j in range(img.shape[0]):
-            merged = np.concatenate([img[j], pred[j], mask[j]], axis=1)
+            merged = np.concatenate([img[j], pred[j, [0, 0, 0]], mask[j, [0, 0, 0]]], axis=1)
+            merged = (merged.transpose(2, 1, 0) - np.min(merged))/ np.ptp(merged)
             wandb_imgs.append(wandb.Image(merged))
 
     wandb.log({f"{mode}_images": wandb_imgs})

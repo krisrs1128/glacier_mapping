@@ -16,7 +16,7 @@ class Trainer:
     self.test_data = test_data
     self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-  def run(self):
+  def train(self):
     """Train Across Epochs"""
 
     self.model.to(self.device)

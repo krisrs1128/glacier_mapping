@@ -271,7 +271,8 @@ def get_opts(conf_path):
 def get_pred_mask(pred, act=torch.nn.Sigmoid(), thresh=0.5):
     """Given the logits of a model predict a segmentation mask."""
     pred = act(pred)
-    binary_pred = pred.clone().detach() >= thresh
+    binary_pred = (pred.clone().detach() >= thresh).float()
+
     return pred, binary_pred
 
 

@@ -146,7 +146,8 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
     return data_df
 
 
-def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
+def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc,
+                     elevation_path, slope_path, borders_path=None,
                      basin_path=None, size=(512, 512), year=None, country=None):
     """Chunck all the images in a folder and construct their metadata.
     Args:
@@ -166,17 +167,23 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
         borders_path) if borders_path is not None else None
     basin = geopandas.read_file(basin_path) if basin_path is not None else None
 
-    columns = ['img_id', 'year', 'country', 'img_path', 'mask_path', 'border_path',
+    columns = ['img_id', 'year', 'country', 'img_path', 'mask_path',
+               'border_path', 'elevation_path', 'slope_path',
                'is_nan_perc', 'labels_perc', 'labeled_nan', 'in_border_perc',
                'labels_in_border', 'basin_perc']
     sat_data = pd.DataFrame(columns=columns)
 
     files = os.listdir(sat_dir)
     n = len(files)
+
     for i, f in enumerate(files):
         logging.info('Processing file {}/{}.'.format(i + 1, n))
+        
         img_path = os.path.join(sat_dir, f)
-        img = rasterio.open(img_path)
+        latitude_data_path = match_img_id(f, elevation_path)
+        elev_path_f = os.path.join(elevation_path, latitude_data_path)
+        slope_path_f = os.path.join(slope_path, latitude_data_path)
+        print(elev_path_f, slope_path_f)
 
         sat_data = chunck_satelitte(
             img_path, labels, sat_data, save_loc, borders, basin, size=size,
@@ -184,6 +191,16 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
 
     sat_data.to_csv(os.path.join(df_loc, 'sat_data.csv'), index=False)
 
+def match_img_id(img_id, mapping_dir):
+    """Given an satelitte image if and a directory of possible matching images,
+       returns the matched image.
+       Used to pick the right elevation/slope data relative to an image."""
+
+    img_generic_id = img_id.split('_')[1]
+    potential_mapping = [file for file in os.listdir(mapping_dir)]
+
+    return [file for file in potential_mapping
+            if file.split('_')[1] == img_generic_id][0]
 
 def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
     """filter image according to metadata.

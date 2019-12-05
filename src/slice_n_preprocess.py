@@ -30,12 +30,15 @@ if __name__ == '__main__':
 
     labels_path = base_dir / f'vector_data/{data_c["year"]}/{data_c["country"]}/data/Glacier_{data_c["year"]}.shp'
     borders_path =  base_dir/ f'vector_data/borders/{data_c["country"]}/{data_c["country"]}.shp'
+    elevation_path = base_dir/ f'img_data/elevation/{data_c["country"]}'
+    slope_path = base_dir/ f'img_data/slope/{data_c["country"]}'
     sat_dir = base_dir / f'img_data/{data_c["year"]}/{data_c["country"]}'
     save_loc = base_dir / f'sat_files/{data_c["year"]}/{data_c["country"]}' 
 
 
     # slice all images in that folder
     preprocess.chunck_sat_files(sat_dir, labels_path, base_dir, save_loc,
+                                elevation_path, slope_path,
                                 borders_path=borders_path, basin_path=basin_path,
                                 size=(data_c["size"], data_c["size"]),
                                 year=data_c["year"], country=data_c["country"])

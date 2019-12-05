@@ -80,13 +80,15 @@ def chunck_satelitte(img_path, labels, data_df, base_dir, elev_path=None, slope_
         if crop:
             elev = utils.crop_raster(elev, borders)[0]
         else: elev = elev.read()[0]
-        # elev = np.nan_to_num(elev)
+        elev = np.nan_to_num(elev)
         elev_slices = utils.slice_image(elev, size=size)
 
     if slope_path is not None:
         slope = rasterio.open(slope_path)
         if crop:
             slope = utils.crop_raster(slope, borders)[0]
+        else: slope = slope.read()[0]
+        slpe = np.nan_to_num(slope)
         slope_slices = utils.slice_image(slope, size=size)
 
     # slice mask and original image

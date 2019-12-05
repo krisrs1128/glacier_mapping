@@ -3,7 +3,7 @@ var dataset = ee.Image('CGIAR/SRTM90_V4');
 var elevation = dataset.select('elevation');
 var slope = ee.Terrain.slope(elevation);
 
-// to match iamge bands
+// to match image bands
 elevation = elevation.float();
 slope = slope.float();
 
@@ -16,8 +16,8 @@ for (var i = 0; i < arrayLength; i++) {
   var image = ee.Image(image_id);
   image = image.float();
   Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 255}, 'image'+i);
-  image = ee.Image.cat([image, elevation, slope])
   var geometry = image.geometry();
+  image = ee.Image.cat([image, elevation, slope])
   console.log(image_id);
   Export.image.toDrive({
     image: image,

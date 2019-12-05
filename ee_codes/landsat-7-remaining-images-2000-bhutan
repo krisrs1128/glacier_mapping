@@ -3,6 +3,10 @@ var dataset = ee.Image('CGIAR/SRTM90_V4');
 var elevation = dataset.select('elevation');
 var slope = ee.Terrain.slope(elevation);
 
+// to match image bands
+elevation = elevation.float();
+slope = slope.float();
+
 var image_ids = ["139041_20001226","137041_20001228","138041_20000930"];
 
 var arrayLength = image_ids.length;
@@ -12,28 +16,13 @@ for (var i = 0; i < arrayLength; i++) {
   image = image.float();
   var geometry = image.geometry();
   Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 255}, 'image'+i);
+  image = ee.Image.cat([image, elevation, slope])
   console.log(image);
   //image
   Export.image.toDrive({
     image: image,
     folder: 'EEImages/Bhutan/2000/remainingImages/',
     description: 'Bhutan_'+image_ids[i],
-    region: geometry,
-    scale: 30
-  });
-  // elevation
-  Export.image.toDrive({
-    image: elevation,
-    folder: 'EEImages/Bhutan/Elevation/',
-    description: 'Bhutan_' + image_ids[i],
-    region: geometry,
-    scale: 30
-  });
-  // slope
-  Export.image.toDrive({
-    image: slope,
-    folder: 'EEImages/Bhutan/Slope/',
-    description: 'Bhutan_' + image_ids[i],
     region: geometry,
     scale: 30
   });

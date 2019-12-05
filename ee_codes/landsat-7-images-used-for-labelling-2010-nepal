@@ -85,6 +85,16 @@ var fill_ids = ["139041_20001226","140041_20011220",
                 "143040_20011209","143039_20001003",
                 "144039_20011013",];
 var arrayLength = image_ids.length;
+
+// Elevation data
+var dataset = ee.Image('CGIAR/SRTM90_V4');
+var elevation = dataset.select('elevation');
+var slope = ee.Terrain.slope(elevation);
+
+// to match image bands
+elevation = elevation.float();
+slope = slope.float();
+
 for (var i = 0; i < arrayLength; i++) {
   var image_id = 'LANDSAT/LE07/C01/T1_RT/LE07_'+image_ids[i];
   var fill_id = 'LANDSAT/LE07/C01/T1_RT/LE07_'+fill_ids[i];
@@ -94,6 +104,7 @@ for (var i = 0; i < arrayLength; i++) {
   image = image.float();
   var geometry = image.geometry();
   // Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 255}, 'image'+i);
+  image = ee.Image.cat([image, elevation, slope])
   console.log(image_id);
   Export.image.toDrive({
     image: image,

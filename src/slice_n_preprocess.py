@@ -65,5 +65,6 @@ if __name__ == '__main__':
         dfs = []
         for year_path in sat_path.iterdir():
             for country_path in year_path.iterdir():
-                dfs.append(pd.read_csv(country_path / 'sat_data.csv'))
+                if (country_path / 'sat_data.csv').exists():
+                    dfs.append(pd.read_csv(country_path / 'sat_data.csv'))
         pd.concat(dfs).to_csv(base_dir / 'sat_data.csv')

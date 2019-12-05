@@ -103,10 +103,8 @@ def slice_image(img, size=(512, 512)):
         size tuple(int, int): size of the slice
     Returns:
         list of slices [np.array]"""
-    if img.ndim == 2:
-        h, w = img.shape
-    else:
-        h, w, _ = img.shape
+    
+    h, w = img.shape[:2]
 
     h_slices = math.ceil(h / size[0])
     w_slices = math.ceil(w / size[1])

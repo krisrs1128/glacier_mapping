@@ -14,6 +14,6 @@ validity_values:
 
 spliting_values:
   random_test: true
-  dev_perc: 0.1
-  test_perc: 0.1
+  dev_perc: 0.3
+  test_perc: 0.2
 

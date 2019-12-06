@@ -114,5 +114,5 @@ def loader(data_opts, train_opts, img_transform, mode="train"):
     batch_size=train_opts["batch_size"],
     shuffle=shuffle,
     num_workers=train_opts["num_workers"],
-    drop_last=False
+    drop_last=True
   )

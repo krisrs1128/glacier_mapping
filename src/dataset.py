@@ -74,11 +74,10 @@ class GlacierDataset(Dataset):
         if self.img_transform is not None:
             img = self.img_transform(img)
 
-        # default is 'glaciers' for original labels 
+        # default is 'glaciers' for origina/l labels 
         mask = np.load(mask_path)
         if self.mask_used == 'debris_glaciers':
             mask = utils.get_debris_glaciers(img, mask)
-            return img, mask.astype(np.float32)
         elif self.mask_used == 'multi_class_glaciers':
             mask = utils.merge_mask_snow_i(img, mask.astype(np.int64))
         return img, mask.astype(np.float32)
@@ -115,5 +114,5 @@ def loader(data_opts, train_opts, img_transform, mode="train"):
     batch_size=train_opts["batch_size"],
     shuffle=shuffle,
     num_workers=train_opts["num_workers"],
-    drop_last=True
+    drop_last=False
   )

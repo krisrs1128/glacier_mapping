@@ -65,13 +65,14 @@ class Trainer:
 
   def evaluate(self, loss_f, metric_fs={}, mode="dev", epoch=-1):
     """Evaluate a dataset and return loss and metrics."""
+    
     epoch_loss = 0
     self.model.eval()
 
     data = getattr(self, f"{mode}_data")
     epoch_metrics = defaultdict(int)
     wandb_imgs = []
-
+    n = len(data.dataset)
     for i, (img, mask) in enumerate(data):
       with torch.no_grad():
         img, mask = img.to(self.device), mask.to(self.device)

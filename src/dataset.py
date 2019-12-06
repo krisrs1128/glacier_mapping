@@ -26,15 +26,17 @@ class GlacierDataset(Dataset):
         self.borders = borders
         self.use_cropped = use_cropped
         self.use_snow_i = use_snow_i
-        self.channels_to_inc = channels_to_inc
+        if channels_to_inc is not None:
+            self.channels_to_inc = channels_to_inc
+        else: self.channels_to_inc = list(range(10))
+        if use_slope: self.channels_to_inc.append(11)
+        if use_elev: self.channels_to_inc.append(10)
         self.mode = mode
         self.mask_used = mask_used
-        self.use_slope = use_slope
-        self.use_elev = use_elev
 
     def __getitem__(self, i):
-        pathes = ['img_path', 'mask_path', 'border_path', 'elevation_path', 'slope_path']
-        image_path, mask_path, border_path, elev_path, slope_path = self.data.iloc[i][pathes]
+        pathes = ['img_path', 'mask_path', 'border_path']
+        image_path, mask_path, border_path = self.data.iloc[i][pathes]
 
         image_path = Path(self.base_dir, image_path)
         mask_path = Path(self.base_dir, mask_path)
@@ -62,19 +64,11 @@ class GlacierDataset(Dataset):
             img = np.concatenate((img, border), axis=0)
             img = torch.from_numpy(img)
 
-        if self.use_elev:
-            elev_path = Path(self.base_dir, elev_path)
-            elev = np.load(elev_path)
-            elev = np.expand_dims(elev, axis=0)
-            img = np.concatenate((img, elev), axis=0)
-            img = torch.from_numpy(img)
-
         if self.use_snow_i:
             snow_index = utils.get_snow_index(img)
             snow_index = np.expand_dims(snow_index, axis=0)
             img = np.concatenate((img, snow_index), axis=0)
             img = torch.from_numpy(img)
-
 
         if self.img_transform is not None:
             img = self.img_transform(img)
@@ -97,6 +91,7 @@ def loader(data_opts, train_opts, img_transform, mode="train"):
   """
   Loader for Experiment
   """
+
   dataset = GlacierDataset(
     data_opts["path"],
     data_opts["metadata"],

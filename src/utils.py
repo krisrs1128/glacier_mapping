@@ -23,20 +23,22 @@ def crop_raster(raster_img, vector_data):
 
     return mask
 
-def get_snow_index(img, thresh=None):
+def get_snow_index(img, thresh=None, indeces=[1, 4]):
     """Given a satelitte image return the snow index,
        default is cahnnels first landsat7 format"""
     # channels first
     index = np.zeros_like(img[0])
     # for division by zero errors
-    mask = (img[1, :, :] + img[4, :, :]) != 0
-    values = (img[1, :, :] - img[4, :, :]) / (img[1, :, :] + img[4, :, :])
+    d = (img[indeces[0], :, :] + img[indeces[1], :, :])
+    mask =  d != 0
+    values = (img[indeces[0], :, :] - img[indeces[1], :, :]) / d
     index[mask] = values[mask]
 
     if thresh is not None:
         return index > thresh
 
     return index
+
 
 def get_debris_glaciers(img, mask, thresh=0.6):
     """Given an image and labels construct pseudo labels of the debris glaciers,

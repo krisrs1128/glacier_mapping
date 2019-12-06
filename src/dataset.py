@@ -7,6 +7,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 import torchvision.transforms as T
+import torchvision.transforms.functional as TF
 
 import src.utils as utils
 torch.manual_seed(10)
@@ -89,11 +90,47 @@ class GlacierDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+def to_numpy_img(img):
+    img = img.data.numpy()
+    img = np.moveaxis(img, 0, -1)
+
+    return img
+
+def rotate(img, mask):
+    import random, cv2
+    angle = random.uniform(-10, 10)
+    w, h = mask.shape
+    center = int(w / 2), int(h / 2)
+
+    rot_mat = cv2.getRotationMatrix2D(center, angle, 1)
+    rotated_img = cv2.warpAffine(img, rot_mat, (w, h))
+    rotated_mask = cv2.warpAffine(mask, rot_mat, (w, h), flags=cv2.INTER_NEAREST)
+
+    return rotated_img, rotated_mask
+
 class AugmentedGlacierDataset(GlacierDataset):
-    def __init__(self, *args, hflip=True, **kargs):
+    def __init__(self, *args, hflip=True, vflip=True, rot=(-5, 5), **kargs):
 
         super().__init__(*args, **kargs)
         self.hflip = hflip
+        self.vflip = vflip
+        self.rot = rot
+
+    def __getitem__(self, i):
+        img, mask = super().__getitem__(i)
+        return self.augment(img, mask)
+
+    def augment(self, img, mask):
+        img = to_numpy_img(img)
+        img, mask = rotate(img, mask)
+        img = np.moveaxis(img, -1, 0)
+
+        return img, mask
+
+
+
+
+
         
     
 

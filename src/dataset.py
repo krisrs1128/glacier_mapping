@@ -78,7 +78,7 @@ class GlacierDataset(Dataset):
         if self.img_transform is not None:
             img = self.img_transform(img)
 
-        # default is 'glaciers' for origina/l labels 
+        # default is 'glaciers' for origina/labels 
         mask = np.load(mask_path)
         if self.mask_used == 'debris_glaciers':
             mask = utils.get_debris_glaciers(img, mask)
@@ -89,13 +89,20 @@ class GlacierDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+class AugmentedGlacierDataset(GlacierDataset):
+    def __init__(self, *args, hflip=True, **kargs):
+
+        super().__init__(*args, **kargs)
+        self.hflip = hflip
+        
+    
 
 
 def loader(data_opts, train_opts, img_transform, mode="train"):
   """
   Loader for Experiment
   """
-  
+
   dataset = GlacierDataset(
     data_opts["path"],
     data_opts["metadata"],

@@ -78,27 +78,38 @@ var GapFill = function(src, fill, kernelSize, upscale) {
 }
 var image_ids = ["139041_20111225", "140041_20091108",
                   "141040_20101204", "142040_20101211",
-                  "143040_20101218","143039_20111221",
+                  "143040_20101218", "143039_20111221",
                   "144039_20111212"];
-var fill_ids = ["139041_20001226","140041_20011220",
-                "141040_20011227","142040_20001215",
-                "143040_20011209","143039_20001003",
+var fill_ids = ["139041_20001226", "140041_20011220",
+                "141040_20011227", "142040_20001215",
+                "143040_20011209", "143039_20001003",
                 "144039_20011013",];
 var arrayLength = image_ids.length;
+
+// Elevation data
+var dataset = ee.Image('CGIAR/SRTM90_V4');
+var elevation = dataset.select('elevation');
+var slope = ee.Terrain.slope(elevation);
+
+// to match image bands
+elevation = elevation.float();
+slope = slope.float();
+
 for (var i = 0; i < arrayLength; i++) {
-  var image_id = 'LANDSAT/LE07/C01/T1_RT/LE07_'+image_ids[i];
-  var fill_id = 'LANDSAT/LE07/C01/T1_RT/LE07_'+fill_ids[i];
+  var image_id = 'LANDSAT/LE07/C01/T1_RT/LE07_' + image_ids[i];
+  var fill_id = 'LANDSAT/LE07/C01/T1_RT/LE07_' + fill_ids[i];
   var image = ee.Image(image_id);
   var fill = ee.Image(fill_id);
   var image = GapFill(image, fill, 10, true);
   image = image.float();
   var geometry = image.geometry();
   // Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 255}, 'image'+i);
+  image = ee.Image.cat([image, elevation, slope])
   console.log(image_id);
   Export.image.toDrive({
     image: image,
     folder: 'EEImages/imagesUsedForLabelling/Nepal/2010',
-    description: 'Nepal_'+image_ids[i],
+    description: 'Nepal_' + image_ids[i],
     region: geometry,
     scale: 30
   });

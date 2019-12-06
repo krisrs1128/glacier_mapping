@@ -248,7 +248,6 @@ def online_mean_and_sd(loader, channels):
     snd_moment = torch.empty(channels)
 
     for img, _ in loader:
-
         b, _, h, w = img.shape
         nb_pixels = b * h * w
         sum_ = torch.sum(img, dim=[0, 2, 3])
@@ -275,8 +274,8 @@ def get_normalization(data_config):
     channels_std = [std[i] for i in data_config.channels_to_inc] 
 
     if data_config.use_snow_i:
-        channels_mean.append(mean[10])
-        channels_std.append(std[10])
+        channels_mean.append(mean[12])
+        channels_std.append(std[12])
 
     img_transform = T.Normalize(channels_mean, channels_std)
 

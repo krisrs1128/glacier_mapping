@@ -27,7 +27,7 @@ class GlacierDataset(Dataset):
         self.use_cropped = use_cropped
         self.use_snow_i = use_snow_i
         if channels_to_inc is not None:
-            self.channels_to_inc = channels_to_inc
+            self.channels_to_inc = channels_to_inc 
         else: self.channels_to_inc = list(range(10))
         if use_slope: self.channels_to_inc.append(11)
         if use_elev: self.channels_to_inc.append(10)
@@ -54,6 +54,8 @@ class GlacierDataset(Dataset):
         img = np.load(image_path)
         img = T.ToTensor()(img)
 
+        # get snow index before filtering the data
+        snow_i = utils.get_snow_index(img)
         if self.channels_to_inc is not None:
             img = img[self.channels_to_inc]
 
@@ -65,7 +67,7 @@ class GlacierDataset(Dataset):
             img = torch.from_numpy(img)
 
         if self.use_snow_i:
-            snow_index = utils.get_snow_index(img)
+            snow_index = snow_i
             snow_index = np.expand_dims(snow_index, axis=0)
             img = np.concatenate((img, snow_index), axis=0)
             img = torch.from_numpy(img)

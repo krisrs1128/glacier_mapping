@@ -277,6 +277,10 @@ def get_normalization(data_config):
         channels_mean.append(mean[12])
         channels_std.append(std[12])
 
+    if data_config.border:
+        channels_mean.append(mean[13])
+        channels_std.append(std[13])
+
     img_transform = T.Normalize(channels_mean, channels_std)
 
     return img_transform

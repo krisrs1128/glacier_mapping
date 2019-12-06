@@ -59,17 +59,17 @@ class GlacierDataset(Dataset):
         if self.channels_to_inc is not None:
             img = img[self.channels_to_inc]
 
+        if self.use_snow_i:
+            snow_index = snow_i
+            snow_index = np.expand_dims(snow_index, axis=0)
+            img = np.concatenate((img, snow_index), axis=0)
+            img = torch.from_numpy(img)
+
         if (self.borders) and (not pd.isnull(border_path)):
             border_path = Path(self.base_dir, border_path)
             border = np.load(border_path)
             border = np.expand_dims(border, axis=0)
             img = np.concatenate((img, border), axis=0)
-            img = torch.from_numpy(img)
-
-        if self.use_snow_i:
-            snow_index = snow_i
-            snow_index = np.expand_dims(snow_index, axis=0)
-            img = np.concatenate((img, snow_index), axis=0)
             img = torch.from_numpy(img)
 
         if self.img_transform is not None:

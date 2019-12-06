@@ -277,8 +277,6 @@ def get_normalization(data_config):
     if data_config.use_snow_i: channels.append(12)
     if data_config.border: channels.append(13)
 
-    print(channels)
-
     channels_mean = [mean[i] for i in channels]
     channels_std = [std[i] for i in channels]
 

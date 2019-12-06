@@ -15,7 +15,9 @@ from src.utils import  get_opts
 def induce_config(data_config):
     inchannels = (len(data_config.channels_to_inc) +
                   data_config.borders +
-                  data_config.use_snow_i)
+                  data_config.use_snow_i + 
+                  data_config.use_elev +
+                  data_config.use_slope)
 
     if data_config.mask_used == "multi_class_glaciers":
         outchannels, multiclass = 2, True

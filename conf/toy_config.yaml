@@ -24,5 +24,7 @@ data:
     load_limit: 5 # Limit the number of samples per epoch | -1 to disable
     borders: false
     use_snow_i: true
+    use_slope: true
+    use_elev: true
     mask_used: "debris_glacier"
     channels_to_inc: [0, 1, 2, 3, 4]

@@ -271,19 +271,16 @@ def get_normalization(data_config):
     norm_data = pickle.load(open(norm_data_file, "rb"))
     mean, std = norm_data["mean"], norm_data["std"]
 
-    if data_config.use_snow_i: data_config.channels_to_inc.append(12)
-    if data_config.border: data_config.channels_to_inc.append(13)
-    
-    channels_mean = [mean[i] for i in data_config.channels_to_inc]
-    channels_std = [std[i] for i in data_config.channels_to_inc] 
+    channels = data_config.channels_to_inc[:]
+    if data_config.use_elev: channels.append(10)
+    if data_config.use_slope: channels.append(11)
+    if data_config.use_snow_i: channels.append(12)
+    if data_config.border: channels.append(13)
 
-    # if data_config.use_snow_i:
-    #     channels_mean.append(mean[12])
-    #     channels_std.append(std[12])
+    print(channels)
 
-    # if data_config.border:
-    #     channels_mean.append(mean[13])
-    #     channels_std.append(std[13])
+    channels_mean = [mean[i] for i in channels]
+    channels_std = [std[i] for i in channels]
 
     img_transform = T.Normalize(channels_mean, channels_std)
 

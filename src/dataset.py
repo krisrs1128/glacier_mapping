@@ -26,8 +26,8 @@ class GlacierDataset(Dataset):
         self.borders = borders
         self.use_cropped = use_cropped
         self.use_snow_i = use_snow_i
-        if channels_to_inc is not None:
-            self.channels_to_inc = channels_to_inc 
+
+        if channels_to_inc is not None: self.channels_to_inc = channels_to_inc[:]
         else: self.channels_to_inc = list(range(10))
         if use_slope: self.channels_to_inc.append(11)
         if use_elev: self.channels_to_inc.append(10)
@@ -56,8 +56,7 @@ class GlacierDataset(Dataset):
 
         # get snow index before filtering the data
         snow_i = utils.get_snow_index(img)
-        if self.channels_to_inc is not None:
-            img = img[self.channels_to_inc]
+        img = img[self.channels_to_inc]
 
         if self.use_snow_i:
             snow_index = snow_i
@@ -93,7 +92,7 @@ def loader(data_opts, train_opts, img_transform, mode="train"):
   """
   Loader for Experiment
   """
-
+  
   dataset = GlacierDataset(
     data_opts["path"],
     data_opts["metadata"],

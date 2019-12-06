@@ -14,7 +14,7 @@ torch.manual_seed(10)
 class GlacierDataset(Dataset):
     def __init__(self, base_dir, data_file, channels_to_inc=None, img_transform=None,
                  mode='train', borders=False, use_cropped=True, use_snow_i=False,
-                 use_elev=True, use_slope=True, mask_used='glacier'):
+                 use_elev=True, use_slope=True, mask_used='glacier', country='all', year='all'):
         super().__init__()
         self.base_dir = base_dir
         data_path = Path(base_dir, data_file)
@@ -22,6 +22,10 @@ class GlacierDataset(Dataset):
         self.data = self.data[self.data.train == mode]
         if mask_used == 'debris_glaciers':
             self.data = self.data[self.data.pseudo_debris_perc > 0]
+        if country != 'all':
+            self.data = self.data[self.data["country"].isin(country)]
+        if year != 'all':
+            self.data = self.data[self.data["year"].isin(year)]
         self.img_transform = img_transform
         self.borders = borders
         self.use_cropped = use_cropped
@@ -100,7 +104,9 @@ def loader(data_opts, train_opts, img_transform, mode="train"):
     mask_used=data_opts["mask_used"],
     img_transform=img_transform,
     mode=mode,
-    borders=data_opts["borders"]
+    borders=data_opts["borders"],
+    year=data_opts["year"],
+    country=data_opts["country"]
   )
 
   if data_opts.load_limit == -1:

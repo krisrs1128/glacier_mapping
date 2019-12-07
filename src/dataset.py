@@ -2,7 +2,9 @@
 import numpy as np
 from pathlib import Path
 import pandas as pd
+import random
 
+import cv2
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -97,19 +99,28 @@ def to_numpy_img(img):
     return img
 
 def rotate(img, mask):
-    import random, cv2
     angle = random.uniform(-10, 10)
     w, h = mask.shape
     center = int(w / 2), int(h / 2)
 
     rot_mat = cv2.getRotationMatrix2D(center, angle, 1)
     rotated_img = cv2.warpAffine(img, rot_mat, (w, h))
-    rotated_mask = cv2.warpAffine(mask, rot_mat, (w, h), flags=cv2.INTER_NEAREST)
+    rotated_mask = cv2.warpAffine(mask, rot_mat, (w, h),
+                                  flags=cv2.INTER_NEAREST)
 
     return rotated_img, rotated_mask
 
+def flip(img, mask, direction):
+    p = random.random()
+    if p > 0.5:
+        img = cv2.flip(img, direction)
+        mask = cv2.flip(mask, direction)
+
+        return img, mask
+    return img, mask
+
 class AugmentedGlacierDataset(GlacierDataset):
-    def __init__(self, *args, hflip=True, vflip=True, rot=(-5, 5), **kargs):
+    def __init__(self, *args, hflip=0.5, vflip=0.5, rot=(-30, 30), **kargs):
 
         super().__init__(*args, **kargs)
         self.hflip = hflip
@@ -123,6 +134,8 @@ class AugmentedGlacierDataset(GlacierDataset):
     def augment(self, img, mask):
         img = to_numpy_img(img)
         img, mask = rotate(img, mask)
+        img, mask = flip(img, mask, 0)
+        img, mask = flip(img, mask, 1)
         img = np.moveaxis(img, -1, 0)
 
         return img, mask

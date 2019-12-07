@@ -98,8 +98,8 @@ def to_numpy_img(img):
 
     return img
 
-def rotate(img, mask):
-    angle = random.uniform(-10, 10)
+def rotate(img, mask, rot=(-10, 10)):
+    angle = random.uniform(rot[0], rot[1])
     w, h = mask.shape
     center = int(w / 2), int(h / 2)
 
@@ -110,9 +110,9 @@ def rotate(img, mask):
 
     return rotated_img, rotated_mask
 
-def flip(img, mask, direction):
+def flip(img, mask, direction, percent=0.5):
     p = random.random()
-    if p > 0.5:
+    if p > percent:
         img = cv2.flip(img, direction)
         mask = cv2.flip(mask, direction)
 
@@ -133,9 +133,9 @@ class AugmentedGlacierDataset(GlacierDataset):
 
     def augment(self, img, mask):
         img = to_numpy_img(img)
-        img, mask = rotate(img, mask)
-        img, mask = flip(img, mask, 0)
-        img, mask = flip(img, mask, 1)
+        img, mask = rotate(img, mask, self.rot)
+        img, mask = flip(img, mask, 0, self.vflip)
+        img, mask = flip(img, mask, 1, self.hflip)
         img = np.moveaxis(img, -1, 0)
 
         return img, mask

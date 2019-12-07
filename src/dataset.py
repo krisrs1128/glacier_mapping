@@ -98,17 +98,19 @@ def to_numpy_img(img):
 
     return img
 
-def rotate(img, mask, rot=(-10, 10)):
-    angle = random.uniform(rot[0], rot[1])
-    w, h = mask.shape
-    center = int(w / 2), int(h / 2)
+def rotate(img, mask, rot=(-10, 10), p=0.5):
+    if random.random() > p:
+        angle = random.uniform(rot[0], rot[1])
+        w, h = mask.shape
+        center = int(w / 2), int(h / 2)
 
-    rot_mat = cv2.getRotationMatrix2D(center, angle, 1)
-    rotated_img = cv2.warpAffine(img, rot_mat, (w, h))
-    rotated_mask = cv2.warpAffine(mask, rot_mat, (w, h),
-                                  flags=cv2.INTER_NEAREST)
+        rot_mat = cv2.getRotationMatrix2D(center, angle, 1)
+        rotated_img = cv2.warpAffine(img, rot_mat, (w, h))
+        rotated_mask = cv2.warpAffine(mask, rot_mat, (w, h),
+                                      flags=cv2.INTER_NEAREST)
+        return rotated_img, rotated_mask
 
-    return rotated_img, rotated_mask
+    return img, mask
 
 def flip(img, mask, direction, percent=0.5):
     p = random.random()

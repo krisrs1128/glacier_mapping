@@ -39,6 +39,10 @@ cd glacier_mapping
 python3 -m src.exper -c=shared/azure.yaml -o /directory/to/save/outputs
 ```
 
+The `mount.sh` script is exactly the script from step 4 in the setup above. It's
+needed because when you shutdown the machine, the mounting information gets
+lost.
+
 ## Compute Canada
 
 ### Environment

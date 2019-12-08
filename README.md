@@ -17,8 +17,7 @@ store`. The fastest way to do this ended up being
    storage account,
    ![storage](https://drive.google.com/uc?id=1wo7F_1mD4ueLbxOt_s5_Mc0s-YhCyBmD)
    and then add a `file share`,
-   https://drive.google.com/open?id=1bJ95Lg13FjXLvGWrwZm-0xbdNJQVfbb1
-   ![share](https://drive.google.com/uc?id=1bJ95Lg13FjXLvGWrwZm-0xbdNJQVfbb1).
+   ![share](https://drive.google.com/uc?id=1bJ95Lg13FjXLvGWrwZm-0xbdNJQVfbb1)
 2. `tar -zcvf` all the processed data on the compute canada cluster.
 3. Log into the VM on which you want to work with the data.
 4. On that VM, mount the file share, by executing the script provided in the

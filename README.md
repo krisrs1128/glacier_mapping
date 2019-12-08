@@ -1,4 +1,4 @@
-# Mapping setup
+# Setup and training mapping models
 
 ## Azure Cluster
 
@@ -31,9 +31,11 @@ store`. The fastest way to do this ended up being
 ### Running
 
 Once you've executed the setup above, you can start a training run by navigating
-to the `/home/kris/glacier_mapping` directory and running,
+to the `/home/kris/` directory and running,
 
 ```
+bash mount.sh
+cd glacier_mapping
 python3 -m src.exper -c=shared/azure.yaml -o /directory/to/save/outputs
 ```
 

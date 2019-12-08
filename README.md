@@ -15,15 +15,15 @@ store`. The fastest way to do this ended up being
 
 1. Create a file share, using `portal.azure.com`. You need to first create a
    storage account,
-   ![storage](https://drive.google.com/open?id=1wo7F_1mD4ueLbxOt_s5_Mc0s-YhCyBmD)
+   ![storage](https://drive.google.com/uc?id=1wo7F_1mD4ueLbxOt_s5_Mc0s-YhCyBmD)
    and then add a `file share`,
    https://drive.google.com/open?id=1bJ95Lg13FjXLvGWrwZm-0xbdNJQVfbb1
-   ![share](https://drive.google.com/open?id=1bJ95Lg13FjXLvGWrwZm-0xbdNJQVfbb1).
+   ![share](https://drive.google.com/uc?id=1bJ95Lg13FjXLvGWrwZm-0xbdNJQVfbb1).
 2. `tar -zcvf` all the processed data on the compute canada cluster.
 3. Log into the VM on which you want to work with the data.
 4. On that VM, mount the file share, by executing the script provided in the
    connect button,
-![connect](https://drive.google.com/file/d/1tcOZFKqeW6UIOA2HHa1xbampIlx9s7Da/view?usp=sharing)
+![connect](https://drive.google.com/uc?id=1tcOZFKqeW6UIOA2HHa1xbampIlx9s7Da)
 5. `rsync` the zipped data onto the VM that you're on.`
 6. `tar -zxvf` the data under the `/mnt/storagename` directory created by the
    script in step 4.

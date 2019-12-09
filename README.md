@@ -27,7 +27,8 @@ store`. The fastest way to do this ended up being
 6. `tar -zxvf` the data under the `/mnt/storagename` directory created by the
    script in step 4.
 
-### Running
+### Running  
+Note: This project requires python 3.6 or higher.
 
 Once you've executed the setup above, you can start a training run by navigating
 to the `/home/kris/` directory and running,
@@ -41,6 +42,16 @@ python3 -m src.exper -c=shared/azure.yaml -o /directory/to/save/outputs
 The `mount.sh` script is exactly the script from step 4 in the setup above. It's
 needed because when you shutdown the machine, the mounting information gets
 lost.
+
+### Running on Azure using conda environment
+```
+conda create -n glacier_mapping python=3.6
+conda activate glacier_mapping
+cd glacier_mapping
+pip install -r requirements.txt
+python -m src.exper -c=shared/azure.yaml -o /directory/to/save/outputs
+```
+
 
 ## Compute Canada
 

@@ -2,7 +2,6 @@
 *.csv
 *.tar.gz
 *.png
-*.txt
 *pycache*
 data/
 notebooks/

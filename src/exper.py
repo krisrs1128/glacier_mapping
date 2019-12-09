@@ -68,9 +68,12 @@ if __name__ == "__main__":
 
     img_transform = get_normalization(opts["data"])
     model = Unet(**opts["model"])
-    train_loader = loader(opts["data"], opts["train"], mode="train", img_transform=img_transform)
-    dev_loader = loader(opts["data"], opts["train"], mode="dev", img_transform=img_transform)
-    test_loader = loader(opts["data"], opts["train"], mode="test", img_transform=img_transform)
+    train_loader = loader(opts["data"], opts["train"], opts["augmentation"],
+                          mode="train", img_transform=img_transform)
+    dev_loader = loader(opts["data"], opts["train"], opts["augmentation"],
+                        mode="dev", img_transform=img_transform)
+    test_loader = loader(opts["data"], opts["train"], opts["augmentation"],
+                         mode="test", img_transform=img_transform)
 
     trainer = Trainer(
         model,

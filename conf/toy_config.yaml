@@ -30,3 +30,9 @@ data:
     use_elev: true
     mask_used: "debris_glacier"
     channels_to_inc: [0, 1, 2, 3, 4]
+
+augmentation:
+    vflip: 0.5 # percent of time to do vertical flip
+    hflip: 0.5 # percent of time to do horizontal flip
+    rotate_prop: 0.5 # perecent of time to rotate
+    rotate_degree: 30 # maximum allowed rotation

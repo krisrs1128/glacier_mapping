@@ -112,7 +112,7 @@ class AugmentedGlacierDataset(GlacierDataset):
 
         return img, mask
 
-def loader(data_opts, train_opts, img_transform, mode="train"):
+def loader(data_opts, train_opts, augment_opts, img_transform, mode="train"):
   """
   Loader for Experiment
   """
@@ -124,9 +124,13 @@ def loader(data_opts, train_opts, img_transform, mode="train"):
                 "mode":mode,
                 "borders":data_opts["borders"],
                 "year":data_opts["year"],
-                "country":data_opts["country"]}
+                "country":data_opts["country"],
+                "hflip":augment_opts["hflip"],
+                "vflip":augment_opts["vflip"],
+                "rot_p":augment_opts["rotate_prop"],
+                "rot":augment_opts["rotate_degree"],}
 
-  dataset = GlacierDataset(*data_args, **data_kargs)
+  dataset = AugmentedGlacierDataset(*data_args, **data_kargs)
 
   if data_opts.load_limit == -1:
     sampler, shuffle = None, train_opts["shuffle"]

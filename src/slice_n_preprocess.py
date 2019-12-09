@@ -1,5 +1,6 @@
 import os
 import itertools
+import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -48,6 +49,8 @@ if __name__ == '__main__':
             type=str,
             help="path to configuration file for slicing",
     )
+    logging.getLogger().setLevel(logging.INFO)
+
 
     parsed_opts = parser.parse_args()
     config_values = load_conf(parsed_opts.conf_name)
@@ -62,22 +65,24 @@ if __name__ == '__main__':
     countries = data_c["country"]
     years = data_c["year"]
 
-    if years == 'all':
+
+    if not years:
         years = [year_path.name for year_path in Path(base_dir, 'img_data').iterdir()]
 
-    if countries == 'all':
+    if not countries:
         countries = []
         for year in years:
             year_path = Path(base_dir, 'img_data', year)
             for country_path in year_path.iterdir():
                 countries.append(country_path.name)
         countries = set(countries)
-
+    
     for year, country in list(itertools.product(years, countries)):
         if Path(base_dir, f'img_data/{year}/{country}').exists():
+            logging.info(f'Processing {year}/{country}')
             preprocess_country(base_dir, basin_path,
                                country, year, data_c, valid_c, split_c)
-            0
+            
         sat_path = base_dir / "sat_files"
         dfs = []
         for year_path in sat_path.iterdir():

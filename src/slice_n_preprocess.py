@@ -1,4 +1,5 @@
 import os
+import itertools
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -6,6 +7,36 @@ import pandas as pd
 
 import src.preprocess as preprocess
 from src.utils import  load_conf
+
+def preprocess_country(base_dir, basin_path, country, year, data_c, valid_c, split_c):
+    labels_path = base_dir / f'vector_data/{year}/{country}/data/Glacier_{year}.shp'
+    borders_path =  base_dir/ f'vector_data/borders/{country}/{country}.shp'
+    sat_dir = base_dir / f'img_data/{year}/{country}'
+    save_loc = Path(base_dir, f'sat_files/{year}/{country}')
+    save_loc.mkdir(parents=True, exist_ok=True)
+
+    # slice all images in that folder
+    preprocess.chunck_sat_files(sat_dir, labels_path, base_dir, save_loc,
+                                borders_path=borders_path, basin_path=basin_path,
+                                size=(data_c["size"], data_c["size"]),
+                                year=data_c["year"], country=data_c["country"])
+
+    def valid_cond_f(sat_data): return ((sat_data.labels_perc > valid_c["labels_perc"]) &
+                                        (sat_data.labels_in_border > valid_c["labels_in_border"]) &
+                                        (sat_data.is_nan_perc < valid_c["is_nan_perc"]))
+
+    sat_data_file = os.path.join(save_loc, 'sat_data.csv')
+    if split_c["random_test"]:
+        def test_cond_f(sat_data): return pd.Series([False for _ in range(len(sat_data))])
+        preprocess.filter_images(sat_data_file, valid_cond_f, test_cond_f)
+        preprocess.split_train_test(
+            sat_data_file, save=True, perc=split_c["test_perc"], label='test')
+
+    else:
+        def test_cond_f(sat_data): return (sat_data.basin_perc > 0)
+        preprocess.filter_images(sat_data_file, valid_cond_f, test_cond_f)
+
+    preprocess.split_train_test(sat_data_file, save=True, perc=split_c["dev_perc"])
 
 
 if __name__ == '__main__':
@@ -28,36 +59,25 @@ if __name__ == '__main__':
 
     basin_path = base_dir / "vector_data/basin/Dudh_Koshi_Glacier.shp"
 
-    labels_path = base_dir / f'vector_data/{data_c["year"]}/{data_c["country"]}/data/Glacier_{data_c["year"]}.shp'
-    borders_path =  base_dir/ f'vector_data/borders/{data_c["country"]}/{data_c["country"]}.shp'
-    sat_dir = base_dir / f'img_data/{data_c["year"]}/{data_c["country"]}'
-    save_loc = Path(base_dir, f'sat_files/{data_c["year"]}/{data_c["country"]}')
-    save_loc.mkdir(parents=True, exist_ok=True)
+    countries = data_c["country"]
+    years = data_c["year"]
 
-    # slice all images in that folder
-    preprocess.chunck_sat_files(sat_dir, labels_path, base_dir, save_loc,
-                                borders_path=borders_path, basin_path=basin_path,
-                                size=(data_c["size"], data_c["size"]),
-                                year=data_c["year"], country=data_c["country"])
+    if years == 'all':
+        years = [year_path.name for year_path in Path(base_dir, 'img_data').iterdir()]
 
-    def valid_cond_f(sat_data): return ((sat_data.labels_perc > valid_c["labels_perc"]) &
-                                        (sat_data.labels_in_border > valid_c["labels_in_border"]) &
-                                        (sat_data.is_nan_perc < valid_c["is_nan_perc"]))
-    
-    sat_data_file = os.path.join(save_loc, 'sat_data.csv')
-    if split_c["random_test"]:
-        def test_cond_f(sat_data): return pd.Series([False for _ in range(len(sat_data))])
-        preprocess.filter_images(sat_data_file, valid_cond_f, test_cond_f)
-        preprocess.split_train_test(
-            sat_data_file, save=True, perc=split_c["test_perc"], label='test')
+    if countries == 'all':
+        countries = []
+        for year in years:
+            year_path = Path(base_dir, 'img_data', year)
+            for country_path in year_path.iterdir():
+                countries.append(country_path.name)
+        countries = set(countries)
 
-    else:
-        def test_cond_f(sat_data): return (sat_data.basin_perc > 0)
-        preprocess.filter_images(sat_data_file, valid_cond_f, test_cond_f)
-
-    preprocess.split_train_test(sat_data_file, save=True, perc=split_c["dev_perc"])
-
-    if data_c["merge"]:
+    for year, country in list(itertools.product(years, countries)):
+        if Path(base_dir, f'img_data/{year}/{country}').exists():
+            preprocess_country(base_dir, basin_path,
+                               country, year, data_c, valid_c, split_c)
+            0
         sat_path = base_dir / "sat_files"
         dfs = []
         for year_path in sat_path.iterdir():

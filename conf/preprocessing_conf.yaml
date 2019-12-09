@@ -1,7 +1,7 @@
 data:
   data_path: "./data"
-  country: "nepal"
-  year: "2000"
+  country: "all"
+  year: "all"
   size: 128
   merge: true # merge the result of this slicing with the original slices
 

@@ -136,7 +136,7 @@ The filtering of data depends, for now, on the amount of labels existing inside 
 In order to fill debris_perc column in the metadata, you should run the following command with the metadata file 
 `python -m src.filter_debris_by_perc --data_path /data/sat_data.csv` 
 
-The command expects that `slices` and `sat_data.csv` to be previously generated.
+The command expects `slices` and `sat_data.csv` to be previously generated.
 
 This is a necessary step to train on pseudo labels, and can be skipped with regular glaciers.
 
@@ -144,7 +144,8 @@ This is a necessary step to train on pseudo labels, and can be skipped with regu
 To generate `normalization_data.pkl`, you should run the following command
 `python -m src.normalize --base_dir ./data`
 
-The command expects that `slices` and `sat_data.csv` to be previously generated.
+The command expects `slices` and `sat_data.csv` to be previously generated.
 
 The normalization operates on all channels/snow_index/borders/elevation/slope, and the right normalization factors will be picked up correctly relative to your training configuration.
+
 ~

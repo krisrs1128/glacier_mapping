@@ -20,7 +20,7 @@ def preprocess_country(base_dir, basin_path, country, year, data_c, valid_c, spl
     preprocess.chunck_sat_files(sat_dir, labels_path, base_dir, save_loc,
                                 borders_path=borders_path, basin_path=basin_path,
                                 size=(data_c["size"], data_c["size"]),
-                                year=data_c["year"], country=data_c["country"])
+                                year=year, country=country)
 
     def valid_cond_f(sat_data): return ((sat_data.labels_perc > valid_c["labels_perc"]) &
                                         (sat_data.labels_in_border > valid_c["labels_in_border"]) &

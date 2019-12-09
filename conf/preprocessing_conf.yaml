@@ -1,6 +1,6 @@
 data:
   data_path: "./data"
-  country: ['nepal'] # list of countries to process, [] for all countries
+  country: [] # list of countries to process, [] for all countries
   year: [] # list of years to process, [] for all years
   size: 128
   merge: true # merge the result of this slicing with the original slices

@@ -2,16 +2,14 @@
 import numpy as np
 from pathlib import Path
 import pandas as pd
-import random
 
-import cv2
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 import torchvision.transforms as T
-import torchvision.transforms.functional as TF
 
 import src.utils as utils
+import src.augmentations as TA
 torch.manual_seed(10)
 
 class GlacierDataset(Dataset):
@@ -92,63 +90,27 @@ class GlacierDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-def to_numpy_img(img):
-    img = img.data.numpy()
-    img = np.moveaxis(img, 0, -1)
-
-    return img
-
-def rotate(img, mask, rot=(-10, 10), p=0.5):
-    if random.random() > p:
-        angle = random.uniform(rot[0], rot[1])
-        w, h = mask.shape
-        center = int(w / 2), int(h / 2)
-
-        rot_mat = cv2.getRotationMatrix2D(center, angle, 1)
-        rotated_img = cv2.warpAffine(img, rot_mat, (w, h))
-        rotated_mask = cv2.warpAffine(mask, rot_mat, (w, h),
-                                      flags=cv2.INTER_NEAREST)
-        return rotated_img, rotated_mask
-
-    return img, mask
-
-def flip(img, mask, direction, percent=0.5):
-    p = random.random()
-    if p > percent:
-        img = cv2.flip(img, direction)
-        mask = cv2.flip(mask, direction)
-
-        return img, mask
-    return img, mask
-
 class AugmentedGlacierDataset(GlacierDataset):
-    def __init__(self, *args, hflip=0.5, vflip=0.5, rot=(-30, 30), **kargs):
+    def __init__(self, *args, hflip=0.5, vflip=0.5, rot_p=0.5, rot=30, **kargs):
 
         super().__init__(*args, **kargs)
         self.hflip = hflip
         self.vflip = vflip
-        self.rot = rot
+        self.rot_p = rot_p
+        self.rot = (-rot, rot)
 
     def __getitem__(self, i):
         img, mask = super().__getitem__(i)
         return self.augment(img, mask)
 
     def augment(self, img, mask):
-        img = to_numpy_img(img)
-        img, mask = rotate(img, mask, self.rot)
-        img, mask = flip(img, mask, 0, self.vflip)
-        img, mask = flip(img, mask, 1, self.hflip)
+        img = TA.to_numpy_img(img)
+        img, mask = TA.rotate(img, mask, self.rot, p=self.rot_p)
+        img, mask = TA.flip(img, mask, 0, self.vflip)
+        img, mask = TA.flip(img, mask, 1, self.hflip)
         img = np.moveaxis(img, -1, 0)
 
         return img, mask
-
-
-
-
-
-        
-    
-
 
 def loader(data_opts, train_opts, img_transform, mode="train"):
   """

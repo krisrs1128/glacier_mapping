@@ -33,7 +33,7 @@ Once you've executed the setup above, you can start a training run by navigating
 to the `/home/kris/` directory and running,
 
 ```
-bash mount.sh
+sh azure.sh
 cd glacier_mapping
 python3 -m src.exper -c=shared/azure.yaml -o /directory/to/save/outputs
 ```

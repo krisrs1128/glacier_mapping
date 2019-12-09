@@ -31,8 +31,8 @@ if __name__ == '__main__':
     labels_path = base_dir / f'vector_data/{data_c["year"]}/{data_c["country"]}/data/Glacier_{data_c["year"]}.shp'
     borders_path =  base_dir/ f'vector_data/borders/{data_c["country"]}/{data_c["country"]}.shp'
     sat_dir = base_dir / f'img_data/{data_c["year"]}/{data_c["country"]}'
-    save_loc = base_dir / f'sat_files/{data_c["year"]}/{data_c["country"]}' 
-
+    save_loc = Path(base_dir, f'sat_files/{data_c["year"]}/{data_c["country"]}')
+    save_loc.mkdir(parents=True, exist_ok=True)
 
     # slice all images in that folder
     preprocess.chunck_sat_files(sat_dir, labels_path, base_dir, save_loc,

@@ -128,7 +128,7 @@ def loader(data_opts, train_opts, augment_opts, img_transform, mode="train"):
                 "hflip":augment_opts["hflip"],
                 "vflip":augment_opts["vflip"],
                 "rot_p":augment_opts["rotate_prop"],
-                "rot":augment_opts["rotate_degree"],}
+                "rot":augment_opts["rotate_degree"]}
 
   dataset = AugmentedGlacierDataset(*data_args, **data_kargs)
 

@@ -1,0 +1,12 @@
+numpy
+pandas 
+geopandas 
+wandb 
+Pillow 
+addict 
+pyyaml 
+rasterio
+torch>=1.0.0
+torchvision
+matplotlib 
+seaborn

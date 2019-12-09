@@ -116,19 +116,17 @@ def loader(data_opts, train_opts, img_transform, mode="train"):
   """
   Loader for Experiment
   """
+  data_args = [data_opts["path"], data_opts["metadata"]]
+  data_kargs = {"use_snow_i":data_opts["use_snow_i"],
+                "channels_to_inc":data_opts["channels_to_inc"],
+                "mask_used":data_opts["mask_used"],
+                "img_transform":img_transform,
+                "mode":mode,
+                "borders":data_opts["borders"],
+                "year":data_opts["year"],
+                "country":data_opts["country"]}
 
-  dataset = GlacierDataset(
-    data_opts["path"],
-    data_opts["metadata"],
-    use_snow_i=data_opts["use_snow_i"],
-    channels_to_inc=data_opts["channels_to_inc"],
-    mask_used=data_opts["mask_used"],
-    img_transform=img_transform,
-    mode=mode,
-    borders=data_opts["borders"],
-    year=data_opts["year"],
-    country=data_opts["country"]
-  )
+  dataset = GlacierDataset(*data_args, **data_kargs)
 
   if data_opts.load_limit == -1:
     sampler, shuffle = None, train_opts["shuffle"]

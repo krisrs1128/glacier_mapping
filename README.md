@@ -125,9 +125,9 @@ where `preprocessing_conf.yaml` is the configuration file for which years/countr
 
 Example:
 
-`year: ['2010] country:[]`
+`year: ['2010'] country:[]`
 will process all countries in 2010.
- 
+
 You should end up with `slices` directory for all the sliced data and `sat_data.csv` for the metadata needed for training. The folder `sat_files` will be created for all intermediate results, for each set of year/country,  to help with future debugging and ease of incremental adding of data. This folder is of no importance for training.
 
 The filtering of data depends, for now, on the amount of labels existing inside the countries border, amount of values out of the satellite image (nan), and amount of labels in general in the slice. Any slice that returns `False` for any of the conditions in the config file, will be marked as invalid. Development split is generated at random, while test split can be random or according to the intersection with the test vector data (check config file for more details)  

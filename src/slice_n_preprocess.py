@@ -26,7 +26,8 @@ def preprocess_country(base_dir, basin_path, country, year, data_c, valid_c, spl
                                         (sat_data.labels_in_border > valid_c["labels_in_border"]) &
                                         (sat_data.is_nan_perc < valid_c["is_nan_perc"]))
 
-    sat_data_file = os.path.join(save_loc, 'sat_data.csv')
+    sat_data_file =  Path(save_loc, 'sat_data.csv')
+
     if split_c["random_test"]:
         def test_cond_f(sat_data): return pd.Series([False for _ in range(len(sat_data))])
         preprocess.filter_images(sat_data_file, valid_cond_f, test_cond_f)

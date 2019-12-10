@@ -79,7 +79,7 @@ class GlacierDataset(Dataset):
         if self.img_transform is not None:
             img = self.img_transform(img)
 
-        # default is 'glaciers' for origina/labels 
+        # default is 'glaciers' for original labels 
         mask = np.load(mask_path)
         if self.mask_used == 'debris_glaciers':
             mask = utils.get_debris_glaciers(img, mask)

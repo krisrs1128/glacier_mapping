@@ -13,7 +13,7 @@ def to_numpy_img(img):
 def rotate(img, mask, rot=(-10, 10), p=0.5):
     """Rotate image and crossponding mask with the same random angle"""
 
-    if random.random() > p:
+    if random.random() < p:
         angle = random.uniform(rot[0], rot[1])
         w, h = mask.shape
         center = int(w / 2), int(h / 2)
@@ -21,14 +21,13 @@ def rotate(img, mask, rot=(-10, 10), p=0.5):
         rot_mat = cv2.getRotationMatrix2D(center, angle, 1)
         img = cv2.warpAffine(img, rot_mat, (w, h))
         mask = cv2.warpAffine(mask, rot_mat, (w, h), flags=cv2.INTER_NEAREST)
-        
+
     return img, mask
 
-def flip(img, mask, direction, percent=0.5):
+def flip(img, mask, direction, p=0.5):
     """Flip image and crossponding mask"""
     
-    p = random.random()
-    if p > percent:
+    if random.random() < p:
         img = cv2.flip(img, direction)
         mask = cv2.flip(mask, direction)
 

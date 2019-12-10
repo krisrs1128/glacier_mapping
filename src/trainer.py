@@ -72,7 +72,7 @@ class Trainer:
     data = getattr(self, f"{mode}_data")
     epoch_metrics = defaultdict(int)
     wandb_imgs = []
-    n = len(data.dataset)
+    
     for i, (img, mask) in enumerate(data):
       with torch.no_grad():
         img, mask = img.to(self.device), mask.to(self.device)

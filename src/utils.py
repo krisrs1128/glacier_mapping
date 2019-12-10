@@ -23,20 +23,22 @@ def crop_raster(raster_img, vector_data):
 
     return mask
 
-def get_snow_index(img, thresh=None):
+def get_snow_index(img, thresh=None, indeces=[1, 4]):
     """Given a satelitte image return the snow index,
        default is cahnnels first landsat7 format"""
     # channels first
     index = np.zeros_like(img[0])
     # for division by zero errors
-    mask = (img[1, :, :] + img[4, :, :]) != 0
-    values = (img[1, :, :] - img[4, :, :]) / (img[1, :, :] + img[4, :, :])
+    d = (img[indeces[0], :, :] + img[indeces[1], :, :])
+    mask =  d != 0
+    values = (img[indeces[0], :, :] - img[indeces[1], :, :]) / d
     index[mask] = values[mask]
 
     if thresh is not None:
         return index > thresh
 
     return index
+
 
 def get_debris_glaciers(img, mask, thresh=0.6):
     """Given an image and labels construct pseudo labels of the debris glaciers,
@@ -103,10 +105,7 @@ def slice_image(img, size=(512, 512)):
         size tuple(int, int): size of the slice
     Returns:
         list of slices [np.array]"""
-    if img.ndim == 2:
-        h, w = img.shape
-    else:
-        h, w, _ = img.shape
+    h, w = img.shape[:2]
 
     h_slices = math.ceil(h / size[0])
     w_slices = math.ceil(w / size[1])
@@ -271,7 +270,8 @@ def get_opts(conf_path):
 def get_pred_mask(pred, act=torch.nn.Sigmoid(), thresh=0.5):
     """Given the logits of a model predict a segmentation mask."""
     pred = act(pred)
-    binary_pred = pred.clone().detach() >= thresh
+    binary_pred = (pred.clone().detach() >= thresh).float()
+
     return pred, binary_pred
 
 

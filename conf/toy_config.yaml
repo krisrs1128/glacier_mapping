@@ -20,9 +20,19 @@ train:
 # ---------------------------
 data:
     path: "./data" # Where's the data?
+    country: ["nepal"]
+    year: ["2000"]
     metadata:  "sat_data.csv"
-    load_limit: 5 # Limit the number of samples per epoch | -1 to disable
+    load_limit: -1 # Limit the number of samples per epoch | -1 to disable
     borders: false
     use_snow_i: true
+    use_slope: true
+    use_elev: true
     mask_used: "debris_glacier"
     channels_to_inc: [0, 1, 2, 3, 4]
+
+augmentation:
+    vflip: 0.5 # percent of time to do vertical flip
+    hflip: 0.5 # percent of time to do horizontal flip
+    rotate_prop: 0.5 # perecent of time to rotate
+    rotate_degree: 30 # maximum allowed rotation

@@ -15,7 +15,9 @@ from src.utils import  get_opts
 def induce_config(data_config):
     inchannels = (len(data_config.channels_to_inc) +
                   data_config.borders +
-                  data_config.use_snow_i)
+                  data_config.use_snow_i + 
+                  data_config.use_elev +
+                  data_config.use_slope)
 
     if data_config.mask_used == "multi_class_glaciers":
         outchannels, multiclass = 2, True
@@ -66,9 +68,12 @@ if __name__ == "__main__":
 
     img_transform = get_normalization(opts["data"])
     model = Unet(**opts["model"])
-    train_loader = loader(opts["data"], opts["train"], mode="train", img_transform=img_transform)
-    dev_loader = loader(opts["data"], opts["train"], mode="dev", img_transform=img_transform)
-    test_loader = loader(opts["data"], opts["train"], mode="test", img_transform=img_transform)
+    train_loader = loader(opts["data"], opts["train"], opts["augmentation"],
+                          mode="train", img_transform=img_transform)
+    dev_loader = loader(opts["data"], opts["train"], opts["augmentation"],
+                        mode="dev", img_transform=img_transform)
+    test_loader = loader(opts["data"], opts["train"], opts["augmentation"],
+                         mode="test", img_transform=img_transform)
 
     trainer = Trainer(
         model,

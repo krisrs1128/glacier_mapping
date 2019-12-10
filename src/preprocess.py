@@ -173,17 +173,16 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
 
     files = os.listdir(sat_dir)
     n = len(files)
+
     for i, f in enumerate(files):
         logging.info('Processing file {}/{}.'.format(i + 1, n))
+        
         img_path = os.path.join(sat_dir, f)
-        img = rasterio.open(img_path)
-
         sat_data = chunck_satelitte(
-            img_path, labels, sat_data, save_loc, borders, basin, size=size,
-            year=year, country=country)
+            img_path, labels, sat_data, save_loc, borders=borders, basin=basin,
+            size=size, year=year, country=country)
 
     sat_data.to_csv(os.path.join(df_loc, 'sat_data.csv'), index=False)
-
 
 def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
     """filter image according to metadata.
@@ -249,7 +248,6 @@ def online_mean_and_sd(loader, channels):
     snd_moment = torch.empty(channels)
 
     for img, _ in loader:
-
         b, _, h, w = img.shape
         nb_pixels = b * h * w
         sum_ = torch.sum(img, dim=[0, 2, 3])
@@ -272,12 +270,15 @@ def get_normalization(data_config):
     norm_data_file = pathlib.Path(data_config.path, "normalization_data.pkl")
     norm_data = pickle.load(open(norm_data_file, "rb"))
     mean, std = norm_data["mean"], norm_data["std"]
-    channels_mean = [mean[i] for i in data_config.channels_to_inc]
-    channels_std = [std[i] for i in data_config.channels_to_inc] 
 
-    if data_config.use_snow_i:
-        channels_mean.append(mean[10])
-        channels_std.append(std[10])
+    channels = data_config.channels_to_inc[:]
+    if data_config.use_elev: channels.append(10)
+    if data_config.use_slope: channels.append(11)
+    if data_config.use_snow_i: channels.append(12)
+    if data_config.border: channels.append(13)
+
+    channels_mean = [mean[i] for i in channels]
+    channels_std = [std[i] for i in channels]
 
     img_transform = T.Normalize(channels_mean, channels_std)
 

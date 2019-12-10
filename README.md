@@ -96,27 +96,27 @@ The results get saved to the output directory. You can use `wandb sync` to uploa
 ## pre-processing and slicing
 To the run the preprocessing you need two folders, `img_data` and `vector_data`, which contains the tiffs and the labels respectively. The folders should be organized as illustrated bellow. 
 ```
-data\
-  img_data\ # tiff files
-    2010\
-      nepal\
-      bhutan\
+data/
+  img_data/ # tiff files
+    2010/
+      nepal/
+      bhutan/
       ...
-    2000\
-      nepal\
+    2000/
+      nepal/
       ...
-  vector_data\ # labels, borders, and test labels
-    2010\
-      nepal\ # nepal labels
+  vector_data/ # labels, borders, and test labels
+    2010/
+      nepal/ # nepal labels
       ....
-    2000\
+    2000/
       ....
-    basin\
-      data\ #.shp files for test labels
-    borders\
-      nepal\
-        data\ #.shp files to nepal borders
-      bhutan\
+    basin/
+      data/ #.shp files for test labels
+    borders/
+      nepal/
+        data/ #.shp files to nepal borders
+      bhutan/
       ....
 ```
 To run the pre-processing script

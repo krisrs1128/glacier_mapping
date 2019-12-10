@@ -148,4 +148,19 @@ The command expects `slices` and `sat_data.csv` to be previously generated.
 
 The normalization operates on all channels/snow_index/borders/elevation/slope, and the right normalization factors will be picked up correctly relative to your training configuration.
 
+
+## vector data sources
+Labels : [ICIMOD](http://www.icimod.org/)
+[(2000, Nepal)]([http://rds.icimod.org/Home/DataDetail?metadataId=9351&searchlist=True](http://rds.icimod.org/Home/DataDetail?metadataId=9351&searchlist=True)): Polygons older/newer than 2 years from 2000 are filtered out. Original collection contains few polygons from 1990s
+[(2000, Bhutan)]([http://rds.icimod.org/Home/DataDetail?metadataId=9357&searchlist=True](http://rds.icimod.org/Home/DataDetail?metadataId=9357&searchlist=True)): Used as it's
+[(2010, Nepal)]([http://rds.icimod.org/Home/DataDetail?metadataId=9348&searchlist=True](http://rds.icimod.org/Home/DataDetail?metadataId=9348&searchlist=True)): Polygons older/newer than 2 years from 2010 are filtered out. Original collection is for 1980-2010
+[(2010, Bhutan)]([http://rds.icimod.org/Home/DataDetail?metadataId=9358&searchlist=True](http://rds.icimod.org/Home/DataDetail?metadataId=9358&searchlist=True)): Used as it's
+
+Borders:
+[Natural Earth: Admin-0 details]([http://www.naturalearthdata.com/downloads/10m-cultural-vectors/](http://www.naturalearthdata.com/downloads/10m-cultural-vectors/))
+
+Test Data: 
+Dudh Koshi sub basin (provided directly from ICIMOD)
+
+
 ~

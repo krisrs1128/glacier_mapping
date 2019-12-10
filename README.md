@@ -152,9 +152,9 @@ The normalization operates on all channels/snow_index/borders/elevation/slope, a
 ## vector data sources
 Labels : [ICIMOD](http://www.icimod.org/)
 
-* [(2000, Nepal)](http://rds.icimod.org/Home/DataDetail?metadataId=9351&searchlist=True) Polygons older/newer than 2 years from 2000 are filtered out. Original collection contains few polygons from 1990s
+* [(2000, Nepal)](http://rds.icimod.org/Home/DataDetail?metadataId=9351&searchlist=True): Polygons older/newer than 2 years from 2000 are filtered out. Original collection contains few polygons from 1990s
 
- * [(2000, Bhutan)](http://rds.icimod.org/Home/DataDetail?metadataId=9357&searchlist=True) Used as it's
+ * [(2000, Bhutan)](http://rds.icimod.org/Home/DataDetail?metadataId=9357&searchlist=True): Used as it's
 
 * [(2010, Nepal)](http://rds.icimod.org/Home/DataDetail?metadataId=9348&searchlist=True): Polygons older/newer than 2 years from 2010 are filtered out. Original collection is for 1980-2010
 

@@ -32,7 +32,8 @@ class GlacierDataset(Dataset):
         self.use_cropped = use_cropped
         self.use_snow_i = use_snow_i
 
-        if channels_to_inc is not None: self.channels_to_inc = channels_to_inc[:]
+        if channels_to_inc is not None:
+            self.channels_to_inc = channels_to_inc[:]
         else: self.channels_to_inc = list(range(10))
         if use_slope: self.channels_to_inc.append(11)
         if use_elev: self.channels_to_inc.append(10)

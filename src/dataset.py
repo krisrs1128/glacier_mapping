@@ -61,11 +61,10 @@ class GlacierDataset(Dataset):
         img = T.ToTensor()(img)
 
         # get snow index before filtering the data
-        snow_i = utils.get_snow_index(img)
+        snow_index = utils.get_snow_index(img)
         img = img[self.channels_to_inc]
 
         if self.use_snow_i:
-            snow_index = snow_i
             snow_index = np.expand_dims(snow_index, axis=0)
             img = np.concatenate((img, snow_index), axis=0)
             img = torch.from_numpy(img)

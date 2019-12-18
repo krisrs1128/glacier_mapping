@@ -62,7 +62,7 @@ if __name__ == "__main__":
     opts["train"]["multiclass"] = multiclass
 
     os.environ["WANDB_MODE"] = "dryrun"
-    wandb.init(dir=str(output_path))
+    wandb.init(project="glacier-mapping", dir=str(output_path))
     wandb.config.update(opts.to_dict())
     wandb.config.update({"__message": parsed_opts.message})
 

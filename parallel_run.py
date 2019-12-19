@@ -32,15 +32,15 @@ def zip_for_tmpdir(conf_path):
     cmd = ""
     original_path = Path(conf_path).resolve()
     zip_name = original_path.name + ".zip"
-    zip_path = str(original_path / zip_name)
+    zip_path = str(original_path.parent / zip_name)
 
     no_zip = not Path(zip_path).exists()
     if no_zip:
         cmd = dedent(
             f"""\
             if [ -d "$SLURM_TMPDIR" ]; then
-                cd {str(original_path)}
-                zip -r {zip_name} patches masks > /dev/null
+                cd {str(original_path.parent)}
+                zip -r {zip_name} {original_path.name} > /dev/null
             fi
             """
         )

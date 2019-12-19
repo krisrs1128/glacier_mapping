@@ -21,6 +21,8 @@ train:
 data:
     path: "/scratch/sankarak/data/glaciers/" # Where's the data?
     metadata:  "sat_data.csv"
+    country: "all"
+    year: "all"
     load_limit: -1 # Limit the number of samples per epoch | -1 to disable
     borders: false
     use_snow_i: false

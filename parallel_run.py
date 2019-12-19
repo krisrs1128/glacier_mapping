@@ -30,7 +30,7 @@ def zip_for_tmpdir(conf_path):
     local tmpdir.
     """
     cmd = ""
-    original_path = Path(conf_path).resolve().parent
+    original_path = Path(conf_path).resolve()
     zip_name = original_path.name + ".zip"
     zip_path = str(original_path / zip_name)
 

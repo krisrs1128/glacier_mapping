@@ -9,7 +9,8 @@ import pandas as pd
 import src.preprocess as preprocess
 from src.utils import  load_conf
 
-def preprocess_country(base_dir, basin_path, country, year, data_c, valid_c, split_c):
+def preprocess_country(base_dir, test_basin_path, dev_basin_path,
+                       country, year, data_c, valid_c, split_c):
     labels_path = base_dir / f'vector_data/{year}/{country}/data/Glacier_{year}.shp'
     borders_path =  base_dir/ f'vector_data/borders/{country}/{country}.shp'
     sat_dir = base_dir / f'img_data/{year}/{country}'
@@ -18,7 +19,8 @@ def preprocess_country(base_dir, basin_path, country, year, data_c, valid_c, spl
 
     # slice all images in that folder
     preprocess.chunck_sat_files(sat_dir, labels_path, base_dir, save_loc,
-                                borders_path=borders_path, basin_path=basin_path,
+                                borders_path=borders_path, test_basin_path=test_basin_path,
+                                dev_basin_path=dev_basin_path,
                                 size=(data_c["size"], data_c["size"]),
                                 year=year, country=country)
 
@@ -28,17 +30,17 @@ def preprocess_country(base_dir, basin_path, country, year, data_c, valid_c, spl
 
     sat_data_file =  Path(save_loc, 'sat_data.csv')
 
-    if split_c["random_test"]:
-        def test_cond_f(sat_data): return pd.Series([False for _ in range(len(sat_data))])
-        preprocess.filter_images(sat_data_file, valid_cond_f, test_cond_f)
+    if split_c["random_split"]:
+        def random_cond_f(sat_data): return pd.Series([False for _ in range(len(sat_data))])
+        preprocess.filter_images(sat_data_file, valid_cond_f, random_cond_f, random_cond_f)
         preprocess.split_train_test(
             sat_data_file, save=True, perc=split_c["test_perc"], label='test')
-
+        preprocess.split_train_test(
+            sat_data_file, save=True, perc=split_c["dev_perc"], label='dev')
     else:
-        def test_cond_f(sat_data): return (sat_data.basin_perc > 0)
-        preprocess.filter_images(sat_data_file, valid_cond_f, test_cond_f)
-
-    preprocess.split_train_test(sat_data_file, save=True, perc=split_c["dev_perc"])
+        def test_cond_f(sat_data): return (sat_data.test_basin_perc > 0)
+        def dev_cond_f(sat_data): return (sat_data.dev_basin_perc > 0)
+        preprocess.filter_images(sat_data_file, valid_cond_f, test_cond_f, dev_cond_f)
 
 
 if __name__ == '__main__':
@@ -61,7 +63,8 @@ if __name__ == '__main__':
 
     base_dir = Path(data_c["data_path"])
 
-    basin_path = base_dir / "vector_data/basin/Dudh_Koshi_Glacier.shp"
+    test_basin_path = base_dir / "vector_data/basin/Dudh_Koshi_Glacier.shp"
+    dev_basin_path = base_dir / "vector_data/val/val.shp"
 
     countries = data_c["country"]
     years = data_c["year"]
@@ -81,7 +84,7 @@ if __name__ == '__main__':
     for year, country in list(itertools.product(years, countries)):
         if Path(base_dir, f'img_data/{year}/{country}').exists():
             logging.info(f'Processing {year}/{country}')
-            preprocess_country(base_dir, basin_path,
+            preprocess_country(base_dir, test_basin_path, dev_basin_path,
                                country, year, data_c, valid_c, split_c)
             
         sat_path = base_dir / "sat_files"

@@ -45,7 +45,7 @@ def zip_for_tmpdir(conf_path):
             """
         )
 
-    cmd += dedent("""
+    cmd += dedent(f"""
         cp {zip_path} $SLURM_TMPDIR
         cd $SLURM_TMPDIR
         unzip {zip_name} > /dev/null

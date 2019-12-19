@@ -130,8 +130,7 @@ def loader(data_opts, train_opts, augment_opts, img_transform, mode="train"):
                 "rot_p":augment_opts["rotate_prop"],
                 "rot":augment_opts["rotate_degree"]}
   if mode == "train":
-    data_kargs.update(aug_kargs)
-    dataset = AugmentedGlacierDataset(*data_args, **data_kargs)
+    dataset = AugmentedGlacierDataset(*data_args, **{**data_kargs, **aug_kargs})
   else:
     dataset = GlacierDataset(*data_args, **data_kargs)
 

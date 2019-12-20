@@ -1,7 +1,7 @@
 data:
   data_path: "$SLURM_TMPDIR/data"
-  country: ['bhutan'] # list of countries to process, [] for all countries
-  year: ['2000'] # list of years to process, [] for all years
+  country: [] # list of countries to process, [] for all countries
+  year: [] # list of years to process, [] for all years
   size: 512
 
 validity_values:

@@ -8,6 +8,7 @@ import pandas as pd
 
 import src.preprocess as preprocess
 from src.utils import  load_conf
+from src.cluster_utils import env_to_path
 
 def preprocess_country(base_dir, test_basin_path, dev_basin_path,
                        country, year, data_c, valid_c, split_c):
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     valid_c = config_values["validity_values"]
     split_c = config_values["spliting_values"]
 
-    base_dir = Path(data_c["data_path"])
+    base_dir = Path(env_to_path(data_c["data_path"]))
 
     test_basin_path = base_dir / "vector_data/basin/Dudh_Koshi_Glacier.shp"
     dev_basin_path = base_dir / "vector_data/val/val.shp"

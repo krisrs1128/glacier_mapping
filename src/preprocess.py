@@ -210,7 +210,7 @@ def filter_images(sat_data_file, valid_cond_f, test_cond_f, dev_cond_f, save=Tru
     test_cond = test_cond_f(sat_data) & (sat_data.valid_data)
     dev_cond = dev_cond_f(sat_data) & (sat_data.valid_data)
     sat_data.loc[test_cond, 'train'] = 'test'
-    sat_data.loc[test_cond, 'train'] = 'dev'
+    sat_data.loc[val_cond, 'train'] = 'dev'
 
     if not save:
         return sat_data

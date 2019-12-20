@@ -8,6 +8,7 @@
 #SBATCH -e /scratch/shimaa/logs/glaciers_preprocessing-%j.err  # Write the err in $SCRATCH
 
 # change the log directories based on your space
+# TODO: make the logging directories map to current user space
 
 # Copy and unzip the raw data to the compute node
 # this assumes you have the raw_data on your scratch space,

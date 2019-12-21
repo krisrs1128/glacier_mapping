@@ -22,5 +22,5 @@ singularity exec --bind $SLURM_TMPDIR /scratch/sankarak/images/glaciers.sif pyth
 
 # tar (compressing takes a huge time) and copy the processed data on $SCRATCH
 cd $SLURM_TMPDIR
-tar -cf processed_data.tar data
-cp $SLURM_TMPDIR/processed_data.tar $SCRATCH
+tar -cf processed_glacier_data.tar data
+cp $SLURM_TMPDIR/processed_glacier_data.tar $SCRATCH

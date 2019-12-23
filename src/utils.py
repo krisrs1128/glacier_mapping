@@ -228,6 +228,12 @@ def sample_param(sample_dict):
     elif sample_dict["sample"] == "log":
         value = np.random.uniform(*sample_dict["from"])
         value = 10 ** value
+    elif sample_dict["sample"] == "subset":
+        value = np.random.choice(*sample_dict["from"],
+                                 np.random.choice(len(sample_dict["from"])),
+                                 replace=False)
+        value = sample_dict["base"] + list(value)
+
     else:
         raise ValueError("Unknonw sample type in dict " + str(sample_dict))
     return value

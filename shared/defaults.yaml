@@ -28,7 +28,7 @@ data:
     use_snow_i: true
     use_slope: true
     use_elev: true
-    mask_used: "glaciers"
+    mask_used: "glacier"
     channels_to_inc: [0, 1, 2, 3, 4]
     normalization_file: normalization_data.pkl
 

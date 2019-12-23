@@ -31,7 +31,7 @@ def zip_for_tmpdir(conf_path):
     """
     cmd = ""
     original_path = Path(conf_path).resolve()
-    zip_name = original_path.name + ".zip"
+    zip_name = original_path.name + ".tar"
     zip_path = str(original_path.parent / zip_name)
 
     no_zip = not Path(zip_path).exists()
@@ -40,7 +40,7 @@ def zip_for_tmpdir(conf_path):
             f"""\
             if [ -d "$SLURM_TMPDIR" ]; then
                 cd {str(original_path.parent)}
-                zip -r {zip_name} {original_path.name} > /dev/null
+                tar -cf {zip_name} {original_path.name} > /dev/null
             fi
             """
         )
@@ -48,7 +48,7 @@ def zip_for_tmpdir(conf_path):
     cmd += dedent(f"""
         cp {zip_path} $SLURM_TMPDIR
         cd $SLURM_TMPDIR
-        unzip {zip_name} > /dev/null
+        tar -xf {zip_name} > /dev/null
     """
     )
     return cmd
@@ -126,7 +126,9 @@ if __name__ == '__main__':
     params = []
     exp_runs = exploration_params["runs"]
     if "repeat" in exploration_params["experiment"]:
-        exp_runs *= int(exploration_params["experiment"]["repeat"]) or 1
+        repeat_times = int(exploration_params["experiment"]["repeat"]) or 1
+        # repeat only the variable part
+        exp_runs = [exp_runs[0]] + (exp_runs[1:] * repeat_times)
     for p in exp_runs:
         params.append(
             {
@@ -156,7 +158,7 @@ if __name__ == '__main__':
         sbp = param["sbatch"]
 
         original_data_path = param["config"]["data"]["path"]
-        param["config"]["data"]["path"] = "$SLURM_TMPDIR"
+        param["config"]["data"]["path"] = "$SLURM_TMPDIR/data"
         param["config"]["data"]["original_path"] = original_data_path
         conf_path = write_conf(run_dir, param)  # returns Path() from pathlib
         template_str = template(param, conf_path, run_dir)

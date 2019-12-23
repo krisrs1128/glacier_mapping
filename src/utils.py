@@ -225,6 +225,9 @@ def sample_param(sample_dict):
         value = np.random.choice(sample_dict["from"])
     elif sample_dict["sample"] == "uniform":
         value = np.random.uniform(*sample_dict["from"])
+    elif sample_dict["sample"] == "log":
+        value = np.random.uniform(*sample_dict["from"])
+        value = 10 ** value
     else:
         raise ValueError("Unknonw sample type in dict " + str(sample_dict))
     return value

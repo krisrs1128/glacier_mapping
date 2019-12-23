@@ -277,7 +277,7 @@ def get_normalization(data_config):
     Returns:
         torchvision.transforms"""
         
-    norm_data_file = pathlib.Path(data_config.path, "normalization_data.pkl")
+    norm_data_file = pathlib.Path(data_config.path, data_config.normalization_file)
     norm_data = pickle.load(open(norm_data_file, "rb"))
     mean, std = norm_data["mean"], norm_data["std"]
 

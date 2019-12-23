@@ -12,7 +12,7 @@ runs:
       model: {} # empty dictionnary, don't change anything
       data: {}
       train:
-        lr: 0.001 # overwrite config.train.lr
+        lr: 0.0001 # overwrite config.train.lr
 
   - sbatch:
       runtime: "00:30:00"
@@ -20,8 +20,17 @@ runs:
       conf_name: random-rates
     config:
       model: {}
-      data: {}
+      data:
+        use_snow_i:
+          sample: list
+          from: [true, false]
+        use_slope:
+          sample: list
+          from: [true, false]
+        use_elev:
+          sample: list
+          from: [true, false]
       train:
         lr:
-          sample: uniform
-          from: [0.00001, 0.01]
+          sample: log
+          from: [-5, -2]

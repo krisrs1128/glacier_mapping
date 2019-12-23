@@ -13,8 +13,8 @@
 # Copy and unzip the raw data to the compute node
 # this assumes you have the raw_data on your scratch space,
 # if it doesn't, you can copy it from /scratch/shimaa (everyone has read access)
-cp $SCRATCH/raw_glaciers_data.zip $SLURM_TMPDIR
-unzip $SLURM_TMPDIR/data/raw_glaciers_data.zip -d $SLURM_TMPDIR
+cp $SCRATCH/data/raw_glaciers_data.zip $SLURM_TMPDIR
+unzip $SLURM_TMPDIR/raw_glaciers_data.zip -d $SLURM_TMPDIR
 
 module load singularity/3.4
 cd $HOME/glacier_mapping

@@ -1,6 +1,7 @@
 *.npy
 *.csv
 *.tar.gz
+*.zip
 *.png
 *pycache*
 data/

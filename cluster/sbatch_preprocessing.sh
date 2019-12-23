@@ -18,9 +18,11 @@ unzip $SLURM_TMPDIR/raw_glaciers_data.zip -d $SLURM_TMPDIR
 
 module load singularity/3.4
 cd $HOME/glacier_mapping
+# TODO: put all in one command
 singularity exec --bind $SLURM_TMPDIR /scratch/sankarak/images/glaciers.sif python3 -W ignore -m src.slice_n_preprocess -c conf/preprocessing_conf.yaml
 singularity exec --bind $SLURM_TMPDIR /scratch/sankarak/images/glaciers.sif python3 -W ignore -m src.filter_debris_by_perc --data_path $SLURM_TMPDIR/data/sat_data.csv
-
+singularity exec --bind $SLURM_TMPDIR /scratch/sankarak/images/glaciers.sifpython3 -m src.normalize --base_dir $SLURM_TMPDIR/data
+singularity exec --bind $SLURM_TMPDIR /scratch/sankarak/images/glaciers.sifpython3 -m src.normalize --base_dir $SLURM_TMPDIR/data --data_file sat_data_p_deb.csv --normalization_data norm_p_deb.pkl
 
 # tar (compressing takes a huge time) and copy the processed data on $SCRATCH
 cd $SLURM_TMPDIR

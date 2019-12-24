@@ -148,6 +148,10 @@ if __name__ == '__main__':
                         **default_yaml["data"],
                         **(p["config"]["data"] if "data" in p["config"] else {}),
                     },
+                    "augmentation": {
+                        **default_yaml["augmentation"],
+                        **(p["config"]["augmentation"] if "augmentation" in p["config"] else {}),
+                    },
                 },
             }
         )

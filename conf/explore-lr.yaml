@@ -11,6 +11,7 @@ runs:
     config:
       model: {} # empty dictionnary, don't change anything
       data: {}
+      augmentation: {}
       train:
         lr: 0.0001 # overwrite config.train.lr
 
@@ -34,7 +35,7 @@ runs:
           sample: subset
           base: [0, 1, 2, 3, 4]
           from: [5, 6, 7, 8, 9]
-
+      augmentation: {}
       train:
         lr:
           sample: log

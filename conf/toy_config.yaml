@@ -30,6 +30,7 @@ data:
     use_elev: true
     mask_used: "debris_glacier"
     channels_to_inc: [0, 1, 2, 3, 4]
+    normalization_file: normalization_data.pkl
 
 augmentation:
     vflip: 0.5 # percent of time to do vertical flip

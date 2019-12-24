@@ -5,7 +5,7 @@ experiment:
 
 runs:
   - sbatch:
-      runtime: "00:30:00"
+      runtime: "02:00:00"
       message: fixed rate
       conf_name: explore-lr
     config:
@@ -15,7 +15,7 @@ runs:
         lr: 0.0001 # overwrite config.train.lr
 
   - sbatch:
-      runtime: "00:30:00"
+      runtime: "02:00:00"
       message: some random rates
       conf_name: random-rates
     config:

@@ -10,7 +10,7 @@ from src.dataset import GlacierDataset, loader
 from src.trainer import Trainer
 from src.unet import Unet
 from src.utils import  get_opts
-
+from src.cluster_utils import env_to_path
 
 def induce_config(data_config):
     inchannels = (len(data_config.channels_to_inc) +
@@ -60,6 +60,7 @@ if __name__ == "__main__":
     opts["model"]["inchannels"] = inchannels
     opts["model"]["outchannels"] = outchannels
     opts["train"]["multiclass"] = multiclass
+    opts["data"]["path"] = env_to_path(opts["data"]["path"])
 
     os.environ["WANDB_MODE"] = "dryrun"
     wandb.init(project="glacier-mapping", dir=str(output_path))

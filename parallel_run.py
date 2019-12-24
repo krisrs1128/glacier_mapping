@@ -160,7 +160,7 @@ if __name__ == '__main__':
         sbp = param["sbatch"]
 
         original_data_path = param["config"]["data"]["path"]
-        param["config"]["data"]["path"] = env_to_path("$SLURM_TMPDIR/data")
+        param["config"]["data"]["path"] = "$SLURM_TMPDIR/data"
         param["config"]["data"]["original_path"] = original_data_path
         conf_path = write_conf(run_dir, param)  # returns Path() from pathlib
         template_str = template(param, conf_path, run_dir)

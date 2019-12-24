@@ -25,9 +25,9 @@ data:
     year: "all"
     load_limit: -1 # Limit the number of samples per epoch | -1 to disable
     borders: false
-    use_snow_i: true
-    use_slope: true
-    use_elev: true
+    use_snow_i: false
+    use_slope: false
+    use_elev: false
     mask_used: "glacier"
     channels_to_inc: [0, 1, 2, 3, 4]
     normalization_file: normalization_data.pkl

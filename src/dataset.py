@@ -118,6 +118,8 @@ def loader(data_opts, train_opts, augment_opts, img_transform, mode="train"):
   """
   data_args = [data_opts["path"], data_opts["metadata"]]
   data_kargs = {"use_snow_i":data_opts["use_snow_i"],
+                "use_elev":data_opts["use_elev"],
+                "use_slope":data_opts["use_slope"],
                 "channels_to_inc":data_opts["channels_to_inc"],
                 "mask_used":data_opts["mask_used"],
                 "img_transform":img_transform,

@@ -291,5 +291,8 @@ def get_normalization(data_config):
     channels_std = [std[i] for i in channels]
 
     img_transform = T.Normalize(channels_mean, channels_std)
+    mean_t, std_t = torch.tensor(channels_mean), torch.tensor(channels_std)
+    inverse_transform = T.Compose([T.Normalize(torch.zeros_like(mean_t), 1 / std_t),
+                                   T.Normalize(- mean_t, torch.ones_like(std_t))])
 
-    return img_transform
+    return img_transform, inverse_transform

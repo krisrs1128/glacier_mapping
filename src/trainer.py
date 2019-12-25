@@ -8,12 +8,13 @@ import torch
 import wandb
 
 class Trainer:
-  def __init__(self, model, config, train_data, dev_data, test_data):
+  def __init__(self, model, config, train_data, dev_data, test_data, inverse_trans):
     self.model = model
     self.config = config
     self.train_data = train_data
     self.dev_data = dev_data
     self.test_data = test_data
+    self.inverse_trans = inverse_trans
     self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
   def train(self):
@@ -89,7 +90,7 @@ class Trainer:
         )
         if self.config.store_images and i % 10  == 0:
           act = utils.matching_act(self.config.multi_class)
-          wandb_imgs += utils.merged_image(img, mask, pred, act)
+          wandb_imgs += utils.merged_image(img, mask, pred, act, self.inverse_trans)
 
     wandb.log({f"{mode}_images": wandb_imgs}, step=epoch)
     return (epoch_loss / len(data)), {name: value/len(data) for name, value in epoch_metrics.items()}

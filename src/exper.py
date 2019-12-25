@@ -68,7 +68,7 @@ if __name__ == "__main__":
     wandb.config.update({"__message": parsed_opts.message})
 
     
-    img_transform = get_normalization(opts["data"])
+    img_transform, inverse_trans = get_normalization(opts["data"])
     model = Unet(**opts["model"])
     train_loader = loader(opts["data"], opts["train"], opts["augmentation"],
                           mode="train", img_transform=img_transform)
@@ -82,6 +82,7 @@ if __name__ == "__main__":
         opts["train"],
         train_loader,
         dev_loader,
-        test_loader
+        test_loader,
+        inverse_trans
     )
     trainer.train()

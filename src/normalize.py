@@ -23,6 +23,7 @@ if __name__ == '__main__':
 
     # calculate mean and std for all channels
     train_dataset = GlacierDataset(base_dir, data_file, mode='train',
+                                   use_slope=True, use_elev=True,
                                    use_snow_i=True, borders=True)
     channels, _, _ = train_dataset[0][0].shape
 

@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 from addict import Dict
-from rasterio.mask import mask as rasterio_mask
 import math
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 import pathlib
-import rasterio
-import torch
-import wandb
 import yaml
 
+import torch
+import wandb
+import numpy as np
+import matplotlib.pyplot as plt
+import rasterio
+from rasterio.mask import mask as rasterio_mask
 
 def crop_raster(raster_img, vector_data):
     """Crop a raster image according to given vector data and
@@ -301,14 +301,18 @@ def update_metrics(epoch_metrics, pred, mask, metric_fs, multi_class=False):
 
     return epoch_metrics
 
-
-def merged_image(img, mask, pred, act):
-    img, pred, mask = img[:, :3].cpu(), pred.unsqueeze(1).cpu(), mask.unsqueeze(1).cpu()
+def merged_image(img, mask, pred, act, inverse_transform):
+    img, pred, mask = img.cpu(), pred.unsqueeze(1).cpu(), mask.unsqueeze(1).cpu()
     pred = act(pred)
     result = []
     for j in range(img.shape[0]):
-        merged = np.concatenate([img[j], pred[j, [0, 0, 0]], mask[j, [0, 0, 0]]], axis=1)
-        merged = (merged.transpose(2, 1, 0) - np.min(merged))/ np.ptp(merged)
+        raw_img = inverse_transform(img[j])[:3]
+        raw_img = (raw_img - raw_img.min()) / np.ptp(raw_img)
+        merged = np.concatenate([raw_img,
+                                 pred[j, [0, 0, 0]],
+                                 mask[j, [0, 0, 0]]], axis=1)
+        merged = merged.transpose(2, 1, 0)
+        # merged = (merged.transpose(2, 1, 0) - np.min(merged))/ np.ptp(merged)
         result.append(wandb.Image(merged))
 
     return result

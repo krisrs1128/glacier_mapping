@@ -8,7 +8,7 @@
     		Nepal/
     		Bhutan/
       	2005/
-        	HKH/
+        		HKH/
 
 - 2010 and 2005 GEE images are corrected using 2000 images on corresonding tiles
 - The tiff files have slope and elevation as a seperate channel

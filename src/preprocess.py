@@ -254,8 +254,8 @@ def online_mean_and_sd(loader, channels):
         (torch.tensor, torch.tensor): (mean, std)"""
 
     cnt = 0
-    fst_moment = torch.empty(channels)
-    snd_moment = torch.empty(channels)
+    fst_moment = torch.zeros(channels)
+    snd_moment = torch.zeros(channels)
 
     for img, _ in loader:
         b, _, h, w = img.shape

@@ -1,0 +1,30 @@
+2019-12-25 20:12:27,895 DEBUG   MainThread:20531 [wandb_config.py:_load_defaults():83] wandb dir not provided, skipping defaults
+2019-12-25 20:12:27,922 DEBUG   MainThread:20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:28,677 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 398
+2019-12-25 20:12:28,703 DEBUG   MainThread:20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:28,855 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /files/shimaa/glacier-mapping/yy0h1ogu/file_stream HTTP/1.1" 200 311
+2019-12-25 20:12:28,954 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /files/shimaa/glacier-mapping/yy0h1ogu/file_stream HTTP/1.1" 200 311
+2019-12-25 20:12:29,028 DEBUG   MainThread:20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:29,218 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 1508
+2019-12-25 20:12:29,294 DEBUG   Thread-4  :20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:29,441 DEBUG   Thread-4  :20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 782
+2019-12-25 20:12:29,460 DEBUG   Thread-4  :20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): storage.googleapis.com:443
+2019-12-25 20:12:30,209 DEBUG   Thread-4  :20531 [connectionpool.py:_make_request():396] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/shimaa/glacier-mapping/yy0h1ogu/___batch_archive_1.tgz?Expires=1577322809&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=R22Pk9fNOUTAQxnv5TWYr2m%2BFWOA2IYwVMQpJ5a8gilURZODE%2FqKVQ4jZUSuhe0UiIcof9n19mWeSQ9hZ5IHoI1oDakqZBjgkEuz8ZMecpOi%2F7zz%2BYdz1ZCwQF0O1jOBOEisoZ%2B8cRQ4m05cUPmZii6HdbyNUJcD2lNwQEYHqT3Pr54dxWcAMPd3TXvX8ON%2BqVHNsUfEaGlY1OKCreJKOY8N6PqPvWhIup9CTX7bKjvMT%2BJ1hllrfAtLX7LZuadcVP9jZOrq3%2FP4I5%2F70IJxjyHLUszFjaM8DOhhz3Vrd18eD9vYltW7ffig4hIYvjHiW2L1I7SPu6g%2FlSGC5tnY4w%3D%3D HTTP/1.1" 200 0
+2019-12-25 20:12:31,617 DEBUG   Thread-1  :20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /files/shimaa/glacier-mapping/yy0h1ogu/file_stream HTTP/1.1" 200 308
+2019-12-25 20:12:31,695 DEBUG   MainThread:20531 [wandb_config.py:_load_defaults():83] wandb dir not provided, skipping defaults
+2019-12-25 20:12:31,746 DEBUG   MainThread:20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:32,527 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 406
+2019-12-25 20:12:32,565 DEBUG   MainThread:20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:33,258 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /files/shimaa/glacier-mapping/txadkri2/file_stream HTTP/1.1" 200 311
+2019-12-25 20:12:33,507 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /files/shimaa/glacier-mapping/txadkri2/file_stream HTTP/1.1" 200 311
+2019-12-25 20:12:33,584 DEBUG   MainThread:20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:34,345 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 1504
+2019-12-25 20:12:34,435 DEBUG   Thread-8  :20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:34,724 DEBUG   Thread-8  :20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 780
+2019-12-25 20:12:34,744 DEBUG   Thread-8  :20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): storage.googleapis.com:443
+2019-12-25 20:12:35,091 DEBUG   Thread-8  :20531 [connectionpool.py:_make_request():396] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/shimaa/glacier-mapping/txadkri2/___batch_archive_1.tgz?Expires=1577322814&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=T4pXpX8ompR1N3Js9%2B8sCnRJiIDtGxq9hrp3qomruDnz%2F7PnecT9gkBrMXO1mSKLGJz%2BRz%2B%2FvKKqXjFp0su4sVbu3CLBYNp1zGGP0BC1COVjrtC6BlIONaJ3mPNakJRGc2bAu4xVIy0m%2BnxTivWaT0%2FdGUhaAos9oanP6OQAeIJezWoeprSxmxckrcyTE2jbWRs%2BAS7g31JYU4bX9GEkIZLu1TJNI4EDnwfHXmlhsK9jwScO0rrII44l7LH0saIggqVtHKTaLB1mk09eKSrhnmw9v2kFJ4S%2FAR1YxjiAKnoNyni3vNXz9p7z65quCH7LV0ARqZzm0DotwWlMAQJEhQ%3D%3D HTTP/1.1" 200 0
+2019-12-25 20:12:36,222 DEBUG   Thread-5  :20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /files/shimaa/glacier-mapping/txadkri2/file_stream HTTP/1.1" 200 308
+2019-12-25 20:12:36,244 DEBUG   MainThread:20531 [wandb_config.py:_load_defaults():83] wandb dir not provided, skipping defaults
+2019-12-25 20:12:36,335 DEBUG   MainThread:20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-12-25 20:12:36,955 DEBUG   MainThread:20531 [connectionpool.py:_make_request():396] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 400
+2019-12-25 20:12:37,003 DEBUG   MainThread:20531 [connectionpool.py:_new_conn():815] Starting new HTTPS connection (1): api.wandb.ai:443

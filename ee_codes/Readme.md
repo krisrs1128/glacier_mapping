@@ -2,8 +2,8 @@
 
     EEImages/
     	2000/
-		Nepal/
-		Bhutan/
+			Nepal/
+			Bhutan/
     	2010/
     		Nepal/
     		Bhutan/

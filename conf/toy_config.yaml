@@ -20,10 +20,10 @@ train:
 # ---------------------------
 data:
     path: "./data" # Where's the data?
-    country: "all"
-    year: ['2000']
+    country: ["nepal"]
+    year: "all"
     metadata:  "sat_data.csv"
-    load_limit: 5 # Limit the number of samples per epoch | -1 to disable
+    load_limit: -1 # Limit the number of samples per epoch | -1 to disable
     borders: false
     use_snow_i: true
     use_slope: false

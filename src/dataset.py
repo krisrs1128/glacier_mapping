@@ -24,9 +24,11 @@ class GlacierDataset(Dataset):
         if mask_used == 'debris_glaciers':
             self.data = self.data[self.data.pseudo_debris_perc > 0]
         if country != 'all':
-            self.data = self.data[self.data["country"].isin(country)]
+            self.data = self.data[(self.data.train.isin(['dev', 'test']))
+                                  | (self.data["country"].isin(country))]
         if year != 'all':
-            self.data = self.data[self.data["year"].isin(year)]
+            self.data = self.data[(self.data.train.isin(['dev', 'test']))
+                                  | (self.data["year"].isin(year))]
         self.img_transform = img_transform
         self.borders = borders
         self.use_cropped = use_cropped

@@ -7,4 +7,5 @@
 data/
 notebooks/
 models/
+output/
 *.pyc

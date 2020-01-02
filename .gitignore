@@ -5,6 +5,7 @@
 *.png
 *pycache*
 data/
+images/
 notebooks/
 models/
 output/

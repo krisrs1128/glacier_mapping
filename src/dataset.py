@@ -93,21 +93,21 @@ class GlacierDataset(Dataset):
         return len(self.data)
 
 class AugmentedGlacierDataset(GlacierDataset):
-    def __init__(self, *args, hflip=0.5, vflip=0.5, rot_p=0.5, rot=30, img_transform=None, **kargs):
+    def __init__(self, *args, hflip=0.5, vflip=0.5, rot_p=0.5, rot=30, aug_transform=None, **kargs):
 
         super().__init__(*args, **kargs)
         self.hflip = hflip
         self.vflip = vflip
         self.rot_p = rot_p
         self.rot = (-rot, rot)
-        self.img_transform = img_transform
+        self.aug_transform = aug_transform
 
     def __getitem__(self, i):
         img, mask = super().__getitem__(i)
         img, mask = self.augment(img, mask)
         # transform after augmentation
-        if self.img_transform is not None:
-            img = self.img_transform(torch.tensor(img))
+        if self.aug_transform is not None:
+            img = self.aug_transform(torch.tensor(img))
         return img, mask
 
     def augment(self, img, mask):
@@ -124,21 +124,21 @@ def loader(data_opts, train_opts, augment_opts, img_transform, mode="train"):
   Loader for Experiment
   """
   data_args = [data_opts["path"], data_opts["metadata"]]
-  data_kargs = {"use_snow_i":data_opts["use_snow_i"],
-                "use_elev":data_opts["use_elev"],
-                "use_slope":data_opts["use_slope"],
-                "channels_to_inc":data_opts["channels_to_inc"],
-                "mask_used":data_opts["mask_used"],
-                "mode":mode,
-                "borders":data_opts["borders"],
-                "year":data_opts["year"],
-                "country":data_opts["country"]}
+  data_kargs = {"use_snow_i": data_opts["use_snow_i"],
+                "use_elev": data_opts["use_elev"],
+                "use_slope": data_opts["use_slope"],
+                "channels_to_inc": data_opts["channels_to_inc"],
+                "mask_used": data_opts["mask_used"],
+                "mode": mode,
+                "borders": data_opts["borders"],
+                "year": data_opts["year"],
+                "country": data_opts["country"]}
 
-  aug_kargs = {"hflip":augment_opts["hflip"],
-                "vflip":augment_opts["vflip"],
-                "rot_p":augment_opts["rotate_prop"],
-                "rot":augment_opts["rotate_degree"],
-                "img_transform":img_transform}
+  aug_kargs = {"hflip": augment_opts["hflip"],
+                "vflip": augment_opts["vflip"],
+                "rot_p": augment_opts["rotate_prop"],
+                "rot": augment_opts["rotate_degree"],
+                "aug_transform": img_transform}
 
   if mode == "train":
     dataset = AugmentedGlacierDataset(*data_args, **{**data_kargs, **aug_kargs})

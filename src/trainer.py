@@ -99,5 +99,5 @@ class Trainer:
     """Given an image segment it."""
     with torch.no_grad():
       pred = self.model(data)
-      act = matching_act(self.config.multi_class)
+      act = utils.matching_act(self.config.multi_class)
       return utils.get_pred_mask(pred, act=act, thresh=thresh)

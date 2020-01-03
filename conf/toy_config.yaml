@@ -33,6 +33,7 @@ data:
     normalization_file: normalization_data.pkl
 
 augmentation:
+    augment: True
     vflip: 0.5 # percent of time to do vertical flip
     hflip: 0.5 # percent of time to do horizontal flip
     rotate_prop: 0.5 # perecent of time to rotate

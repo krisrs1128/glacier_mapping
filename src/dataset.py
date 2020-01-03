@@ -93,9 +93,11 @@ class GlacierDataset(Dataset):
         return len(self.data)
 
 class AugmentedGlacierDataset(GlacierDataset):
-    def __init__(self, *args, hflip=0.5, vflip=0.5, rot_p=0.5, rot=30, aug_transform=None, **kargs):
+    def __init__(self, *args, augment, hflip=0.5, vflip=0.5, rot_p=0.5, rot=30,
+                 aug_transform=None, **kargs):
 
         super().__init__(*args, **kargs)
+        self.augment = augment
         self.hflip = hflip
         self.vflip = vflip
         self.rot_p = rot_p
@@ -104,7 +106,8 @@ class AugmentedGlacierDataset(GlacierDataset):
 
     def __getitem__(self, i):
         img, mask = super().__getitem__(i)
-        img, mask = self.augment(img, mask)
+        if self.augment:
+            img, mask = self.augment(img, mask)
         # transform after augmentation
         if self.aug_transform is not None:
             img = self.aug_transform(torch.tensor(img))
@@ -134,7 +137,8 @@ def loader(data_opts, train_opts, augment_opts, img_transform, mode="train"):
                 "year": data_opts["year"],
                 "country": data_opts["country"]}
 
-  aug_kargs = {"hflip": augment_opts["hflip"],
+  aug_kargs = {augment: augment_opts["augment"],
+                "hflip": augment_opts["hflip"],
                 "vflip": augment_opts["vflip"],
                 "rot_p": augment_opts["rotate_prop"],
                 "rot": augment_opts["rotate_degree"],

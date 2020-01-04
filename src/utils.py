@@ -230,7 +230,7 @@ def sample_param(sample_dict):
         value = 10 ** value
     elif sample_dict["sample"] == "subset":
         value = np.random.choice(sample_dict["from"],
-                                 np.random.choice(len(sample_dict["from"])),
+                                 np.random.choice(len(sample_dict["from"]) + 1),
                                  replace=False)
         value = sample_dict["base"] + list(value)
 

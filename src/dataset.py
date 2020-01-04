@@ -137,7 +137,7 @@ def loader(data_opts, train_opts, augment_opts, img_transform, mode="train"):
                 "year": data_opts["year"],
                 "country": data_opts["country"]}
 
-  aug_kargs = {augment: augment_opts["augment"],
+  aug_kargs = {"augment": augment_opts["augment"],
                 "hflip": augment_opts["hflip"],
                 "vflip": augment_opts["vflip"],
                 "rot_p": augment_opts["rotate_prop"],

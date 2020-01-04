@@ -252,11 +252,11 @@ def load_conf(path):
 def merge_defaults(extra_opts, conf_path):
     print("Loading params from", conf_path)
     result = load_conf(conf_path)
-    for group in ["model", "train", "data"]:
+    for group in ["model", "train", "data", "augmentation"]:
         if group in extra_opts:
             for k, v in extra_opts[group].items():
                 result[group][k] = v
-    for group in ["model", "train", "data"]:
+    for group in ["model", "train", "data", "augmentation"]:
         for k, v in result[group].items():
             if isinstance(v, dict):
                 v = sample_param(v)
@@ -273,7 +273,7 @@ def get_opts(conf_path):
         conf_path = pathlib.Path(__file__).parent.parent / "shared" / conf_name
         assert conf_path.exists()
 
-    return merge_defaults({"model": {}, "train": {}, "data": {}}, conf_path)
+    return merge_defaults({"model": {}, "train": {}, "data": {}, "augmentation": {}}, conf_path)
 
 
 def get_pred_mask(pred, act=torch.nn.Sigmoid(), thresh=0.5):

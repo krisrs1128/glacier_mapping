@@ -5,7 +5,7 @@ experiment:
 
 runs:
   - sbatch:
-      runtime: "02:00:00"
+      runtime: "03:00:00"
       message: fixed rate
       conf_name: explore-lr
     config:
@@ -16,7 +16,7 @@ runs:
         lr: 0.0001 # overwrite config.train.lr
 
   - sbatch:
-      runtime: "02:00:00"
+      runtime: "03:00:00"
       message: some random rates
       conf_name: random-rates
     config:
@@ -35,6 +35,14 @@ runs:
           sample: subset
           base: [0, 1, 2, 3, 4]
           from: [5, 6, 7, 8, 9]
+        country:
+          sample: subset
+          base: ["nepal"]
+          from: ["bhutan"]
+        year:
+          sample: subset
+          base: ["2000"]
+          from: ["2010"]
       augmentation:
         augment:
           sample: list
@@ -42,4 +50,4 @@ runs:
       train:
         lr:
           sample: log
-          from: [-5, -2]
+          from: [-5, -2.5]

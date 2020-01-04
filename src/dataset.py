@@ -107,13 +107,13 @@ class AugmentedGlacierDataset(GlacierDataset):
     def __getitem__(self, i):
         img, mask = super().__getitem__(i)
         if self.augment:
-            img, mask = self.augment(img, mask)
+            img, mask = self.augment_img(img, mask)
         # transform after augmentation
         if self.aug_transform is not None:
             img = self.aug_transform(torch.tensor(img))
         return img, mask
 
-    def augment(self, img, mask):
+    def augment_img(self, img, mask):
         img = TA.to_numpy_img(img)
         img, mask = TA.rotate(img, mask, self.rot, p=self.rot_p)
         img, mask = TA.flip(img, mask, 0, self.vflip)

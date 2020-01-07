@@ -88,10 +88,10 @@ if __name__ == '__main__':
             preprocess_country(base_dir, test_basin_path, dev_basin_path,
                                country, year, data_c, valid_c, split_c)
             
-        sat_path = base_dir / "sat_files"
-        dfs = []
-        for year_path in sat_path.iterdir():
-            for country_path in year_path.iterdir():
-                if (country_path / 'sat_data.csv').exists():
-                    dfs.append(pd.read_csv(country_path / 'sat_data.csv'))
-        pd.concat(dfs).to_csv(base_dir / 'sat_data.csv')
+    sat_path = base_dir / "sat_files"
+    dfs = []
+    for year_path in sat_path.iterdir():
+        for country_path in year_path.iterdir():
+            if (country_path / 'sat_data.csv').exists():
+                dfs.append(pd.read_csv(country_path / 'sat_data.csv'))
+    pd.concat(dfs).to_csv(base_dir / 'sat_data.csv')

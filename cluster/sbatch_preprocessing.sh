@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=6                # Ask for 6 CPUs
 #SBATCH --gres=gpu:1                     # Ask for 1 GPU
 #SBATCH --mem=32G                        # Ask for 32 GB of RAM
-#SBATCH --time=5:00:00                   # The job will run for 5 hours
+#SBATCH --time=13:00:00                   # The job will run for 13 hours
 #SBATCH -o /scratch/shimaa/logs/glaciers_preprocessing-%j.out  # Write the log in $SCRATCH
 #SBATCH -e /scratch/shimaa/logs/glaciers_preprocessing-%j.err  # Write the err in $SCRATCH
 

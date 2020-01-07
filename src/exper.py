@@ -45,7 +45,7 @@ if __name__ == "__main__":
             "-o",
             "--output_dir",
             type=str,
-            help="where the runs data should be stored"
+            help="where the runs data should be stored" 
     )
 
     # setup directories for output

@@ -25,3 +25,6 @@ if __name__ == '__main__':
                            axis=1)
     df['pseudo_debris_perc'] = debris_perc
     df.to_csv(data_path)
+
+    df_bebris = df[df.pseudo_debris_perc > 0]
+    df_bebris.to_csv(data_path.parent / 'sat_data_p_deb.csv')

@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 from collections import defaultdict
-import numpy as np
 import pathlib
+
+import numpy as np
+import torch
+import torchvision
+import wandb
+
 import src.metrics as mtr
 import src.utils as utils
-import torch
-import wandb
 
 class Trainer:
   def __init__(self, model, config, train_data, dev_data, test_data, inverse_trans):
@@ -72,9 +75,8 @@ class Trainer:
 
     data = getattr(self, f"{mode}_data")
     epoch_metrics = defaultdict(int)
-    wandb_imgs = []
     
-    for i, (img, mask) in enumerate(data):
+    for img, mask in data:
       with torch.no_grad():
         img, mask = img.to(self.device), mask.to(self.device)
         pred = self.model(img)
@@ -88,11 +90,16 @@ class Trainer:
           metric_fs,
           self.config.multi_class
         )
-        if self.config.store_images and i % 10  == 0:
-          act = utils.matching_act(self.config.multi_class)
-          wandb_imgs += utils.merged_image(img, mask, pred, act, self.inverse_trans)
 
-    wandb.log({f"{mode}_images": wandb_imgs}, step=epoch)
+
+    img, pred, mask = img.cpu(), pred.unsqueeze(1).cpu(), mask.unsqueeze(1).cpu()
+    act = utils.matching_act(self.config.multi_class)
+    pred = act(pred)
+    raw_img = self.inverse_trans(img[0])[:3]
+    raw_img = (raw_img - raw_img.min()) / np.ptp(raw_img)
+    wandb_img = torch.stack([raw_img, pred[0, [0, 0, 0]], mask[0, [0, 0, 0]]])
+    wandb.log({f"{mode}_images": wandb.Image(
+    	torchvision.utils.make_grid(wandb_img, normalize=True))}, step=epoch)
     return (epoch_loss / len(data)), {name: value/len(data) for name, value in epoch_metrics.items()}
 
   def predict(self, data, thresh=0.5):
@@ -101,3 +108,6 @@ class Trainer:
       pred = self.model(data)
       act = utils.matching_act(self.config.multi_class)
       return utils.get_pred_mask(pred, act=act, thresh=thresh)
+
+  def load_model(self, path):
+  	self.model = self.model.load_state_dict(torch.load(path))

@@ -97,7 +97,16 @@ def stitch_slices(slices, h, w, overlap=3):
     return stitched
 
 def tiff_to_seg(img, model_path, conf_path, normalization_folder, slice_size=(512, 512), overlap=6):
-    """From a tiff to seg"""
+    """From a tiff to seg
+    Args:
+        img (np.array): channel last numpy array that reprsents a tiff
+        model_path (str): the path to the model used in prediction
+        conf_path (str): the path to the config file used during training the model
+        normalization_folder (str): path to the parent folder of the normalization data 
+        slize_size (int, int): size of the slice used when slicing the tiff
+        overlap (int): how much overlap happens between slices
+    Returns:
+        np.array: the stitched prediction map"""
 
     conf = strip_conf(conf_path)
     conf["data"]["path"] = normalization_folder

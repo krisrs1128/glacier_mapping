@@ -56,20 +56,16 @@
                     <div style="padding-left:20px">
                         <div id="classList" class="classList">
                             <div class="radio">
-                                <button class="circle jscolor" data-class-name="water" data-jscolor="{valueElement:null,value:'0000FF',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
-                                <label class="selected"><input type="radio" name="new-class" class="radNewClass" value="water" checked>Water (<span id="label-counts-water">0</span> samples since last retrain)</label>
+                                <button class="circle jscolor" data-class-name="glacier" data-jscolor="{valueElement:null,value:'FCBA03',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
+                                <label class="selected"><input type="radio" name="new-class" class="radNewClass" value="glacier" checked>Glacier (<span id="label-counts-water">0</span> samples since last retrain)</label>
                             </div>
                             <div class="radio">
-                                <button class="circle jscolor" data-class-name="forest" data-jscolor="{valueElement:null,value:'008000',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
-                                <label><input type="radio" name="new-class" class="radNewClass" value="forest">Tree Canopy (<span id="label-counts-forest">0</span> samples since last retrain)</label>
+                                <button class="circle jscolor" data-class-name="other" data-jscolor="{valueElement:null,value:'008000',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
+                                <label><input type="radio" name="new-class" class="radNewClass" value="other">Non Glacier (<span id="label-counts-forest">0</span> samples since last retrain)</label>
                             </div>
                             <div class="radio">
-                                <button class="circle jscolor" data-class-name="field" data-jscolor="{valueElement:null,value:'80FF80',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
-                                <label><input type="radio" name="new-class" class="radNewClass" value="field">Field (<span id="label-counts-field">0</span> samples since last retrain)</label>
-                            </div>
-                            <div class="radio">
-                                <button class="circle jscolor" data-class-name="built" data-jscolor="{valueElement:null,value:'806060',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
-                                <label><input type="radio" name="new-class" class="radNewClass" value="built">Built (<span id="label-counts-built">0</span> samples since last retrain)</label>
+                                <button class="circle jscolor" data-class-name="debris" data-jscolor="{valueElement:null,value:'806060',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
+                                <label><input type="radio" name="new-class" class="radNewClass" value="debris">Debris (<span id="label-counts-built">0</span> samples since last retrain)</label>
                             </div>
                         </div>
                         <div style="text-align: center; margin-top:10px; margin-bottom:20px;">

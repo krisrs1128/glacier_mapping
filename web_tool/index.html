@@ -56,16 +56,20 @@
                     <div style="padding-left:20px">
                         <div id="classList">
                             <div class="radio">
-                                <button class="circle jscolor" data-class-name="Glacier" data-jscolor="{valueElement:null,value:'0000FF',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
-                                <label class="selected"><input type="radio" name="radClasses" class="radNewClass" value="Glacier" checked><span class="className">Glacier</span> (<span class="classCounts">0</span> samples since last retrain)</label>
+                                <button class="circle jscolor" data-class-name="Water" data-jscolor="{valueElement:null,value:'0000FF',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
+                                <label class="selected"><input type="radio" name="radClasses" class="radNewClass" value="Water" checked><span class="className">Water</span> (<span class="classCounts">0</span> samples since last retrain)</label>
                             </div>
                             <div class="radio">
-                                <button class="circle jscolor" data-class-name="Debris" data-jscolor="{valueElement:null,value:'008000',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
-                                <label><input type="radio" name="radClasses" class="radNewClass" value="Debris"><span class="className">Debris</span> (<span class="classCounts">0</span> samples since last retrain)</label>
+                                <button class="circle jscolor" data-class-name="Forest" data-jscolor="{valueElement:null,value:'008000',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
+                                <label><input type="radio" name="radClasses" class="radNewClass" value="Forest"><span class="className">Forest</span> (<span class="classCounts">0</span> samples since last retrain)</label>
                             </div>
                             <div class="radio">
-                                <button class="circle jscolor" data-class-name="Other" data-jscolor="{valueElement:null,value:'80FF80',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
-                                <label><input type="radio" name="radClasses" class="radNewClass" value="Other"><span class="className">Other</span> (<span class="classCounts">0</span> samples since last retrain)</label>
+                                <button class="circle jscolor" data-class-name="Field" data-jscolor="{valueElement:null,value:'80FF80',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
+                                <label><input type="radio" name="radClasses" class="radNewClass" value="Field"><span class="className">Field</span> (<span class="classCounts">0</span> samples since last retrain)</label>
+                            </div>
+                            <div class="radio">
+                                <button class="circle jscolor" data-class-name="Built" data-jscolor="{valueElement:null,value:'806060',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}"></button>
+                                <label><input type="radio" name="radClasses" class="radNewClass" value="Built"><span class="className">Built</span> (<span class="classCounts">0</span> samples since last retrain)</label>
                             </div>
                         </div>
                         <div style="text-align: center; margin-top:10px; margin-bottom:20px;">
@@ -238,6 +242,7 @@
             var logoControl = $("<div class='leaflet-control logo-area'></div>");
             logoControl.append("<span class='logo-text'>Microsoft AI for Earth</span>");
             logoControl.append("<br/>");
+            logoControl.append("<span class='logo-text-small'>Version: 0.7</span>");
             
             $(".leaflet-top.leaflet-left").append(logoControl)
 

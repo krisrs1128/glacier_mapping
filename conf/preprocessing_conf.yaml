@@ -1,5 +1,5 @@
 data:
-  data_path: "./data"
+  data_path: "$SLURM_TMPDIR/data"
   country: [] # list of countries to process, [] for all countries
   year: [] # list of years to process, [] for all years
   size: 512
@@ -12,6 +12,6 @@ validity_values:
                    # nan is due to having pixels outside of the origianl satelitle image
 
 spliting_values:
-  random_test: false # select test randomly or based on the Dudh_Koshi basin
+  random_split: false # select test randomly or based on the Dudh_Koshi basin
   dev_perc: 0.2
   test_perc: 0.2 # only used with random_test: true

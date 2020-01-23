@@ -54,8 +54,8 @@ def save_slice(data, save_loc, slice_type, img_name, num):
 
 
 def chunck_satelitte(img_path, labels, data_df, base_dir,
-                     borders=None, basin=None, size=(512, 512), crop=True,
-                     country=None, year=None):
+                     borders=None, test_basin=None, dev_basin=None,
+                     size=(512, 512), crop=True, country=None, year=None):
     """Chunck a given satelitte image with the related labels and save metadata.
     Args:
         img_path (str): the path to the image to chunck
@@ -90,8 +90,10 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
             cropped_slices = utils.slice_image(cropped_img, size=size)
 
     # mask and slice basin if provided
-    if basin is not None:
-        _, basin_slices = get_sliced_mask(img, basin, size=size)
+    if test_basin is not None:
+        _, test_basin_slices = get_sliced_mask(img, test_basin, size=size)
+    if dev_basin is not None:
+        _, dev_basin_slices = get_sliced_mask(img, dev_basin, size=size)
 
     # save slices and fill metadata
     for i, img_slice in enumerate(img_slices):
@@ -137,9 +139,13 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
                 data_dict['cropped_label'] = save_slice(cropped_label, save_loc,
                                                         'cropped_label', img_name, i)
 
-        if basin is not None:
-            is_basin = basin_slices[i] == 1
-            data_dict['basin_perc'] = is_basin.sum() / is_label.sum()
+        if test_basin is not None:
+            is_basin = test_basin_slices[i] == 1
+            data_dict['test_basin_perc'] = is_basin.sum() / is_label.sum()
+
+        if dev_basin is not None:
+            is_basin = dev_basin_slices[i] == 1
+            data_dict['dev_basin_perc'] = is_basin.sum() / is_label.sum()
 
         data_df = data_df.append(data_dict, ignore_index=True)
 
@@ -147,7 +153,7 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
 
 
 def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
-                     basin_path=None, size=(512, 512), year=None, country=None):
+                     test_basin_path=None, dev_basin_path=None, size=(512, 512), year=None, country=None):
     """Chunck all the images in a folder and construct their metadata.
     Args:
         sat_dir (str): the path of the directory
@@ -164,7 +170,8 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
     labels = geopandas.read_file(labels_path)
     borders = geopandas.read_file(
         borders_path) if borders_path is not None else None
-    basin = geopandas.read_file(basin_path) if basin_path is not None else None
+    test_basin = geopandas.read_file(test_basin_path) if test_basin_path is not None else None
+    dev_basin = geopandas.read_file(dev_basin_path) if dev_basin_path is not None else None
 
     columns = ['img_id', 'year', 'country', 'img_path', 'mask_path', 'border_path',
                'is_nan_perc', 'labels_perc', 'labeled_nan', 'in_border_perc',
@@ -179,17 +186,18 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
         
         img_path = os.path.join(sat_dir, f)
         sat_data = chunck_satelitte(
-            img_path, labels, sat_data, save_loc, borders=borders, basin=basin,
-            size=size, year=year, country=country)
+            img_path, labels, sat_data, save_loc, borders=borders, test_basin=test_basin,
+            dev_basin=dev_basin, size=size, year=year, country=country)
 
     sat_data.to_csv(os.path.join(df_loc, 'sat_data.csv'), index=False)
 
-def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
+def filter_images(sat_data_file, valid_cond_f, test_cond_f, dev_cond_f, save=True):
     """filter image according to metadata.
     Args:
         sat_data_file (str): path to satlitte imagery metadata
         valid_cond_f (function): function that returns if a slice is a valid slice or should be ignored
-        valid_cond_f (function): function that returns if a slice is a test slice
+        test_cond_f (function): function that returns if a slice is a test slice
+        dev_cond_f (function): function that returns if a slice is a dev slice
         save (bool): whether to save the resulting dataframe
     Returns:
         None or pd.Dataframe (metadata with column for train/test labels)
@@ -200,7 +208,9 @@ def filter_images(sat_data_file, valid_cond_f, test_cond_f, save=True):
     sat_data['train'] = 'invalid'
     sat_data.loc[sat_data.valid_data, 'train'] = 'train'
     test_cond = test_cond_f(sat_data) & (sat_data.valid_data)
+    dev_cond = dev_cond_f(sat_data) & (sat_data.valid_data)
     sat_data.loc[test_cond, 'train'] = 'test'
+    sat_data.loc[dev_cond, 'train'] = 'dev'
 
     if not save:
         return sat_data
@@ -244,8 +254,8 @@ def online_mean_and_sd(loader, channels):
         (torch.tensor, torch.tensor): (mean, std)"""
 
     cnt = 0
-    fst_moment = torch.empty(channels)
-    snd_moment = torch.empty(channels)
+    fst_moment = torch.zeros(channels)
+    snd_moment = torch.zeros(channels)
 
     for img, _ in loader:
         b, _, h, w = img.shape
@@ -267,7 +277,7 @@ def get_normalization(data_config):
     Returns:
         torchvision.transforms"""
         
-    norm_data_file = pathlib.Path(data_config.path, "normalization_data.pkl")
+    norm_data_file = pathlib.Path(data_config.path, data_config.normalization_file)
     norm_data = pickle.load(open(norm_data_file, "rb"))
     mean, std = norm_data["mean"], norm_data["std"]
 
@@ -281,5 +291,8 @@ def get_normalization(data_config):
     channels_std = [std[i] for i in channels]
 
     img_transform = T.Normalize(channels_mean, channels_std)
+    mean_t, std_t = torch.tensor(channels_mean), torch.tensor(channels_std)
+    inverse_transform = T.Compose([T.Normalize(torch.zeros_like(mean_t), 1 / std_t),
+                                   T.Normalize(- mean_t, torch.ones_like(std_t))])
 
-    return img_transform
+    return img_transform, inverse_transform

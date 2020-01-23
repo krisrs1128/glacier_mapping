@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 from addict import Dict
-from rasterio.mask import mask as rasterio_mask
 import math
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 import pathlib
-import rasterio
-import torch
-import wandb
 import yaml
 
+import torch
+import wandb
+import numpy as np
+import matplotlib.pyplot as plt
+import rasterio
+from rasterio.mask import mask as rasterio_mask
 
 def crop_raster(raster_img, vector_data):
     """Crop a raster image according to given vector data and
@@ -98,29 +98,34 @@ def get_mask(raster_img, vector_data, nan_value=0):
     return binary_mask
 
 
-def slice_image(img, size=(512, 512)):
+def slice_image(img, size=(512, 512), overlap=6):
     """Given an image slice according to size with no overlapping.
     Args:
         img (np.array): image to be sliced
         size tuple(int, int): size of the slice
+        overlap (int): how much the slices should overlap
     Returns:
         list of slices [np.array]"""
+    
     h, w = img.shape[:2]
-
-    h_slices = math.ceil(h / size[0])
-    w_slices = math.ceil(w / size[1])
+    
+    h_slices = math.ceil((h - 2 * overlap) / (size[0] - 2 * overlap))
+    w_slices = math.ceil((w - 2 * overlap) / (size[1] - 2 * overlap))
 
     slices = []
     for i in range(h_slices):
         for j in range(w_slices):
-            start_i, end_i = i * size[0], (i + 1) * size[0]
-            start_j, end_j = j * size[1], (j + 1) * size[1]
-
+            start_i = i * (size[0] - overlap)
+            end_i = start_i +  size[0]
+            start_j = j * (size[1] - overlap)
+            end_j = start_j + size[1]
+            
             # the last tile need to be of the same size as well
             if end_i > h:
                 start_i = -size[0]
             if end_j > w:
                 start_j = -size[1]
+                
             if img.ndim == 2:
                 slices.append(img[start_i:end_i, start_j:end_j])
             else:
@@ -225,6 +230,15 @@ def sample_param(sample_dict):
         value = np.random.choice(sample_dict["from"])
     elif sample_dict["sample"] == "uniform":
         value = np.random.uniform(*sample_dict["from"])
+    elif sample_dict["sample"] == "log":
+        value = np.random.uniform(*sample_dict["from"])
+        value = 10 ** value
+    elif sample_dict["sample"] == "subset":
+        value = np.random.choice(sample_dict["from"],
+                                 np.random.choice(len(sample_dict["from"]) + 1),
+                                 replace=False)
+        value = sample_dict["base"] + list(value)
+
     else:
         raise ValueError("Unknonw sample type in dict " + str(sample_dict))
     return value
@@ -243,11 +257,11 @@ def load_conf(path):
 def merge_defaults(extra_opts, conf_path):
     print("Loading params from", conf_path)
     result = load_conf(conf_path)
-    for group in ["model", "train", "data"]:
+    for group in ["model", "train", "data", "augmentation"]:
         if group in extra_opts:
             for k, v in extra_opts[group].items():
                 result[group][k] = v
-    for group in ["model", "train", "data"]:
+    for group in ["model", "train", "data", "augmentation"]:
         for k, v in result[group].items():
             if isinstance(v, dict):
                 v = sample_param(v)
@@ -264,7 +278,7 @@ def get_opts(conf_path):
         conf_path = pathlib.Path(__file__).parent.parent / "shared" / conf_name
         assert conf_path.exists()
 
-    return merge_defaults({"model": {}, "train": {}, "data": {}}, conf_path)
+    return merge_defaults({"model": {}, "train": {}, "data": {}, "augmentation": {}}, conf_path)
 
 
 def get_pred_mask(pred, act=torch.nn.Sigmoid(), thresh=0.5):
@@ -292,14 +306,21 @@ def update_metrics(epoch_metrics, pred, mask, metric_fs, multi_class=False):
 
     return epoch_metrics
 
-
-def merged_image(img, mask, pred, act):
-    img, pred, mask = img[:, :3].cpu(), pred.unsqueeze(1).cpu(), mask.unsqueeze(1).cpu()
+def merged_image(img, mask, pred, act, inverse_transform):
+    img, pred, mask = img.cpu(), pred.unsqueeze(1).cpu(), mask.unsqueeze(1).cpu()
     pred = act(pred)
     result = []
     for j in range(img.shape[0]):
-        merged = np.concatenate([img[j], pred[j, [0, 0, 0]], mask[j, [0, 0, 0]]], axis=1)
-        merged = (merged.transpose(2, 1, 0) - np.min(merged))/ np.ptp(merged)
+        raw_img = inverse_transform(img[j])[:3]
+        raw_img = (raw_img - raw_img.min()) / np.ptp(raw_img)
+        merged = np.concatenate([raw_img,
+                                 pred[j, [0, 0, 0]],
+                                 mask[j, [0, 0, 0]]], axis=1)
+        merged = merged.transpose(2, 1, 0)
+        # merged = (merged.transpose(2, 1, 0) - np.min(merged))/ np.ptp(merged)
         result.append(wandb.Image(merged))
 
     return result
+
+
+

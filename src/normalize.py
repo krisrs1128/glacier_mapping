@@ -11,14 +11,19 @@ from src.dataset import GlacierDataset
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--base_dir", default="./data", type=str,
-                        help="path of sat_data to normalize")
+                        help="path of base directory that has all the data")
+    parser.add_argument("--data_file", default="sat_data.csv", type=str,
+                        help="filtered sat_data to normalize")
+    parser.add_argument("--normalization_data", default="normalization_data.pkl", type=str,
+                        help="name of the normalization_data")
     args = parser.parse_args()
     base_dir = Path(args.base_dir)
 
-    data_file = 'sat_data.csv'
+    data_file = args.data_file
 
     # calculate mean and std for all channels
     train_dataset = GlacierDataset(base_dir, data_file, mode='train',
+                                   use_slope=True, use_elev=True,
                                    use_snow_i=True, borders=True)
     channels, _, _ = train_dataset[0][0].shape
 
@@ -26,5 +31,5 @@ if __name__ == '__main__':
     mean, std = online_mean_and_sd(normalization_loader, channels)
 
     norm_data = {'mean': mean, 'std':std}
-    save_loc = Path(base_dir, "normalization_data.pkl")
+    save_loc = Path(base_dir, args.normalization_data)
     pickle.dump(norm_data, open(save_loc, "wb"))

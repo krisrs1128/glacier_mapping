@@ -19,10 +19,23 @@ train:
 # -----    Data Conf    -----
 # ---------------------------
 data:
-    path: "/scratch/sankarak/data/glaciers/" # Where's the data?
+    path: "/scratch/shimaa/data/processed_glacier_data" # Where's the data?
     metadata:  "sat_data.csv"
+    country: "all"
+    year: "all"
     load_limit: -1 # Limit the number of samples per epoch | -1 to disable
     borders: false
-    use_snow_i: true
-    mask_used: "debris_glacier"
+    use_snow_i: false
+    use_slope: false
+    use_elev: false
+    mask_used: "glacier"
     channels_to_inc: [0, 1, 2, 3, 4]
+    normalization_file: normalization_data.pkl
+
+
+augmentation:
+    augment: true
+    vflip: 0.5 # percent of time to do vertical flip
+    hflip: 0.5 # percent of time to do horizontal flip
+    rotate_prop: 0.5 # perecent of time to rotate
+    rotate_degree: 30 # maximum allowed rotation

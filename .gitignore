@@ -1,9 +1,13 @@
 *.npy
 *.csv
 *.tar.gz
+*.zip
 *.png
 *pycache*
 data/
+images/
 notebooks/
 models/
+output/
 *.pyc
+wandb/

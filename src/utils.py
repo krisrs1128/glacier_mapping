@@ -98,29 +98,34 @@ def get_mask(raster_img, vector_data, nan_value=0):
     return binary_mask
 
 
-def slice_image(img, size=(512, 512)):
+def slice_image(img, size=(512, 512), overlap=6):
     """Given an image slice according to size with no overlapping.
     Args:
         img (np.array): image to be sliced
         size tuple(int, int): size of the slice
+        overlap (int): how much the slices should overlap
     Returns:
         list of slices [np.array]"""
+    
     h, w = img.shape[:2]
-
-    h_slices = math.ceil(h / size[0])
-    w_slices = math.ceil(w / size[1])
+    
+    h_slices = math.ceil((h - 2 * overlap) / (size[0] - 2 * overlap))
+    w_slices = math.ceil((w - 2 * overlap) / (size[1] - 2 * overlap))
 
     slices = []
     for i in range(h_slices):
         for j in range(w_slices):
-            start_i, end_i = i * size[0], (i + 1) * size[0]
-            start_j, end_j = j * size[1], (j + 1) * size[1]
-
+            start_i = i * (size[0] - overlap)
+            end_i = start_i +  size[0]
+            start_j = j * (size[1] - overlap)
+            end_j = start_j + size[1]
+            
             # the last tile need to be of the same size as well
             if end_i > h:
                 start_i = -size[0]
             if end_j > w:
                 start_j = -size[1]
+                
             if img.ndim == 2:
                 slices.append(img[start_i:end_i, start_j:end_j])
             else:
@@ -316,3 +321,6 @@ def merged_image(img, mask, pred, act, inverse_transform):
         result.append(wandb.Image(merged))
 
     return result
+
+
+

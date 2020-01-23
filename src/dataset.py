@@ -15,7 +15,8 @@ torch.manual_seed(10)
 class GlacierDataset(Dataset):
     def __init__(self, base_dir, data_file, channels_to_inc=None, img_transform=None,
                  mode='train', borders=False, use_cropped=True, use_snow_i=False,
-                 use_elev=True, use_slope=True, mask_used='glacier', country='all', year='all'):
+                 use_elev=True, use_slope=True, mask_used='glacier',
+                 country='all', year='all'):
         super().__init__()
         self.base_dir = base_dir
         data_path = Path(base_dir, data_file)

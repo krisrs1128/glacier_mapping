@@ -10,3 +10,4 @@ notebooks/
 models/
 output/
 *.pyc
+wandb/

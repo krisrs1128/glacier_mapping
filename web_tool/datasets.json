@@ -1,0 +1,77 @@
+{
+    "hcmc_sentinel": {
+        "metadata": {
+            "displayName": "Ho Chi Minh City, Vietnam",
+            "imageryName": "Sentinel Imagery",
+            "locationName": null
+        },
+        "dataLayer": {
+            "type": "CUSTOM",
+            "path": "tiles/hcmc_sentinel.tif",
+            "padding": 1100
+        },
+        "basemapLayer": {
+            "initialZoom": 11,
+            "url": "tiles/hcmc_sentinel_tiles/{z}/{x}/{y}.png",
+            "initialLocation": [ 10.682, 106.752 ],
+            "args": {
+                "attribution": "Georeferenced Image",
+                "tms": true,
+                "maxNativeZoom": 16,
+                "maxZoom": 20,
+                "minZoom": 10
+            },
+            "bounds": null
+        },
+        "shapeLayers": [
+            {
+                "shapesFn": "shapes/hcmc_sentinel_admin_1_clipped.geojson",
+                "zoneNameKey": "NAME_1",
+                "name": "Provinces"
+            },
+            {
+                "shapesFn": "shapes/hcmc_sentinel_admin_2_clipped.geojson",
+                "zoneNameKey": "NAME_2",
+                "name": "Districts"
+            },
+            {
+                "shapesFn": "shapes/hcmc_sentinel_admin_3_clipped.geojson",
+                "zoneNameKey": "NAME_3",
+                "name": "Wards"
+            }
+        ]
+    },
+    "hkh_landsat": {
+        "metadata": {
+            "displayName": "Hindu Kush Himalaya",
+            "imageryName": "Landsat Imagery",
+            "locationName": null
+        },
+        "dataLayer": {
+            "type": "CUSTOM",
+            "path": "tiles/hkh.tif",
+            "padding": 1100
+        },
+        "basemapLayer": {
+            "initialZoom": 11,
+            "url": "tiles/hkh_landsat_tiles/{z}/{x}/{y}.png",
+            "initialLocation": [ 36.8922, 73.2633],
+            "args": {
+                "attribution": "Georeferenced Image",
+                "tms": true,
+                "maxNativeZoom": 16,
+                "maxZoom": 20,
+                "minZoom": 10
+            },
+            "bounds": null
+        },
+        "shapeLayers": [
+            {
+                "shapesFn": "shapes/hcmc_sentinel_admin_1_clipped.geojson",
+                "zoneNameKey": "HKH",
+                "name": "Area Boundaries"
+            }
+        ]
+        
+    }
+}

@@ -1,19 +1,17 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-# pylint: disable=E1137,E1136,E0110
+# pylint: disable=E1137,E1136,E0110,E1101
 import sys
 import os
 import time
 import datetime
 import collections
-
-import bottle
-
 import argparse
 import base64
 import json
 import uuid
+import threading
 
 import numpy as np
 import cv2
@@ -24,132 +22,61 @@ import fiona.transform
 import rasterio
 import rasterio.warp
 
-import mercantile
-
 import pickle
 import joblib
 
-from azure.cosmosdb.table.tableservice import TableService
-from azure.cosmosdb.table.models import Entity
-
 from DataLoader import warp_data_to_3857, crop_data_by_extent
 from Heatmap import Heatmap
-from Datasets import DATASETS
-from Utils import get_random_string, class_prediction_to_img, get_shape_layer_by_name, AtomicCounter
 
-from ServerModelsKerasDense import KerasDenseFineTune
+from Datasets import load_datasets, get_area_from_geometry
+DATASETS = load_datasets()
+
+from Utils import get_random_string, class_prediction_to_img, get_shape_layer_by_name, AtomicCounter
 
 from web_tool import ROOT_DIR
 
+import bottle 
+bottle.TEMPLATE_PATH.insert(0, "./" + ROOT_DIR + "/views") # let bottle know where we are storing the template files
 
-class Session():
-    ''' Currently this is a totally static class, however this is what needs to change if we are to support multiple sessions.
+import cheroot.wsgi
+import beaker.middleware
+
+from log import setup_logging, LOGGER
+
+from Session import Session, manage_session_folders, SESSION_FOLDER
+from SessionHandler import SessionHandler
+SESSION_HANDLER = None
+
+
+#---------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------
+
+
+def setup_sessions():
+    '''This method is called before every request. Adds the beaker SessionMiddleware on as request.session.
     '''
-    storage_type = None # this will be "table" or "file"
-    storage_path = None # this will be a file path
-    table_service = None # this will be an instance of TableService
+    bottle.request.session = bottle.request.environ['beaker.session']
+    bottle.request.client_ip = bottle.request.environ.get('HTTP_X_FORWARDED_FOR') or bottle.request.environ.get('REMOTE_ADDR')
 
-    gpuid = None
 
-    model = None
-    current_transform = ()
+def manage_sessions():
+    '''This method is called before every request. Checks to see if there a session assosciated with the current request.
+    If there is then update the last interaction time on that session.
+    '''
 
-    current_snapshot_string = get_random_string(8)
-    current_snapshot_idx = 0
-    current_request_counter = AtomicCounter()
-    request_list = []
+    if SESSION_HANDLER.is_expired(bottle.request.session.id): # Someone is trying to use a session that we have deleted due to inactivity
+        SESSION_HANDLER.cleanup_expired_session(bottle.request.session.id)
+        bottle.request.session.delete() # TODO: I'm not sure how the actual session is deleted on the client side
+        LOGGER.info("Cleaning up an out of date session")
+    elif not SESSION_HANDLER.is_active(bottle.request.session.id):
+        LOGGER.warning("We are getting a request that doesn't have an active session")
+    else:
+        SESSION_HANDLER.touch_session(bottle.request.session.id) # let the SESSION_HANDLER know that this session has activity
 
-    @staticmethod
-    def reset(soft=False, from_cached=None):
-        if not soft:
-            Session.model.reset() # can't fail, so don't worry about it
-        Session.current_snapshot_string = get_random_string(8)
-        Session.current_snapshot_idx = 0
-        Session.current_request_counter = AtomicCounter()
-        Session.request_list = []
-
-        if Session.storage_type == "table":
-            Session.table_service.insert_entity("webtoolsessions",
-            {
-                "PartitionKey": str(np.random.randint(0,8)),
-                "RowKey": str(uuid.uuid4()),
-                "session_id": Session.current_snapshot_string,
-                "server_hostname": os.uname()[1],
-                "server_sys_argv": ' '.join(sys.argv),
-                "base_model": from_cached
-            })
-
-    @staticmethod
-    def load(encoded_model_fn):
-        model_fn = base64.b64decode(encoded_model_fn).decode('utf-8')
-
-        print(model_fn)
-
-        del Session.model
-        Session.model = joblib.load(model_fn)
-
-    @staticmethod
-    def save(model_name):
-
-        if Session.storage_type is not None:
-            assert Session.storage_path is not None # we check for this when starting the program
-
-            snapshot_id = "%s_%d" % (model_name, Session.current_snapshot_idx)
-            
-            print("Saving state for %s" % (snapshot_id))
-            base_dir = os.path.join(Session.storage_path, Session.current_snapshot_string)
-            if not os.path.exists(base_dir):
-                os.makedirs(base_dir, exist_ok=False)
-            
-            model_fn = os.path.join(base_dir, "%s_model.p" % (snapshot_id))
-            joblib.dump(Session.model, model_fn, protocol=pickle.HIGHEST_PROTOCOL)
-
-            if Session.storage_type == "file":
-                request_list_fn = os.path.join(base_dir, "%s_request_list.p" % (snapshot_id))
-                joblib.dump(Session.request_list, request_list_fn, protocol=pickle.HIGHEST_PROTOCOL)
-            elif Session.storage_type == "table":
-                # We don't serialize the request list when saving to table storage
-                pass
-
-            Session.current_snapshot_idx += 1
-            return base64.b64encode(model_fn.encode('utf-8')).decode('utf-8') # this is super dumb
-        else:
-            return None
-    
-    @staticmethod
-    def add_entry(data):
-        client_ip = bottle.request.environ.get('HTTP_X_FORWARDED_FOR') or bottle.request.environ.get('REMOTE_ADDR')
-        data = data.copy()
-        data["time"] = datetime.datetime.now()
-        data["remote_address"] = client_ip
-        data["current_snapshot_index"] = Session.current_snapshot_idx
-        current_request_counter = Session.current_request_counter.increment()
-        data["current_request_index"] = current_request_counter
-
-        assert "experiment" in data
-
-        if Session.storage_type == "file":
-            Session.request_list.append(data)
-        
-        elif Session.storage_type == "table":
-
-            data["PartitionKey"] = Session.current_snapshot_string
-            data["RowKey"] = "%s_%d" % (data["experiment"], current_request_counter)
-
-            for k in data.keys():
-                if isinstance(data[k], dict) or isinstance(data[k], list):
-                    data[k] = json.dumps(data[k])
-            
-            try:
-                Session.table_service.insert_entity("webtoolinteractions", data)
-            except Exception as e:
-                print(e)
-        else:
-            # The storage_type / --storage_path command line args were not set
-            pass
 
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
+
 
 def enable_cors():
     '''From https://gist.github.com/richard-flosi/3789163
@@ -160,22 +87,39 @@ def enable_cors():
     bottle.response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
     bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
+
 def do_options():
     '''This method is necessary for CORS to work (I think --Caleb)
     '''
     bottle.response.status = 204
     return
 
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
-
-def do_heatmap(z,y,x):
-    bottle.response.content_type = 'image/jpeg'
-    x = x.split("?")[0]
-    return Heatmap.get(int(z),int(y),int(x))
 
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
+
+
+def create_session():
+    bottle.response.content_type = 'application/json'
+    data = bottle.request.json
+
+    SESSION_HANDLER.create_session(bottle.request.session.id, data["model"])
+    
+    bottle.response.status = 200
+    return json.dumps(data)
+
+
+def kill_session():
+    bottle.response.content_type = 'application/json'
+    data = bottle.request.json
+
+    SESSION_HANDLER.kill_session(bottle.request.session.id)
+    SESSION_HANDLER.cleanup_expired_session(bottle.request.session.id)
+    bottle.request.session.delete()
+
+    bottle.response.status = 200
+    return json.dumps(data)
+
 
 def do_load():
     bottle.response.content_type = 'application/json'
@@ -183,8 +127,8 @@ def do_load():
     
     cached_model = data["cachedModel"]
 
-    Session.reset(False, from_cached=cached_model)
-    Session.load(cached_model)
+    SESSION_HANDLER.get_session(bottle.request.session.id).reset(False, from_cached=cached_model)
+    SESSION_HANDLER.get_session(bottle.request.session.id).load(cached_model)
 
     data["message"] = "Loaded new model from %s" % (cached_model)
     data["success"] = True
@@ -192,17 +136,18 @@ def do_load():
     bottle.response.status = 200
     return json.dumps(data)
 
+
 def reset_model():
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
+    data["remote_address"] = bottle.request.client_ip
     
     initial_reset = data.get("initialReset", False)
     if not initial_reset:
-        Session.add_entry(data) # record this interaction
-        Session.save(data["experiment"])
+        SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
+        SESSION_HANDLER.get_session(bottle.request.session.id).save(data["experiment"])
 
-    Heatmap.reset()
-    Session.reset()
+    SESSION_HANDLER.get_session(bottle.request.session.id).reset()
 
     data["message"] = "Reset model"
     data["success"] = True
@@ -210,17 +155,19 @@ def reset_model():
     bottle.response.status = 200
     return json.dumps(data)
 
+
 def retrain_model():
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
+    data["remote_address"] = bottle.request.client_ip
     
-    success, message = Session.model.retrain(**data["retrainArgs"])
+    success, message = SESSION_HANDLER.get_session(bottle.request.session.id).model.retrain(**data["retrainArgs"])
     
     if success:
         bottle.response.status = 200
-        encoded_model_fn = Session.save(data["experiment"])
+        encoded_model_fn = SESSION_HANDLER.get_session(bottle.request.session.id).save(data["experiment"])
         data["cached_model"] = encoded_model_fn 
-        Session.add_entry(data) # record this interaction
+        SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
     else:
         data["error"] = message
         bottle.response.status = 500
@@ -230,10 +177,13 @@ def retrain_model():
 
     return json.dumps(data)
 
+
 def record_correction():
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
-    Session.add_entry(data) # record this interaction
+    data["remote_address"] = bottle.request.client_ip
+
+    SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
 
     #
     tlat, tlon = data["extent"]["ymax"], data["extent"]["xmin"]
@@ -244,13 +194,11 @@ def record_correction():
     class_idx = data["value"] # what we want to switch the class to
     origin_crs = "epsg:%d" % (data["extent"]["spatialReference"]["latestWkid"])
 
-    # Add a click to the heatmap
+    # record points in lat/lon
     xs, ys = fiona.transform.transform(origin_crs, "epsg:4326", [tlon], [tlat])
-    tile = mercantile.tile(xs[0], -ys[0], 17)
-    Heatmap.increment(tile.z, tile.y, tile.x)
 
     #
-    naip_crs, naip_transform, naip_index = Session.current_transform
+    naip_crs, naip_transform, naip_index = SESSION_HANDLER.get_session(bottle.request.session.id).current_transform
 
     xs, ys = fiona.transform.transform(origin_crs, naip_crs.to_dict(), [tlon,blon], [tlat,blat])
     
@@ -269,7 +217,7 @@ def record_correction():
     tdst_row, bdst_row = min(tdst_row, bdst_row), max(tdst_row, bdst_row)
     tdst_col, bdst_col = min(tdst_col, bdst_col), max(tdst_col, bdst_col)
 
-    Session.model.add_sample(tdst_row, bdst_row, tdst_col, bdst_col, class_idx)
+    SESSION_HANDLER.get_session(bottle.request.session.id).model.add_sample(tdst_row, bdst_row, tdst_col, bdst_col, class_idx)
     num_corrected = (bdst_row-tdst_row) * (bdst_col-tdst_col)
 
     data["message"] = "Successfully submitted correction"
@@ -279,15 +227,18 @@ def record_correction():
     bottle.response.status = 200
     return json.dumps(data)
 
+
 def do_undo():
     ''' Method called for POST `/doUndo`
     '''
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
-    Session.add_entry(data) # record this interaction
+    data["remote_address"] = bottle.request.client_ip
+
+    SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
 
     # Forward the undo command to the backend model
-    success, message, num_undone = Session.model.undo()
+    success, message, num_undone = SESSION_HANDLER.get_session(bottle.request.session.id).model.undo()
     data["message"] = message
     data["success"] = success
     data["count"] = num_undone
@@ -295,11 +246,14 @@ def do_undo():
     bottle.response.status = 200
     return json.dumps(data)
 
+
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
-    Session.add_entry(data) # record this interaction
+    data["remote_address"] = bottle.request.client_ip
+
+    SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
 
     # Inputs
     extent = data["extent"]
@@ -324,7 +278,7 @@ def pred_patch():
 
     naip_data, naip_crs, naip_transform, naip_bounds, naip_index = DATASETS[dataset]["data_loader"].get_data_from_extent(extent)
     naip_data = np.rollaxis(naip_data, 0, 3) # we do this here instead of get_data_by_extent because not all GeoDataTypes will have a channel dimension
-    Session.current_transform = (naip_crs, naip_transform, naip_index)
+    SESSION_HANDLER.get_session(bottle.request.session.id).current_transform = (naip_crs, naip_transform, naip_index)
 
     # ------------------------------------------------------
     # Step 3
@@ -332,7 +286,7 @@ def pred_patch():
     #   Apply reweighting
     #   Fix padding
     # ------------------------------------------------------
-    output = Session.model.run(naip_data, extent, False)
+    output = SESSION_HANDLER.get_session(bottle.request.session.id).model.run(naip_data, extent, False)
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
     assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
 
@@ -362,13 +316,15 @@ def pred_patch():
 
 
 def pred_tile():
-    ''' Method called for POST `/predPatch`'''
+    ''' Method called for POST `/predTile`'''
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
-    Session.add_entry(data) # record this interaction
+    data["remote_address"] = bottle.request.client_ip
+
+    SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
 
     # Inputs
-    extent = data["extent"]
+    geom = data["polygon"]
     class_list = data["classes"]
     name_list = [item["name"] for item in class_list]
     color_list = [item["color"] for item in class_list]
@@ -379,15 +335,14 @@ def pred_tile():
         raise ValueError("Dataset doesn't seem to be valid, do the datasets in js/tile_layers.js correspond to those in TileLayers.py")    
     
     try:
-        naip_data, raster_profile, raster_transform, raster_bounds, raster_crs = DATASETS[dataset]["data_loader"].get_data_from_shape_by_extent(extent, zone_layer_name)
+        naip_data, raster_profile, raster_transform, raster_bounds, raster_crs = DATASETS[dataset]["data_loader"].get_data_from_shape(geom["geometry"])
         naip_data = np.rollaxis(naip_data, 0, 3)
-        shape_area = DATASETS[dataset]["data_loader"].get_area_from_shape_by_extent(extent, zone_layer_name)      
+        shape_area = get_area_from_geometry(geom["geometry"])      
     except NotImplementedError as e:
         bottle.response.status = 400
         return json.dumps({"error": "Cannot currently download imagery with 'Basemap' based datasets"})
 
-
-    output = Session.model.run(naip_data, extent, True)
+    output = SESSION_HANDLER.get_session(bottle.request.session.id).model.run(naip_data, geom, True)
     output_hard = output.argmax(axis=2)
     print("Finished, output dimensions:", output.shape)
 
@@ -405,7 +360,7 @@ def pred_tile():
     img_hard = cv2.cvtColor(img_hard, cv2.COLOR_RGB2BGRA)
     img_hard[nodata_mask] = [0,0,0,0]
 
-    img_hard, img_hard_bounds = warp_data_to_3857(img_hard, raster_crs, raster_transform, raster_bounds, resolution=1)
+    img_hard, img_hard_bounds = warp_data_to_3857(img_hard, raster_crs, raster_transform, raster_bounds, resolution=10)
 
     cv2.imwrite(os.path.join(ROOT_DIR, "downloads/%s.png" % (tmp_id)), img_hard)
     data["downloadPNG"] = "downloads/%s.png" % (tmp_id)
@@ -445,7 +400,9 @@ def get_input():
     '''
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
-    Session.add_entry(data) # record this interaction
+    data["remote_address"] = bottle.request.client_ip
+
+    SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
 
     # Inputs
     extent = data["extent"]
@@ -470,55 +427,16 @@ def get_input():
     return json.dumps(data)
 
 
-def get_input_metadata():
-    ''' Method called for POST `/getInputMetadata`
-    '''
-    bottle.response.content_type = 'application/json'
-    data = bottle.request.json
-    #Session.add_entry(data) # record this interaction
+def whoami():
+    return str(bottle.request.session) + " " + str(bottle.request.session.id)
 
-    # Inputs
-    extent = data["extent"]
-    dataset = data["dataset"]
-
-    if dataset not in DATASETS:
-        raise ValueError("Dataset doesn't seem to be valid, please check Datasets.py")
-
-    naip_fn = DATASETS[dataset]["data_loader"].get_metadata_from_extent(extent)
-    
-    data["input_fn"] = naip_fn
-
-    bottle.response.status = 200
-    return json.dumps(data)
 
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 
-def get_root_app():
-    return bottle.static_file("index.html", root="./" + ROOT_DIR + "/")
 
-def get_datasets():
-    tile_layers = "var tileLayers = {\n"
-    for dataset_name, dataset in DATASETS.items():
-        tile_layers += '"%s": %s,\n' % (dataset_name, dataset["javascript_string"])
-    tile_layers += "};"
-    
-    interesting_locations = '''var interestingLocations = [
-        L.marker([47.60, -122.15]).bindPopup('Bellevue, WA'),
-        L.marker([39.74, -104.99]).bindPopup('Denver, CO'),
-        L.marker([37.53,  -77.44]).bindPopup('Richmond, VA'),
-        L.marker([39.74, -104.99]).bindPopup('Denver, CO'),
-        L.marker([37.53,  -77.44]).bindPopup('Richmond, VA'),
-        L.marker([33.746526, -84.387522]).bindPopup('Atlanta, GA'),
-        L.marker([32.774250, -96.796122]).bindPopup('Dallas, TX'),
-        L.marker([40.106675, -88.236409]).bindPopup('Champaign, IL'),
-        L.marker([38.679485, -75.874667]).bindPopup('Dorchester County, MD'),
-        L.marker([34.020618, -118.464412]).bindPopup('Santa Monica, CA'),
-        L.marker([37.748517, -122.429771]).bindPopup('San Fransisco, CA'),
-        L.marker([38.601951, -98.329227]).bindPopup('Ellsworth County, KS')
-    ];'''
-
-    return tile_layers + '\n\n' + interesting_locations
+def get_landing_page():
+    return bottle.static_file("landing_page.html", root="./" + ROOT_DIR + "/")
 
 def get_favicon():
     return
@@ -526,14 +444,18 @@ def get_favicon():
 def get_everything_else(filepath):
     return bottle.static_file(filepath, root="./" + ROOT_DIR + "/")
 
+
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Backend Server")
+    global SESSION_HANDLER
+    parser = argparse.ArgumentParser(description="AI for Earth Land Cover")
 
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose debugging", default=False)
 
+    # TODO: make sure the storage type is passed onto the Session objects
     parser.add_argument(
         '--storage_type',
         action="store", dest="storage_type", type=str,
@@ -543,59 +465,47 @@ def main():
     parser.add_argument("--storage_path", action="store", dest="storage_path", type=str, help="Path to directory where output will be stored", default=None)
 
     parser.add_argument("--host", action="store", dest="host", type=str, help="Host to bind to", default="0.0.0.0")
-    parser.add_argument("--port", action="store", dest="port", type=int, help="Port to listen on", default=4444)
-    parser.add_argument("--model", action="store", dest="model",
-        choices=[
-            "keras_dense"
-        ],
-        help="Model to use", required=True
-    )
-    parser.add_argument("--fine_tune_seed_data_fn", action="store", dest="fine_tune_seed_data_fn", type=str, help="Path to npz containing seed data to use", default=None)
-    parser.add_argument("--fine_tune_layer", action="store", dest="fine_tune_layer", type=int, help="Layer of model to fine tune", default=-2)
+    parser.add_argument("--port", action="store", dest="port", type=int, help="Port to listen on", default=8080)
 
 
-    parser.add_argument("--model_fn", action="store", dest="model_fn", type=str, help="Model fn to use", default=None)
-    parser.add_argument("--gpu", action="store", dest="gpuid", type=int, help="GPU to use", default=None)
+    subparsers = parser.add_subparsers(dest="subcommand", help='Help for subcommands') # TODO: If we use Python3.7 we can use the required keyword here
+    parser_a = subparsers.add_parser('local', help='For running models on the local server')
+
+    parser_b = subparsers.add_parser('remote', help='For running models with RPC calls')
+    parser.add_argument("--remote_host", action="store", dest="remote_host", type=str, help="RabbitMQ host", default="0.0.0.0")
+    parser.add_argument("--remote_port", action="store", dest="remote_port", type=int, help="RabbitMQ port", default=8080)
 
     args = parser.parse_args(sys.argv[1:])
 
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "" if args.gpuid is None else str(args.gpuid)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
-    model = None
-    if args.model == "keras_dense":
-        model = KerasDenseFineTune(args.model_fn, args.gpuid, args.fine_tune_layer, args.fine_tune_seed_data_fn)
+    # create Session factory to use based on whether we are running locally or remotely
+    run_local = None
+    if args.subcommand == "local":
+        print("Sessions will be spawned on the local machine")
+        run_local = True
+    elif args.subcommand == "remote":
+        print("Sessions will be spawned remotely")
+        run_local = False
     else:
-        raise NotImplementedError("The given model type is not implemented yet.")
+        print("Must specify 'local' or 'remote' on command line")
+        return
+    SESSION_HANDLER = SessionHandler(run_local, args)
+    SESSION_HANDLER.start_monitor()
 
-    if args.storage_type == "file":
-        assert args.storage_path is not None, "You must specify a storage path if you select the 'path' storage type"
-        Session.storage_path = args.storage_path
-    elif args.storage_type == "table":
-        assert args.storage_path is not None, "You must specify a storage path if you select the 'table' storage type"
-        Session.storage_path = args.storage_path
-
-        assert "AZURE_ACCOUNT_NAME" in os.environ
-        assert "AZURE_ACCOUNT_KEY" in os.environ
-
-        Session.table_service = TableService(
-            account_name=os.environ['AZURE_ACCOUNT_NAME'],
-            account_key=os.environ['AZURE_ACCOUNT_KEY']
-        )
-    elif args.storage_type is None:
-        assert args.storage_path is None, "You cannot specify a storage path if you do not select a storage type"
-
-    Session.model = model
-    Session.storage_type = args.storage_type
-
+    # Setup logging
+    log_path = os.getcwd() + "/logs"
+    setup_logging(log_path, "server") # TODO: don't delete logs
 
 
     # Setup the bottle server 
     app = bottle.Bottle()
 
     app.add_hook("after_request", enable_cors)
-    app.route("/predPatch", method="OPTIONS", callback=do_options)
+    app.add_hook("before_request", setup_sessions)
+    app.add_hook("before_request", manage_sessions) # before every request we want to check to make sure there are no session issues
+
+    # API paths
+    app.route("/predPatch", method="OPTIONS", callback=do_options) # TODO: all of our web requests from index.html fire an OPTIONS call because of https://stackoverflow.com/questions/1256593/why-am-i-getting-an-options-request-instead-of-a-get-request, we should fix this 
     app.route('/predPatch', method="POST", callback=pred_patch)
 
     app.route("/predTile", method="OPTIONS", callback=do_options)
@@ -603,9 +513,6 @@ def main():
     
     app.route("/getInput", method="OPTIONS", callback=do_options)
     app.route('/getInput', method="POST", callback=get_input)
-
-    app.route("/getInputMetadata", method="OPTIONS", callback=do_options)
-    app.route('/getInputMetadata', method="POST", callback=get_input_metadata)
 
     app.route("/recordCorrection", method="OPTIONS", callback=do_options)
     app.route('/recordCorrection', method="POST", callback=record_correction)
@@ -622,25 +529,40 @@ def main():
     app.route("/doLoad", method="OPTIONS", callback=do_options)
     app.route("/doLoad", method="POST", callback=do_load)
 
-    app.route("/heatmap/<z>/<y>/<x>", method="GET", callback=do_heatmap)
+    app.route("/createSession", method="OPTIONS", callback=do_options)
+    app.route("/createSession", method="POST", callback=create_session)
 
-    app.route("/", method="GET", callback=get_root_app)
-    app.route("/js/datasets.js", method="GET", callback=get_datasets)
+    app.route("/killSession", method="OPTIONS", callback=do_options)
+    app.route("/killSession", method="POST", callback=kill_session)
+
+    app.route("/whoami", method="GET", callback=whoami)
+
+    # Content paths
+    app.route("/", method="GET", callback=get_landing_page)
     app.route("/favicon.ico", method="GET", callback=get_favicon)
     app.route("/<filepath:re:.*>", method="GET", callback=get_everything_else)
 
-    bottle_server_kwargs = {
-        "host": args.host,
-        "port": args.port,
-        "debug": args.verbose,
-        "server": "tornado",
-        "reloader": False,
-        "options": {"threads": 12} # TODO: As of bottle version 0.12.17, the WaitressBackend does not get the **options kwargs
+
+    manage_session_folders()
+    session_opts = {
+        'session.type': 'file',
+        'session.cookie_expires': 3000,
+        'session.data_dir': SESSION_FOLDER,
+        'session.auto': True
     }
-    #app.run(**bottle_server_kwargs)
-    
-    from waitress import serve
-    serve(app, host=args.host, port=args.port, threads=12)
+    app = beaker.middleware.SessionMiddleware(app, session_opts)
+
+    server = cheroot.wsgi.Server(
+        (args.host, args.port),
+        app
+    )
+    server.max_request_header_size = 2**13
+    server.max_request_body_size = 2**27
+
+    try:
+        server.start()
+    finally:
+        server.stop()
 
 
 if __name__ == "__main__":

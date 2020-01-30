@@ -55,8 +55,8 @@ class SessionHandler():
         self._WORKERS = [ # TODO: I hardcode that there are 4 GPUs available on the local machine
             {"type": "local", "gpu_id": 0},
             {"type": "local", "gpu_id": 1},
-            {"type": "local", "gpu_id": 2},
-            {"type": "local", "gpu_id": 3}
+ #           {"type": "local", "gpu_id": 2},
+#            {"type": "local", "gpu_id": 3}
         ]
 
         self._WORKER_POOL = Queue()

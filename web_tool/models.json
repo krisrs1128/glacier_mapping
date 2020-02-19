@@ -11,16 +11,16 @@
             "fn": "web_tool/data/sentinel_demo_model.h5"
         }
     },
-    "naip_demo": {
+    "shimas_unet": {
         "metadata": {
-            "displayName": "NAIP Supervised"
+            "displayName": "UNet Shima Kind Durian 140"
         },
         "model": {
             "type": "keras_dense",
             "fineTuneLayer": -4,
             "numParameters": 7790949,
-            "inputShape": [240,240,4],
-            "fn": "web_tool/data/naip_demo_model.h5"
+            "inputShape": [512,512,10],
+            "fn": "web_tool/data/model_188.pt"
         }
     }
 }

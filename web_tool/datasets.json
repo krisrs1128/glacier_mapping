@@ -1,49 +1,7 @@
 {
-    "hcmc_sentinel": {
+    "hkh2000_landsat": {
         "metadata": {
-            "displayName": "Ho Chi Minh City, Vietnam",
-            "imageryName": "Sentinel Imagery",
-            "locationName": null
-        },
-        "dataLayer": {
-            "type": "CUSTOM",
-            "path": "tiles/hcmc_sentinel.tif",
-            "padding": 1100
-        },
-        "basemapLayer": {
-            "initialZoom": 11,
-            "url": "tiles/hcmc_sentinel_tiles/{z}/{x}/{y}.png",
-            "initialLocation": [ 10.682, 106.752 ],
-            "args": {
-                "attribution": "Georeferenced Image",
-                "tms": true,
-                "maxNativeZoom": 16,
-                "maxZoom": 20,
-                "minZoom": 10
-            },
-            "bounds": null
-        },
-        "shapeLayers": [
-            {
-                "shapesFn": "shapes/hcmc_sentinel_admin_1_clipped.geojson",
-                "zoneNameKey": "NAME_1",
-                "name": "Provinces"
-            },
-            {
-                "shapesFn": "shapes/hcmc_sentinel_admin_2_clipped.geojson",
-                "zoneNameKey": "NAME_2",
-                "name": "Districts"
-            },
-            {
-                "shapesFn": "shapes/hcmc_sentinel_admin_3_clipped.geojson",
-                "zoneNameKey": "NAME_3",
-                "name": "Wards"
-            }
-        ]
-    },
-    "hkh_landsat": {
-        "metadata": {
-            "displayName": "Hindu Kush Himalaya",
+            "displayName": "Hindu Kush Himalaya 2000",
             "imageryName": "Landsat Imagery",
             "locationName": null
         },
@@ -54,24 +12,94 @@
         },
         "basemapLayer": {
             "initialZoom": 11,
-            "url": "tiles/hkh_landsat_tiles/{z}/{x}/{y}.png",
-            "initialLocation": [ 36.8922, 73.2633],
+            "url": "tiles/hkh/{z}/{x}/{y}.png",
+            "initialLocation": [ 34.0322, 78.1650],
             "args": {
                 "attribution": "Georeferenced Image",
                 "tms": true,
-                "maxNativeZoom": 16,
-                "maxZoom": 20,
-                "minZoom": 10
+                "maxNativeZoom": 13,
+                "maxZoom": 14,
+                "minZoom": 8
             },
             "bounds": null
         },
         "shapeLayers": [
             {
-                "shapesFn": "shapes/hcmc_sentinel_admin_1_clipped.geojson",
+                "shapesFn": "shapes/hkh.geojson",
                 "zoneNameKey": "HKH",
                 "name": "Area Boundaries"
             }
         ]
         
+    },
+    "nepal2000_landsat": {
+        "metadata": {
+            "displayName": "Nepal 2000",
+            "imageryName": "Landsat Imagery",
+            "locationName": null
+        },
+        "dataLayer": {
+            "type": "CUSTOM",
+            "path": "tiles/nepal.tif",
+            "padding": 1100
+        },
+        "basemapLayer": {
+            "initialZoom": 11,
+            "url": "tiles/nepal/{z}/{x}/{y}.png",
+            "initialLocation": [ 28.3949, 84.1240],
+            "args": {
+                "attribution": "Georeferenced Image",
+                "tms": true,
+                "maxNativeZoom": 13,
+                "maxZoom": 16,
+                "minZoom": 8
+            },
+            "bounds": null
+        },
+        "shapeLayers": [
+            
+            {
+                "shapesFn": "shapes/nepal_province.geojson",
+                "zoneNameKey": "NAME_1",
+                "name": "Provinces"
+            },
+            {
+                "shapesFn": "shapes/nepal_district.geojson",
+                "zoneNameKey": "NAME_2",
+                "name": "Districts"
+            }
+        ]
+        
+    },
+    "buthan2000_landsat": {
+        "metadata": {
+            "displayName": "Bhutan 2000",
+            "imageryName": "Landsat Imagery",
+            "locationName": null
+        },
+        "dataLayer": {
+            "type": "CUSTOM",
+            "path": "tiles/bhutan.tif",
+            "padding": 1100
+        },
+        "basemapLayer": {
+            "initialZoom": 11,
+            "url": "tiles/bhutan/{z}/{x}/{y}.png",
+            "initialLocation": [ 28.3949, 84.1240],
+            "args": {
+                "attribution": "Georeferenced Image",
+                "tms": true,
+                "maxNativeZoom": 13,
+                "maxZoom": 16,
+                "minZoom": 8
+            },
+            "bounds": null
+        },
+        "shapeLayers": [
+            
+        ]
+        
     }
+
+
 }

@@ -75,7 +75,12 @@ def template(param, conf_path, run_dir):
         {zip_command}
         cd {sbp["repo_path"]}
 
-        module load singularity/3.4
+        # singularity 3.5 path issue
+        REVERSED_PATH="$(tr ':' '\n'  <<< $PATH | tac | paste -s -d ':')"
+        export PATH="$REVERSED_PATH"
+
+        module load singularity/3.5
+        module load cuda/9.2
         echo "Starting job"
         singularity exec --nv --bind {param["config"]["data"]["path"]},{str(run_dir)}\\
                 {sbp["singularity_path"]}\\

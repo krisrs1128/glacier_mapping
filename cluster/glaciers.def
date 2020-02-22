@@ -19,4 +19,4 @@ From: ubuntu:18.04
     pip3 install numpy==1.14.*
     pip3 install opencv-python
     pip3 install pandas graphql-core==2.0 wandb Pillow==5.4 addict pyyaml rasterio  geopandas
-    pip3 install --no-cache-dir torch torchvision matplotlib ipython seaborn
+    pip3 install --no-cache-dir torch torchvision matplotlib ipython seaborn scikit-image

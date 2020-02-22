@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import rasterio
 from rasterio.mask import mask as rasterio_mask
+from skimage import view_as_windows
 
 def crop_raster(raster_img, vector_data):
     """Crop a raster image according to given vector data and
@@ -98,40 +99,22 @@ def get_mask(raster_img, vector_data, nan_value=0):
     return binary_mask
 
 
-def slice_image(img, size=(512, 512), overlap=6):
-    """Given an image slice according to size with no overlapping.
+def slice_image(img, size=(512, 512, 12), overlap=6):
+    """Slice an image into overlapping patches
     Args:
         img (np.array): image to be sliced
-        size tuple(int, int): size of the slice
+        size tuple(int, int, int): size of the slices
         overlap (int): how much the slices should overlap
     Returns:
         list of slices [np.array]"""
-    
-    h, w = img.shape[:2]
-    
-    h_slices = math.ceil((h - 2 * overlap) / (size[0] - 2 * overlap))
-    w_slices = math.ceil((w - 2 * overlap) / (size[1] - 2 * overlap))
+    stride = size[0] - overlap
+    patches = view_as_windows(img, size, step=size[0] - overlap)
+    result = []
+    for i in range(patches.shape[0]):
+        for j in range(patches.shape[1]):
+            result.append(patches[i, j, 0])
 
-    slices = []
-    for i in range(h_slices):
-        for j in range(w_slices):
-            start_i = i * (size[0] - overlap)
-            end_i = start_i +  size[0]
-            start_j = j * (size[1] - overlap)
-            end_j = start_j + size[1]
-            
-            # the last tile need to be of the same size as well
-            if end_i > h:
-                start_i = -size[0]
-            if end_j > w:
-                start_j = -size[1]
-                
-            if img.ndim == 2:
-                slices.append(img[start_i:end_i, start_j:end_j])
-            else:
-                slices.append(img[start_i:end_i, start_j:end_j, :])
-
-    return slices
+    return result
 
 
 def display_sat_image(sat_img):

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 from addict import Dict
-import math
-import os
 import pathlib
 import yaml
 

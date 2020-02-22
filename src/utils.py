@@ -107,7 +107,6 @@ def slice_image(img, size=(512, 512, 12), overlap=6):
         overlap (int): how much the slices should overlap
     Returns:
         list of slices [np.array]"""
-    stride = size[0] - overlap
     patches = view_as_windows(img, size, step=size[0] - overlap)
     result = []
     for i in range(patches.shape[0]):
@@ -304,6 +303,3 @@ def merged_image(img, mask, pred, act, inverse_transform):
         result.append(wandb.Image(merged))
 
     return result
-
-
-

@@ -12,7 +12,7 @@ import pathlib
 import rasterio
 import re
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 def generate_masks(img_metas, img_bounds, shps_paths, output_base="mask",
@@ -170,9 +170,9 @@ def path_pairs_landsat(base_dir):
     return pd.DataFrame(pairs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     img_dir = "/scratch/sankarak/data/glaciers_azure/"
-    paths_df = path_pairs_landsat(img_dir)[:5]
+    paths_df = path_pairs_landsat(img_dir)
     imgs = [rasterio.open(p) for p in paths_df["img"].values]
     img_metas = [im.meta for im in imgs]
     img_bounds = [im.bounds for im in imgs]

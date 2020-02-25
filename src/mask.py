@@ -4,14 +4,15 @@ Generate Masks from Tiffs / Shapefiles
 from rasterio.features import rasterize
 from shapely.geometry import box, Polygon
 from shapely.ops import cascaded_union
-import skimage.io
-import glob
 import geopandas as gpd
+import glob
 import numpy as np
+import os
+import pandas as pd
 import pathlib
 import rasterio
-import pandas as pd
-import os
+import re
+import skimage.io
 
 def generate_masks(img_metas, shps_paths, output_base="mask", out_dir=None):
     """

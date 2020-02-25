@@ -4,27 +4,57 @@ Generate Masks from Tiffs / Shapefiles
 from rasterio.features import rasterize
 from shapely.geometry import box, Polygon
 from shapely.ops import cascaded_union
+import skimage.io
+import glob
 import geopandas as gpd
 import numpy as np
 import pathlib
 import rasterio
+import pandas as pd
+import os
 
-def generate_masks(img_metas, matching_shps, output_base="mask", out_dir=None):
+def generate_masks(img_metas, shps_paths, output_base="mask", out_dir=None):
     """
     A wrapper of generate_mask, to make labels for each input
     """
-    masks = []
+    if not out_dir:
+        out_dir = os.getcwd()
+
+    shape_objects = {}
     for k, img_meta in enumerate(img_metas):
-        mask = generate_mask(img_meta, matching_shps[k])
-        if outdir is None:
-            masks.append(mask)
-        else:
-            # convert numpy to tiff
-            # save the tiff
-            pass
+        # if current shape paths are in objects, use them to make mask
+        # otherwise read in, add to object, and use for mask
+        print(f"working on {img_meta} ({k} / {len(img_metas)})")
 
-    return masks
+        shps = []
+        for path in shps_paths[k]:
+            if path not in shape_objects.keys():
+                shape_objects[path] = gpd.read_file(path)
+                shape_objects[path] = shape_objects[path].to_crs(img_meta["crs"].data)
 
+            shps.append(shape_objects[path])
+
+        mask = generate_mask(img_meta, shps)
+        out_path = pathlib.Path(out_dir, f"{output_base}_{k}.tiff")
+        # skimage.io.imsave(str(out_path), mask, plugin="tifffile")
+        np.save(str(out_path), mask)
+
+
+# def generate_masks(img_metas, matching_shps, output_base="mask", out_dir=None):
+#     """
+#     A wrapper of generate_mask, to make labels for each input
+#     """
+#     masks = []
+#     for k, img_meta in enumerate(img_metas):
+#         mask = generate_mask(img_meta, matching_shps[k])
+#         if outdir is None:
+#             masks.append(mask)
+#         else:
+#             # convert numpy to tiff
+#             # save the tiff
+#             pass
+
+#     return masks
 
 def generate_mask(img_meta, shps):
     """
@@ -111,11 +141,50 @@ def clip_shapefile(img_bounds, img_meta, shps):
         result.append(gpd.overlay(shp, bbox_poly))
     return result
 
+def parse_path(path):
+    #
+    # example path: /scratch/sankarak/data/glaciers_azure/img_data/2005/nepal
+    # year is the number right after data/
+    # https://regexr.com/4ponn
+    regexes = re.compile("(data\/)([0-9]+)(\/)([A-z]+)").search(str(path))
+    _, year, _, region = regexes.groups()
+    return year, region
+
+def path_pairs_landsat(base_dir):
+    """
+    Mapping from Tiffs to their Labels
+
+    For the landsat 7 data whose IDs were given to us by ICIMOD's shapefiles,
+    this gives the mapping between the raw tiff file and the corresponding
+    shapefiles / borders.
+
+    :param base_dir: The directory containing img_data and vector_data. See
+      ee_codes/Readme.md for a description of the directory structure.
+    :return pairs: A pandas dataframe with columns "img", "label", and
+      "border". "img" gives the path to the raw tiffile, "label" is the path to
+      the shapefile for that tiff, and "borders" is the path to the shapefile
+      for the border of the enclosing country.
+    """
+    pairs = []
+    img_paths = pathlib.Path(base_dir).glob("**/*tif")
+    for img_path in img_paths:
+        year, region = parse_path(img_path)
+        label_dir = pathlib.Path(base_dir, "vector_data", year, region, "data")
+        label_path = pathlib.Path(label_dir, f"Glacier_{year}.shp")
+
+        border_path = pathlib.Path(base_dir, "vector_data", "borders", region, f"{region}.shp")
+        pairs.append({
+            "img": str(img_path),
+            "label": str(label_path),
+            "border": str(border_path)
+        })
+
+    return pd.DataFrame(pairs)
+
 
 if __name__ == '__main__':
-    img_dir = "/scratch/sankarak/data/glaciers_azure/img_data/2010/nepal/"
-    img_ids = ["Nepal_139041_20111225.tif", "Nepal_140041_20091108.tif", "Nepal_141040_20101204.tif"]
-    img_paths = [pathlib.Path(img_dir, s) for s in img_ids]
-    img_metas = [rasterio.open(p).meta for p in img_paths]
-    shps = convert_crs(img.meta, [gpd.read_file(labels_path), gpd.read_file(borders_path)])
-    masks = generate_masks(img_metas, len(img_metas) * [shps])
+    img_dir = "/scratch/sankarak/data/glaciers_azure/"
+    paths_df = path_pairs_landsat(img_dir)
+    img_metas = [rasterio.open(p).meta for p in paths_df["img"].values]
+    shps_paths =[[p["label"], p["border"]] for _, p in paths_df.iterrows()]
+    generate_masks(img_metas, shps_paths)

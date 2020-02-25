@@ -21,6 +21,7 @@ def generate_masks(img_metas, matching_shps, output_base="mask", out_dir=None):
         else:
             # convert numpy to tiff
             # save the tiff
+            pass
 
     return masks
 

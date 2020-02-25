@@ -12,9 +12,12 @@ import pandas as pd
 import pathlib
 import rasterio
 import re
-import skimage.io
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
-def generate_masks(img_metas, shps_paths, output_base="mask", out_dir=None):
+
+def generate_masks(img_metas, im_bounds, shps_paths, output_base="mask",
+                   out_dir=None):
     """
     A wrapper of generate_mask, to make labels for each input
     """
@@ -25,37 +28,21 @@ def generate_masks(img_metas, shps_paths, output_base="mask", out_dir=None):
     for k, img_meta in enumerate(img_metas):
         # if current shape paths are in objects, use them to make mask
         # otherwise read in, add to object, and use for mask
-        print(f"working on {img_meta} ({k} / {len(img_metas)})")
+        print(f"working on image {k} / {len(img_metas)}")
 
         shps = []
         for path in shps_paths[k]:
             if path not in shape_objects.keys():
                 shape_objects[path] = gpd.read_file(path)
-                shape_objects[path] = shape_objects[path].to_crs(img_meta["crs"].data)
 
-            shps.append(shape_objects[path])
+            shp = shape_objects[path].to_crs(img_meta["crs"].data)
+            shps.append(shp)
 
+        shps = clip_shapefile(img_bounds[k], img_meta, shps)
         mask = generate_mask(img_meta, shps)
-        out_path = pathlib.Path(out_dir, f"{output_base}_{k}.tiff")
-        # skimage.io.imsave(str(out_path), mask, plugin="tifffile")
+        out_path = pathlib.Path(out_dir, f"{output_base}_{k}")
         np.save(str(out_path), mask)
 
-
-# def generate_masks(img_metas, matching_shps, output_base="mask", out_dir=None):
-#     """
-#     A wrapper of generate_mask, to make labels for each input
-#     """
-#     masks = []
-#     for k, img_meta in enumerate(img_metas):
-#         mask = generate_mask(img_meta, matching_shps[k])
-#         if outdir is None:
-#             masks.append(mask)
-#         else:
-#             # convert numpy to tiff
-#             # save the tiff
-#             pass
-
-#     return masks
 
 def generate_mask(img_meta, shps):
     """
@@ -87,6 +74,7 @@ def channel_mask(img_meta, shp):
     for _, row in shp.iterrows():
         if row["geometry"].geom_type == "Polygon":
             poly_shp += [poly_from_coord(row["geometry"], img_meta["transform"])]
+
         else: # case if multipolygon
             for p in row["geometry"]:
                 poly_shp += [poly_from_coord(p, img_meta["transform"])]
@@ -103,7 +91,7 @@ def poly_from_coord(polygon, transform):
     poly_pts = []
     poly = cascaded_union(polygon)
     for i in np.array(poly.exterior.coords):
-        poly_pts.append(~transform * tuple(i))
+        poly_pts.append(~transform * tuple(i)[:2]) # in case polygonz format
 
     # Generate a polygon object
     return Polygon(poly_pts)
@@ -141,6 +129,7 @@ def clip_shapefile(img_bounds, img_meta, shps):
 
         result.append(gpd.overlay(shp, bbox_poly))
     return result
+
 
 def parse_path(path):
     #
@@ -186,6 +175,8 @@ def path_pairs_landsat(base_dir):
 if __name__ == '__main__':
     img_dir = "/scratch/sankarak/data/glaciers_azure/"
     paths_df = path_pairs_landsat(img_dir)
-    img_metas = [rasterio.open(p).meta for p in paths_df["img"].values]
+    imgs = [rasterio.open(p) for p in paths_df["img"].values]
+    img_metas = [im.meta for im in imgs]
+    img_bounds = [im.bounds for im in imgs]
     shps_paths =[[p["label"], p["border"]] for _, p in paths_df.iterrows()]
-    generate_masks(img_metas, shps_paths)
+    generate_masks(img_metas, img_bounds, shps_paths)

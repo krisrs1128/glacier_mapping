@@ -177,4 +177,6 @@ if __name__ == '__main__':
     img_metas = [im.meta for im in imgs]
     img_bounds = [im.bounds for im in imgs]
     shps_paths =[[p["label"], p["border"]] for _, p in paths_df.iterrows()]
+
     generate_masks(img_metas, img_bounds, shps_paths)
+    paths_df.to_csv("paths.csv", index=False)

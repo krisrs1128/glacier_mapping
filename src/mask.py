@@ -5,7 +5,6 @@ from rasterio.features import rasterize
 from shapely.geometry import box, Polygon
 from shapely.ops import cascaded_union
 import geopandas as gpd
-import glob
 import numpy as np
 import os
 import pandas as pd
@@ -16,20 +15,29 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def generate_masks(img_metas, im_bounds, shps_paths, output_base="mask",
+def generate_masks(img_metas, img_bounds, shps_paths, output_base="mask",
                    out_dir=None):
     """
     A wrapper of generate_mask, to make labels for each input
+
+    :param img_meta: The metadata field associated with a geotiff. Expected to
+      contain transform (coordinate system), height, and width fields.
+    :param img_bounds: A list of coordinates specifying the bounding box of the
+      input img.
+    :param shps_paths: A list of lists of paths to shapefiles. The k^th element
+      is a list of paths, each of which will become a channel in the k^th
+      resulting mask.
+    :param output_base: The basename for all the output numpy files
+    :param out_dir: The directory to which to save all the results.
     """
     if not out_dir:
         out_dir = os.getcwd()
 
     shape_objects = {}
     for k, img_meta in enumerate(img_metas):
-        # if current shape paths are in objects, use them to make mask
-        # otherwise read in, add to object, and use for mask
         print(f"working on image {k} / {len(img_metas)}")
 
+        # get all label channels for current tiff
         shps = []
         for path in shps_paths[k]:
             if path not in shape_objects.keys():
@@ -38,6 +46,7 @@ def generate_masks(img_metas, im_bounds, shps_paths, output_base="mask",
             shp = shape_objects[path].to_crs(img_meta["crs"].data)
             shps.append(shp)
 
+        # build mask over tiff's extent, and save
         shps = clip_shapefile(img_bounds[k], img_meta, shps)
         mask = generate_mask(img_meta, shps)
         out_path = pathlib.Path(out_dir, f"{output_base}_{k}")
@@ -60,7 +69,6 @@ def generate_mask(img_meta, shps):
         if img_meta["crs"].to_string() != shp.crs.to_string():
             raise ValueError("Coordinate reference systems do not agree")
         result[:, :, k] = channel_mask(img_meta, shp)
-
     return result
 
 
@@ -83,28 +91,17 @@ def channel_mask(img_meta, shp):
     return rasterize(shapes=poly_shp, out_shape=im_size)
 
 
-#Generate polygon
 def poly_from_coord(polygon, transform):
     """
+    Get a transformed polygon
     https://lpsmlgeo.github.io/2019-09-22-binary_mask/
     """
     poly_pts = []
     poly = cascaded_union(polygon)
     for i in np.array(poly.exterior.coords):
         poly_pts.append(~transform * tuple(i)[:2]) # in case polygonz format
-
-    # Generate a polygon object
     return Polygon(poly_pts)
 
-
-def convert_crs(img_meta, shps):
-    """
-    Convert shapefile CRS to img CRS
-    """
-    result = []
-    for shp in shps:
-        result += [shp.to_crs(img_meta["crs"].data)]
-    return result
 
 def clip_shapefile(img_bounds, img_meta, shps):
     """
@@ -127,7 +124,7 @@ def clip_shapefile(img_bounds, img_meta, shps):
         if img_meta["crs"].to_string() != shp.crs.to_string():
             raise ValueError("Coordinate reference systems do not agree")
 
-        result.append(gpd.overlay(shp, bbox_poly))
+        result.append(shp.loc[shp.intersects(bbox_poly["geometry"][0])])
     return result
 
 
@@ -139,6 +136,7 @@ def parse_path(path):
     regexes = re.compile("(data\/)([0-9]+)(\/)([A-z]+)").search(str(path))
     _, year, _, region = regexes.groups()
     return year, region
+
 
 def path_pairs_landsat(base_dir):
     """
@@ -174,7 +172,7 @@ def path_pairs_landsat(base_dir):
 
 if __name__ == '__main__':
     img_dir = "/scratch/sankarak/data/glaciers_azure/"
-    paths_df = path_pairs_landsat(img_dir)
+    paths_df = path_pairs_landsat(img_dir)[:5]
     imgs = [rasterio.open(p) for p in paths_df["img"].values]
     img_metas = [im.meta for im in imgs]
     img_bounds = [im.bounds for im in imgs]

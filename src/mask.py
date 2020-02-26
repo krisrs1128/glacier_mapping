@@ -64,7 +64,7 @@ def generate_mask(img_meta, shps):
     :return mask: A K channel binary numpy array. The k^th channel gives the
       binary mask for the k^th input shapefile.
     """
-    result = np.zeros((img_meta["width"], img_meta["height"], len(shps)))
+    result = np.zeros((img_meta["height"], img_meta["width"], len(shps)))
     for k, shp in enumerate(shps):
         if img_meta["crs"].to_string() != shp.crs.to_string():
             raise ValueError("Coordinate reference systems do not agree")
@@ -87,7 +87,7 @@ def channel_mask(img_meta, shp):
             for p in row["geometry"]:
                 poly_shp += [poly_from_coord(p, img_meta["transform"])]
 
-    im_size = (img_meta["width"], img_meta["height"])
+    im_size = (img_meta["height"], img_meta["width"])
     return rasterize(shapes=poly_shp, out_shape=im_size)
 
 

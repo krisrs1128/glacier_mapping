@@ -1,8 +1,7 @@
 #!/bin/bash
 sbatch <<EOT
 #SBATCH --job-name=slicing
-#SBATCH --cpus-per-task=1
-#SBATCH --gres=gpu:0
+#SBATCH --gres=gpu:1
 #SBATCH --account=def-bengioy_gpu
 #SBATCH --mem=64G
 #SBATCH --time=00:07:00

@@ -10,6 +10,6 @@ sbatch <<EOT
 #SBATCH --error /home/sankarak/logs/slicing-%j.err
 
 module load singularity/3.5
-singularity exec --bind /scratch/sankarak/data/ /scratch/sankarak/images/glaciers.sif python3 slice.py $1
+singularity exec --bind /scratch/sankarak/data/ /scratch/sankarak/images/glaciers.sif python3 -m src.slice $1
 
 EOT

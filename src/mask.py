@@ -49,7 +49,7 @@ def generate_masks(img_metas, img_bounds, shps_paths, output_base="mask",
         # build mask over tiff's extent, and save
         shps = clip_shapefile(img_bounds[k], img_meta, shps)
         mask = generate_mask(img_meta, shps)
-        out_path = pathlib.Path(out_dir, f"{output_base}_{k}")
+        out_path = pathlib.Path(out_dir, f"{output_base}_{k:02}")
         np.save(str(out_path), mask)
 
 

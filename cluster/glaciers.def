@@ -14,7 +14,9 @@ From: ubuntu:18.04
     apt -y install python3-pip
     apt -y install build-essential libssl-dev libffi-dev python3-dev
     apt -y install nano vim
+    apt -y install libspatialindex-dev
 
     pip3 install numpy==1.14.*
     pip3 install pandas graphql-core==2.0 wandb Pillow addict pyyaml rasterio  geopandas
     pip3 install --no-cache-dir torch torchvision matplotlib ipython seaborn
+    pip3 install scikit-learn rpyc tensorflow Rtree mercantile utm beaker cheroot

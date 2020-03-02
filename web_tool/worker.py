@@ -24,7 +24,7 @@ class MyService(rpyc.Service):
 
     def __init__(self, model):
         self.model = model
-        
+
     def on_connect(self, conn):
         pass
 
@@ -64,7 +64,7 @@ def main():
     parser.add_argument("--model_fn", action="store", dest="model_fn", type=str, help="Model fn to use", default=None)
     parser.add_argument("--fine_tune_layer", action="store", dest="fine_tune_layer", type=int, help="Layer of model to fine tune", default=-2)
     parser.add_argument("--fine_tune_seed_data_fn", action="store", dest="fine_tune_seed_data_fn", type=str, help="Path to npz containing seed data to use", default=None)
-    
+
     parser.add_argument("--gpu", action="store", dest="gpuid", type=int, help="GPU to use", required=True)
 
     args = parser.parse_args(sys.argv[1:])
@@ -77,7 +77,7 @@ def main():
     # Setup model
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "" if args.gpuid is None else str(args.gpuid)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
     if args.model == "keras_dense":
         model = KerasDenseFineTune(args.model_fn, args.gpuid, args.fine_tune_layer, args.fine_tune_seed_data_fn)
@@ -86,6 +86,6 @@ def main():
 
     t = OneShotServer(MyService(model), port=args.port)
     t.start()
-   
+
 if __name__ == "__main__":
     main()

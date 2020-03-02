@@ -30,7 +30,7 @@
                 "name": "Area Boundaries"
             }
         ]
-        
+
     },
     "nepal2000_landsat": {
         "metadata": {
@@ -57,7 +57,7 @@
             "bounds": null
         },
         "shapeLayers": [
-            
+
             {
                 "shapesFn": "shapes/nepal_province.geojson",
                 "zoneNameKey": "NAME_1",
@@ -69,7 +69,7 @@
                 "name": "Districts"
             }
         ]
-        
+
     },
     "buthan2000_landsat": {
         "metadata": {
@@ -96,9 +96,9 @@
             "bounds": null
         },
         "shapeLayers": [
-            
+
         ]
-        
+
     }
 
 

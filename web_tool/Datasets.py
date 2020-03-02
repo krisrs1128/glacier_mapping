@@ -40,7 +40,7 @@ def _load_geojson_as_list(fn):
         src_crs = f.crs
         for row in f:
             geom = row["geometry"]
-            
+
             area = get_area_from_geometry(geom, src_crs)
             areas.append(area)
 
@@ -91,9 +91,9 @@ def load_datasets():
 
     for key, dataset in dataset_json.items():
         dataset_object = _load_dataset(dataset)
-        
+
         if dataset_object is False:
-            print("WARNING: files are missing, we will not be able to server '%s' dataset" % (key)) 
+            print("WARNING: files are missing, we will not be able to server '%s' dataset" % (key))
         else:
             datasets[key] = dataset_object
 

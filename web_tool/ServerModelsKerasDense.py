@@ -29,16 +29,16 @@ class KerasDenseFineTune(BackendModel):
     def __init__(self, model_fn, gpuid, fine_tune_layer, fine_tune_seed_data_fn, verbose=False):
 
         self.model_fn = model_fn
-        
+
 
         tmodel = keras.models.load_model(self.model_fn, compile=False, custom_objects={
-            "jaccard_loss":keras.metrics.mean_squared_error, 
+            "jaccard_loss":keras.metrics.mean_squared_error,
             "loss":keras.metrics.mean_squared_error
         })
 
         feature_layer_idx = fine_tune_layer
         tmodel.summary()
-        
+
         self.model = keras.models.Model(inputs=tmodel.inputs, outputs=[tmodel.outputs[0], tmodel.layers[feature_layer_idx].output])
         self.model.compile("sgd","mse")
         self.model._make_predict_function()	# have to initialize before threading
@@ -83,18 +83,18 @@ class KerasDenseFineTune(BackendModel):
             for row in self.augment_base_x_train:
                 self.augment_x_train.append(row)
             for row in self.augment_base_y_train:
-                self.augment_y_train.append(row) 
+                self.augment_y_train.append(row)
 
         else:
             self.use_seed_data = False
-     
+
 
     def run(self, naip_data, extent, on_tile=False):
         ''' Expects naip_data to have shape (height, width, channels) and have values in the [0, 255] range.
         '''
         naip_data = naip_data / 255.0
         output, output_features = self.run_model_on_tile(naip_data)
-        
+
         if self.augment_model_trained:
             original_shape = output.shape
             output = output_features.reshape(-1, output_features.shape[2])
@@ -128,13 +128,13 @@ class KerasDenseFineTune(BackendModel):
         else:
             if predict_central_pixel_only:
                 output = output[:,120,120,:]
-        
+
         return output
 
     def retrain(self, **kwargs):
         x_train = np.concatenate(self.augment_x_train, axis=0)
         y_train = np.concatenate(self.augment_y_train, axis=0)
-        
+
         vals, counts = np.unique(y_train, return_counts=True)
 
         if len(vals) >= 4:
@@ -148,9 +148,9 @@ class KerasDenseFineTune(BackendModel):
         else:
             success = False
             message = "Need to include training samples from each class"
-        
+
         return success, message
-        
+
     def add_sample(self, tdst_row, bdst_row, tdst_col, bdst_col, class_idx):
         x_features = self.current_features[tdst_row:bdst_row+1, tdst_col:bdst_col+1, :].copy().reshape(-1, self.current_features.shape[2])
         y_samples = np.zeros((x_features.shape[0]), dtype=np.uint8)
@@ -204,7 +204,7 @@ class KerasDenseFineTune(BackendModel):
         '''
         height = naip_tile.shape[0]
         width = naip_tile.shape[1]
-        
+
         output = np.zeros((height, width, self.output_channels), dtype=np.float32)
         output_features = np.zeros((height, width, self.output_features), dtype=np.float32)
 
@@ -228,7 +228,7 @@ class KerasDenseFineTune(BackendModel):
 
 
         model_output = self.model.predict(np.array(batch), batch_size=batch_size, verbose=0)
-        
+
         for i, (y, x) in enumerate(batch_indices):
             output[y:y+self.input_size, x:x+self.input_size] += model_output[0][i] * kernel[..., np.newaxis]
             output_features[y:y+self.input_size, x:x+self.input_size] += model_output[1][i] * kernel[..., np.newaxis]

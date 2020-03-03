@@ -177,4 +177,4 @@ if __name__ == "__main__":
 
     output_dir = "/scratch/sankarak/data/glaciers_azure/masks"
     generate_masks(img_metas, img_bounds, shps_paths, output_dir + "/mask")
-    paths_df.to_csv("paths.csv", index=False)
+    paths_df.to_csv(output_dir + "/paths.csv", index=False)

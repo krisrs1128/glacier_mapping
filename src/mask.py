@@ -1,6 +1,7 @@
 """
 Generate Masks from Tiffs / Shapefiles
 """
+from joblib import Parallel, delayed
 from rasterio.features import rasterize
 from shapely.geometry import box, Polygon
 from shapely.ops import cascaded_union
@@ -16,7 +17,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 def generate_masks(img_metas, img_bounds, shps_paths, output_base="mask",
-                   out_dir=None):
+                   out_dir=None, n_jobs=10):
     """
     A wrapper of generate_mask, to make labels for each input
 
@@ -33,24 +34,20 @@ def generate_masks(img_metas, img_bounds, shps_paths, output_base="mask",
     if not out_dir:
         out_dir = os.getcwd()
 
-    shape_objects = {}
-    for k, img_meta in enumerate(img_metas):
+    def wrapper(k):
         print(f"working on image {k} / {len(img_metas)}")
-
-        # get all label channels for current tiff
         shps = []
         for path in shps_paths[k]:
-            if path not in shape_objects.keys():
-                shape_objects[path] = gpd.read_file(path)
-
-            shp = shape_objects[path].to_crs(img_meta["crs"].data)
-            shps.append(shp)
+            shps.append(gpd.read_file(path).to_crs(img_metas[k]["crs"].data))
 
         # build mask over tiff's extent, and save
-        shps = clip_shapefile(img_bounds[k], img_meta, shps)
-        mask = generate_mask(img_meta, shps)
+        shps = clip_shapefile(img_bounds[k], img_metas[k], shps)
+        mask = generate_mask(img_metas[k], shps)
         out_path = pathlib.Path(out_dir, f"{output_base}_{k:02}")
         np.save(str(out_path), mask)
+
+    para = Parallel(n_jobs=n_jobs)
+    para(delayed(wrapper)(k) for k in range(len(img_metas)))
 
 
 def generate_mask(img_meta, shps):
@@ -155,7 +152,7 @@ def path_pairs_landsat(base_dir):
     """
     pairs = []
     img_paths = pathlib.Path(base_dir).glob("**/*tif")
-    for img_path in img_paths:
+    for k, img_path in enumerate(img_paths):
         year, region = parse_path(img_path)
         label_dir = pathlib.Path(base_dir, "vector_data", year, region, "data")
         label_path = pathlib.Path(label_dir, f"Glacier_{year}.shp")
@@ -176,7 +173,8 @@ if __name__ == "__main__":
     imgs = [rasterio.open(p) for p in paths_df["img"].values]
     img_metas = [im.meta for im in imgs]
     img_bounds = [im.bounds for im in imgs]
-    shps_paths =[[p["label"], p["border"]] for _, p in paths_df.iterrows()]
+    shps_paths = [[p["label"], p["border"]] for _, p in paths_df.iterrows()]
 
-    generate_masks(img_metas, img_bounds, shps_paths)
+    output_dir = "/scratch/sankarak/data/glaciers_azure/masks"
+    generate_masks(img_metas, img_bounds, shps_paths, output_dir + "/mask")
     paths_df.to_csv("paths.csv", index=False)

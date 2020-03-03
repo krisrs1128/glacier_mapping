@@ -7,6 +7,7 @@ Convert Large Tiff and Mask files to Slices (512 x 512 subtiles)
 import numpy as np
 import pandas as pd
 import os
+import pdb
 import matplotlib.pyplot as plt
 import pathlib
 import skimage.io
@@ -67,14 +68,19 @@ def write_pair_slices(img_path, mask_path, out_dir=None, out_base="slice",
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
-    parser.add_argument("paths", metavar="p", default="paths.csv", type=str, help="csv file mapping tiffs to masks.")
-    parser.add_argument("row", metavar="r", default=0, type=int, help="row of csv file to slice")
-    parser.add_argument("out_dir", metavar="o", default=".", type=str, help="directory to save all the outputs")
-    parser.add_argument("out_base", metavar="b", default="paths_", type=str, help="name to prepend to all the slices")
+    parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default="paths.csv")
+    parser.add_argument("-r", "--row_in_csv", type=int, help="row of csv file to slice", default=0)
+    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=".")
+    parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="paths_")
+
+    # parser.add_argument("paths", metavar="p", default="paths.csv", type=str, help="csv file mapping tiffs to masks.")
+    # parser.add_argument("row", metavar="r", default=0, type=int, help="row of csv file to slice")
+    # parser.add_argument("out_dir", metavar="o", default=".", type=str, help="directory to save all the outputs")
+    # parser.add_argument("out_base", metavar="b", default="paths_", type=str, help="name to prepend to all the slices")
     args = parser.parse_args()
 
-    paths = pd.read_csv(args.paths)
-    img_path = paths[args.r]["img"]
-    mask_path = f"/scratch/sankarak/data/tmp_masks/mask_{args.r:02}.npy"
+    paths = pd.read_csv(args.paths_csv)
+    img_path = paths.iloc[args.row_in_csv]["img"]
+    mask_path = f"/scratch/sankarak/data/tmp_masks/mask_{args.row_in_csv:02}.npy"
 
-    write_pair_slices(img_path, mask_path, args.out_dir, args.out_base)
+    write_pair_slices(img_path, mask_path, args.output_dir, args.out_base)

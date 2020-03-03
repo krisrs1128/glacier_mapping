@@ -11,3 +11,6 @@ models/
 output/
 *.pyc
 wandb/
+outputs/
+backup_data/
+shared/temp_files/

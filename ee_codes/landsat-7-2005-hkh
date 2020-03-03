@@ -551,9 +551,9 @@ var raw_2005 = ee.ImageCollection('LANDSAT/LE07/C01/T1_RT')
 var raw_2005 = raw_2005.distinct(["WRS_ROW","WRS_PATH"]);
 var collectionList = raw_2005.toList(raw_2005.size());
 var collectionSize = collectionList.size().getInfo();
-/* Iterate over 2005 images and look for
+/* Iterate over 2005 images and look for 
    image with corresponding WRS_ROW/PATH in 2000 list */
-for (var index = 0; index < collectionSize; index++) {
+for (var index = 0; index < collectionSize; index++) { 
     /* Convert image to float for export */
     var image_2005 = ee.Image(collectionList.get(index)).float();
     /* Get corresponding row_path for 2005 image */
@@ -573,12 +573,12 @@ for (var index = 0; index < collectionSize; index++) {
       var image = image_2005;
       var fill = image_2000;
       var image = GapFill(image, fill, 10, true);
-      image = image.float();
+      // Map.addLayer(image, {bands: ['B3', 'B2', 'B1'], min: 0, max: 255}, 'raw');
       var geometry = image.geometry();
+      Map.addLayer(geometry, {}, 'geom');
       image = ee.Image.cat([image, elevation, slope]);
       var export_name = image_2005.id().getInfo();
       // print(export_name);
-      // break;
       Export.image.toDrive({
         image: image,
         folder: 'EEImages/imagesUsedForLabelling/HKH/2005',

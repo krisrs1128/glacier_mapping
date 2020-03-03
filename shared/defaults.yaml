@@ -20,21 +20,25 @@ train:
 # ---------------------------
 data:
     path: "/scratch/shimaa/data/processed_glacier_data" # Where's the data?
-    metadata:  "sat_data.csv"
-    country: "all"
-    year: "all"
+    metadata:  "sat_data.csv" # meta data file name
+    country: "all" # List of all countries to include. "all" to include all avilable years
+                # This only affect the training data, not the validation and test
+    year: "all" # List of all years to include. "all" to include all avilable years
+                # This only affect the training data, not the validation and test
     load_limit: -1 # Limit the number of samples per epoch | -1 to disable
-    borders: false
-    use_snow_i: false
-    use_slope: false
-    use_elev: false
-    mask_used: "glacier"
-    channels_to_inc: [0, 1, 2, 3, 4]
-    normalization_file: normalization_data.pkl
+    borders: false # Whether to use the border as an extra channel
+    use_snow_i: false # Whether to use snow index as an extra channel
+    use_slope: false # Whether to use slope as an extra channel
+    use_elev: false # Whether to use elevation as an extra channel
+    mask_used: "glacier" # The labels used to predict.
+                         # Options are 'glaciers' [default] for all the labels or
+                         # 'debris_glaciers' for psuedo debris glaciers labels 
+    channels_to_inc: [0, 1, 2, 3, 4] # list of all the channels to include (from 0 to 9)
+    normalization_file: normalization_data.pkl # What normalization file to use
 
 
 augmentation:
-    augment: true
+    augment: true # To augment or not
     vflip: 0.5 # percent of time to do vertical flip
     hflip: 0.5 # percent of time to do horizontal flip
     rotate_prop: 0.5 # perecent of time to rotate

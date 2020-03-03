@@ -2,7 +2,7 @@ data:
   data_path: "$SLURM_TMPDIR/data"
   country: [] # list of countries to process, [] for all countries
   year: [] # list of years to process, [] for all years
-  size: 512
+  size: 512 # Size of the square slice (nxn)
 
 validity_values:
   labels_perc: 0 # labels amounts has to more than labels_perc
@@ -13,5 +13,5 @@ validity_values:
 
 spliting_values:
   random_split: false # select test randomly or based on the Dudh_Koshi basin
-  dev_perc: 0.2
-  test_perc: 0.2 # only used with random_test: true
+  dev_perc: 0.2 # only used with random_split: true
+  test_perc: 0.2 # only used with random_split: true

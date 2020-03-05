@@ -52,7 +52,7 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
         np.save(str(out_path), mask)
         pd.DataFrame({
             "img_path": img_paths[k],
-            "mask": out_path,
+            "mask": out_path + ".npy",
             "width": img.meta["width"],
             "height": img.meta["height"],
             "mask_width": mask.shape[1],

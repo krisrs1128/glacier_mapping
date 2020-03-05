@@ -4,15 +4,14 @@ Convert Large Tiff and Mask files to Slices (512 x 512 subtiles)
 
 2020-02-26 10:36:48
 """
-import numpy as np
-import pandas as pd
-import os
-import pdb
-import matplotlib.pyplot as plt
-import pathlib
-import skimage.io
-import argparse
+from joblib import Parallel, delayed
 from skimage.util.shape import view_as_windows
+import argparse
+import numpy as np
+import os
+import pandas as pd
+import pathlib
+import rasterio
 
 def slice_tile(img, size=(512,512), overlap=6):
     """Slice an image into overlapping patches
@@ -41,7 +40,7 @@ def write_pair_slices(img_path, mask_path, out_dir=None, out_base="slice",
     if out_dir is None:
         out_dir = os.getcwd()
 
-    img = skimage.io.imread(img_path)
+    img = rasterio.open(img_path).read().transpose(1, 2, 0)
     mask = np.load(mask_path)
     img_slices, mask_slices = slice_pair(img, mask, **kwargs)
     metadata = []
@@ -62,24 +61,25 @@ def write_pair_slices(img_path, mask_path, out_dir=None, out_base="slice",
         })
 
     metadata = pd.DataFrame(metadata)
-    metadata.to_csv(metadata_path, mode="a", index=False)
+    metadata.to_csv(pathlib.Path(out_dir, metadata_path), mode="a", index=False)
     return metadata
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
-    parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default="paths.csv")
-    parser.add_argument("-r", "--row_in_csv", type=int, help="row of csv file to slice", default=0)
-    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=".")
-    parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="paths_")
+    parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default="/scratch/sankarak/data/glaciers_azure/masks/metadata.csv")
+    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default="/scratch/sankarak/data/glaciers_azure/slices/")
+    parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="slice")
+    parser.add_argument("-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=5)
     args = parser.parse_args()
 
-    
     paths = pd.read_csv(args.paths_csv)
-    
+
     ## Slicing all the Tiffs in input csv file into specified output directory
-    for row in range(len(paths)):
+    def wrapper(row):
         img_path=paths.iloc[row]["img"]
-        mask_path=f"/scratch/sankarak/data/tmp_masks/mask_{row:02}.npy"
+        mask_path=paths.iloc[row]["mask"]
         print(f"##Slicing tiff {row +1}/{len(paths)} ...")
-        write_pair_slices(img_path, mask_path, args.output_dir, args.out_base)
+        write_pair_slices(img_path, mask_path, args.output_dir, f"{args.out_base}_{row}")
+    para = Parallel(n_jobs=args.n_cpu)
+    para(delayed(wrapper)(k) for k in range(len(paths)))

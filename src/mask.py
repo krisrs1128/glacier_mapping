@@ -16,8 +16,8 @@ import warnings
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-def generate_masks(img_metas, img_bounds, shps_paths, output_base="mask",
-                   out_dir=None, n_jobs=10):
+def generate_masks(img_paths, shps_paths, output_base="mask",
+                   out_dir=None, n_jobs=4):
     """
     A wrapper of generate_mask, to make labels for each input
 
@@ -34,20 +34,33 @@ def generate_masks(img_metas, img_bounds, shps_paths, output_base="mask",
     if not out_dir:
         out_dir = os.getcwd()
 
+    cols = ["id", "img", "mask", "img_width", "img_height", "mask_width", "mask_height"]
+    metadata = pd.DataFrame({k: [] for k in cols})
+    metadata_path = pathlib.Path(out_dir, "metadata.csv")
+    metadata.to_csv(metadata_path, index=False)
+
     def wrapper(k):
-        print(f"working on image {k} / {len(img_metas)}")
-        shps = []
+        print(f"working on image {k} / {len(img_paths)}")
+        img, shps = rasterio.open(img_paths[k]), []
         for path in shps_paths[k]:
-            shps.append(gpd.read_file(path).to_crs(img_metas[k]["crs"].data))
+            shps.append(gpd.read_file(path).to_crs(img.meta["crs"].data))
 
         # build mask over tiff's extent, and save
-        shps = clip_shapefile(img_bounds[k], img_metas[k], shps)
-        mask = generate_mask(img_metas[k], shps)
+        shps = clip_shapefile(img.bounds, img.meta, shps)
+        mask = generate_mask(img.meta, shps)
         out_path = pathlib.Path(out_dir, f"{output_base}_{k:02}")
         np.save(str(out_path), mask)
+        pd.DataFrame({
+            "img_path": img_paths[k],
+            "mask": out_path,
+            "width": img.meta["width"],
+            "height": img.meta["height"],
+            "mask_width": mask.shape[1],
+            "mask_height": mask.shape[0]
+        }, index=[k]).to_csv(metadata_path, header = False, mode="a")
 
     para = Parallel(n_jobs=n_jobs)
-    para(delayed(wrapper)(k) for k in range(len(img_metas)))
+    para(delayed(wrapper)(k) for k in range(len(img_paths)))
 
 
 def generate_mask(img_meta, shps):
@@ -170,11 +183,9 @@ def path_pairs_landsat(base_dir):
 if __name__ == "__main__":
     img_dir = "/scratch/sankarak/data/glaciers_azure/"
     paths_df = path_pairs_landsat(img_dir)
-    imgs = [rasterio.open(p) for p in paths_df["img"].values]
-    img_metas = [im.meta for im in imgs]
-    img_bounds = [im.bounds for im in imgs]
+    img_paths = paths_df["img"].values
     shps_paths = [[p["label"], p["border"]] for _, p in paths_df.iterrows()]
 
-    output_dir = "/scratch/sankarak/data/glaciers_azure/masks"
-    generate_masks(img_metas, img_bounds, shps_paths, output_dir + "/mask")
+    out_dir = "/scratch/sankarak/data/glaciers_azure/masks"
+    generate_masks(img_paths, shps_paths, out_dir=out_dir)
     paths_df.to_csv(output_dir + "/paths.csv", index=False)

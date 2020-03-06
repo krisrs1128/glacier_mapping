@@ -27,8 +27,6 @@ class KerasDenseFineTune(BackendModel):
     def __init__(self, model_fn, gpuid, fine_tune_layer, fine_tune_seed_data_fn, verbose=False):
 
         self.model_fn = model_fn
-
-
         tmodel = keras.models.load_model(self.model_fn, compile=False, custom_objects={
             "jaccard_loss":keras.metrics.mean_squared_error,
             "loss":keras.metrics.mean_squared_error

@@ -97,7 +97,7 @@ class SessionHandler():
 
     def _spawn_local_worker(self, port, model_fn, gpu_id, fine_tune_layer):
         command = [
-            "/usr/bin/env", "python", "web_tool/worker.py",
+            "/usr/bin/env", "python3", "web_tool/worker.py",
             "--model", "keras_dense",
             "--model_fn", model_fn,
             "--fine_tune_layer", str(fine_tune_layer),
@@ -121,10 +121,8 @@ class SessionHandler():
         worker = self._WORKER_POOL.get() # this will block until we have a free one
 
         if worker["type"] == "local":
-            random_port = get_free_tcp_port()
-            random_port = 4040
             gpu_id = worker["gpu_id"]
-            process = self._spawn_local_worker(random_port, model_fn, gpu_id, fine_tune_layer)
+            process = self._spawn_local_worker(4040, model_fn, gpu_id, fine_tune_layer)
             model = ModelRPC(session_id, random_port)
             session = Session(session_id, model)
             self._SESSION_MAP[session_id] = session

@@ -81,12 +81,12 @@ class Session():
             assert self.storage_path is not None # we check for this when starting the program
 
             snapshot_id = "%s_%d" % (model_name, self.current_snapshot_idx)
-            
+
             print("Saving state for %s" % (snapshot_id))
             base_dir = os.path.join(self.storage_path, self.current_snapshot_string)
             if not os.path.exists(base_dir):
                 os.makedirs(base_dir, exist_ok=False)
-            
+
             model_fn = os.path.join(base_dir, "%s_model.p" % (snapshot_id))
             #joblib.dump(self.model, model_fn, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -101,7 +101,7 @@ class Session():
             return base64.b64encode(model_fn.encode('utf-8')).decode('utf-8') # this is super dumb
         else:
             return None
-    
+
     def add_entry(self, data):
         data = data.copy()
         data["time"] = datetime.datetime.now()
@@ -113,7 +113,7 @@ class Session():
 
         if self.storage_type == "file":
             self.request_list.append(data)
-        
+
         elif self.storage_type == "table":
 
             data["PartitionKey"] = self.current_snapshot_string
@@ -122,7 +122,7 @@ class Session():
             for k in data.keys():
                 if isinstance(data[k], dict) or isinstance(data[k], list):
                     data[k] = json.dumps(data[k])
-            
+
             try:
                 self.table_service.insert_entity("webtoolinteractions", data)
             except Exception as e:

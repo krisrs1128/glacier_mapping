@@ -117,6 +117,8 @@ class DataLoaderCustom(DataLoader):
         transformed_geom = shapely.geometry.shape(transformed_geom)
         buffed_geom = transformed_geom.buffer(self.padding)
         geom = shapely.geometry.mapping(shapely.geometry.box(*buffed_geom.bounds))
+
+        # passed into the model
         src_image, src_transform = rasterio.mask.mask(f, [geom], crop=True)
         f.close()
 

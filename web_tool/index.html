@@ -18,7 +18,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
     <link href="css/noty.css" rel="stylesheet">
 
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.    console.log("requesting patch")
+    console.log(polygon)
+1.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">
 
 
@@ -267,7 +269,7 @@
             map.createPane('labels');
             map.getPane('labels').style.zIndex = 200;
 
-            for(var i=0;i<interestingLocations.length;i++){
+            for(var i=0;i < interestingLocations.length;i++){
                 interestingLocations[i].on('click', function(e){
                     map.setView(e.latlng, 13);
                 });
@@ -424,7 +426,7 @@
                 function(value){
                     soft0_hard1 = value;
 
-                    for(idx=0; idx<currentPatches.length; idx++){
+                    for(idx=0; idx < currentPatches.length; idx++){
                         var tActiveImgIdx = currentPatches[idx]["activeImgIdx"];
                         var srcs = currentPatches[idx]["patches"][tActiveImgIdx]["srcs"];
                         currentPatches[idx]["imageLayer"].setUrl(srcs[soft0_hard1]);
@@ -432,7 +434,7 @@
 
                     if(currentPatches.length>0){
                         var idx = currentPatches.length - 1;
-                        for(var tActiveImgIdx=0; tActiveImgIdx<currentPatches[idx]["patches"].length; tActiveImgIdx++){
+                        for(var tActiveImgIdx=0; tActiveImgIdx < currentPatches[idx]["patches"].length; tActiveImgIdx++){
                             var srcs = currentPatches[idx]["patches"][tActiveImgIdx]["srcs"];
                             $("#exampleImage_"+tActiveImgIdx).attr("src", srcs[soft0_hard1]);
                         }
@@ -481,7 +483,7 @@
                         weight: 2
                     });
                     selectionBox.addTo(map);
-                }else{
+                } else {
                     if(!animating){
                         selectionBox.setStyle({
                             color: "#000000",
@@ -499,6 +501,7 @@
                 if(shiftKeyDown){
                     // Run the inference path
                     curSelPoly = getPolyAround(e.latlng, SELECTION_SIZE);
+
                     if(currentSelection === null){ // This condition creates the red selection box on the first click
                         currentSelection = L.polygon(curSelPoly, {
                             color: "#ff0000",
@@ -538,7 +541,7 @@
                                     map.dragging.enable();
                                 }
                             }, 700);
-                        }else{
+                        } else {
                             console.debug("Click not in selection");
                         }
                     }
@@ -623,9 +626,7 @@
 
 
                 var newClassElement =  $("<div class='radio'>");
-                //var newPicker = $("<button class=\"circle jscolor\" data-class-name=\"class-"+newClassIdx+"\" data-jscolor=\"{valueElement:null,value:'"+newColor.substring(1)+"',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}\"></button>");
                 var newLabel = $("<label><input type='radio' name='new-class' class='radNewClass' value='class-"+newClassIdx+"'><span id='label-name-class-"+newClassIdx+"' class='label-name'>Class "+newClassIdx+"</span> (<span id='label-counts-class-"+newClassIdx+"'>0</span> samples since last retrain)<i class='fa fa-edit ml-1 label-name-edit'></i></label>");
-
 
                 var newPicker = document.createElement('button');
                 newPicker.classList.add("circle");
@@ -674,7 +675,7 @@
             //----------------------------------------------------------------------
             // Setup the example images list
             //----------------------------------------------------------------------
-            for(var i=0; i<ENDPOINTS.length; i++){
+            for(var i=0; i < ENDPOINTS.length; i++){
                 var img = $("<img class='exampleImage'>");
                 img.attr("im-id", i);
                 img.attr("id", "exampleImage_"+i);

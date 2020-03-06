@@ -57,7 +57,7 @@ var doReset = function(notify=true){
         success: function(data, textStatus, jqXHR){
             if(data["success"] && notify){
                 notifySuccess(data, textStatus, jqXHR);
-                
+
                 $("#label-retrains").html("0");
 
                 for( k in labelCounts){
@@ -124,7 +124,7 @@ var doDownloadTile = function(){
             var tiffURL = window.location.origin + "/" + data["downloadTIFF"];
             $("#lblPNG").html("<a href='"+pngURL+"' target='_blank'>Download PNG</a>");
             $("#lblTIFF").html("<a href='"+tiffURL+"' target='_blank'>Download TIFF</a>");
-            
+
         },
         error: notifyFail,
         dataType: "json",
@@ -150,7 +150,7 @@ var doSendCorrection = function(polygon, idx){
     var topleftProjected = L.CRS.EPSG3857.project(topleft);
     var bottomright = L.latLng(polygon[2][0], polygon[2][1]);
     var bottomrightProjected = L.CRS.EPSG3857.project(bottomright);
-    
+
     var request = {
         "type": "correction",
         "dataset": DATASET,
@@ -178,8 +178,6 @@ var doSendCorrection = function(polygon, idx){
             console.debug(data);
 
             labelName = findClassByIdx(data["value"])
-            console.debug(labelName)
-            //labelCounts[data["value"]] += data["count"];
             labelCounts[labelName] += 1;
 
             $("#label-counts-"+labelName).html(labelCounts[labelName]);
@@ -208,7 +206,7 @@ var doUndo = function(){
             url: BACKEND_URL + "doUndo",
             data: JSON.stringify(request),
             success: function(data, textStatus, jqXHR){
-                
+
                 // remove previously added point
                 console.debug(data);
 
@@ -221,7 +219,7 @@ var doUndo = function(){
                     $("#label-counts-"+labelName).html(labelCounts[labelName]);
                 }
 
-                // 
+                //
 
                 // alert success
                 new Noty({
@@ -231,7 +229,7 @@ var doUndo = function(){
                     timeout: 1000,
                     theme: 'metroui'
                 }).show();
-            }, 
+            },
             error: notifyFail,
             always: function(){
                 undoInProgress = false;
@@ -263,23 +261,11 @@ var requestPatches = function(polygon){
         "patches": [],
         "activeImgIdx": activeImgIdx
     });
+
     var idx = currentPatches.length-1;
-    
     requestInputPatch(idx, polygon, BACKEND_URL);
-
-    currentPatches[idx]["patches"].push({
-        "srcs": null
-    });
+    currentPatches[idx]["patches"].push({"srcs": null});
     requestPatch(idx, polygon, 0, BACKEND_URL);
-
-    // The following code is for connecting to multiple backends at once
-    // for(var i=0; i<ENDPOINTS.length; i++){
-    //     //console.debug("Running requestPatch on " + ENDPOINTS[i]["url"]);
-    //     currentPatches[idx]["patches"].push({
-    //         "srcs": null
-    //     });
-    //     requestPatch(idx, polygon, i, BACKEND_URL); //TODO: this should be changed if we want to have a web tool that queries different backends
-    // }
 };
 
 var requestPatch = function(idx, polygon, currentImgIdx, serviceURL){
@@ -287,6 +273,8 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL){
     var topleftProjected = L.CRS.EPSG3857.project(topleft);
     var bottomright = L.latLng(polygon[2][0], polygon[2][1]);
     var bottomrightProjected = L.CRS.EPSG3857.project(bottomright);
+    console.log("requesting predictions")
+    console.log(DATASET)
 
     var request = {
         "type": "runInference",
@@ -303,22 +291,22 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL){
         },
         "colors": colorList,
     };
-    
+
     $.ajax({
         type: "POST",
         url: serviceURL + "predPatch",
         data: JSON.stringify(request),
         success: function(data, textStatus, jqXHR){
+            console.log("predicting")
             var resp = data;
-
             var srcs = [
                 "data:image/png;base64," + resp.output_soft,
                 "data:image/png;base64," + resp.output_hard,
             ];
-            
+
             var img = $("#exampleImage_"+currentImgIdx);
             img.attr("src", srcs[soft0_hard1]);
-            img.attr("data-name", resp.model_name);                    
+            img.attr("data-name", resp.model_name);
 
             if(currentImgIdx == currentPatches[idx]["activeImgIdx"]){
                 img.addClass("active");
@@ -369,7 +357,7 @@ var requestInputPatch = function(idx, polygon, serviceURL){
         success: function(data, textStatus, jqXHR){
             var resp = data;
             var naipImg = "data:image/png;base64," + resp.input_naip;
-            currentPatches[idx]["naipImg"] = naipImg 
+            currentPatches[idx]["naipImg"] = naipImg
             $("#inputImage").attr("src", naipImg);
 
             if(pred0_naip1 == 1){

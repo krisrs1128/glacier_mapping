@@ -20,7 +20,7 @@
 
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">
-    
+
 
 </head>
 
@@ -31,9 +31,9 @@
     <div id="privacy" class="leaflet-container">
         <a href="https://privacy.microsoft.com/en-US/privacystatement" target="_blank">Privacy Statement</a>
     </div>
-    
+
     <div id="sidebar" class="sidebar">
-    
+
         <!-- Tab panes -->
         <div class="sidebar-content">
 
@@ -144,7 +144,7 @@
 
         var visible = true;
         var opacitySlider;
-        
+
         var soft0_hard1 = 1;
         var pred0_naip1 = 0;
         var activeImgIdx = 0;
@@ -175,34 +175,34 @@
 
         var map = null;
         var animating = false;
-       
+
         var numClicks = 0;
 
         var userPointList = []
 
         var heatmap = null;
         var undoInProgress = false;
-        
+
         //----------------------------------------------------------------------
         // Runtime entrance
         //----------------------------------------------------------------------
         $(document).ready(function(){
 
-            
+
             //----------------------------------------------------------------------
             // Remove the default behavior of the shift key
             //----------------------------------------------------------------------
             document.onselectstart = function() {
                 return false;
             }
-            
+
             //----------------------------------------------------------------------
             // Parse URL arguments
             //----------------------------------------------------------------------
             args = getURLArguments()
             EXP_NAME = args.userID
             BACKEND_URL = BACKEND_ENDPOINTS[args.backendID]["url"];
-            
+
             if(!(args.dataset in tileLayers) && (args.dataset !== null)){
                 args.dataset = null;
                 new Noty({
@@ -217,9 +217,9 @@
                 args.dataset = "esri_world_imagery";
             }
             DATASET = args.dataset;
-            
+
             doReset(false); // reset the backend server
-            
+
             //----------------------------------------------------------------------
             // Start user study if necessary
             //----------------------------------------------------------------------
@@ -233,7 +233,7 @@
             // Setup map layers
             //----------------------------------------------------------------------
             heatmap = L.tileLayer(BACKEND_URL + 'heatmap/{z}/{y}/{x}?{randint}', {
-                attribution: 'Georeferenced Image', 
+                attribution: 'Georeferenced Image',
                 tms:true,
                 transparent:true,
                 maxZoom: 20,
@@ -252,12 +252,12 @@
             START_CENTER = tileLayers[DATASET]["location"][0];
             START_ZOOM = tileLayers[DATASET]["location"][1];
 
-            
+
             var cities = L.layerGroup(interestingLocations);
 
             map = L.map('map', {
                 zoomControl: false,
-                crs: L.CRS.EPSG3857, // this is a default, but I'm setting it to be explicit about what CRS we are in	
+                crs: L.CRS.EPSG3857, // this is a default, but I'm setting it to be explicit about what CRS we are in
                 center: START_CENTER,
                 zoom: START_ZOOM,
                 keyboard: false,
@@ -301,7 +301,7 @@
             var logoControl = $("<div class='leaflet-control logo-area'></div>");
             logoControl.append("<span class='logo-text'>Microsoft AI for Earth, Mila, UTEP</span>");
             logoControl.append("<br/>");
-            
+
             $(".leaflet-top.leaflet-left").append(logoControl)
 
             //----------------------------------------------------------------------
@@ -312,9 +312,9 @@
                 position:'topleft',
                 defaultMarkGeocode: true
             }).addTo(map);
-            
+
             //----------------------------------------------------------------------
-            // Custom initialization of the map zoom controls so that we can 
+            // Custom initialization of the map zoom controls so that we can
             // position it where we want
             //----------------------------------------------------------------------
             L.control.zoom({
@@ -451,16 +451,16 @@
                     size: "171px"
                 }
             ).addTo(map);
-            
+
             //----------------------------------------------------------------------
-            // Setup leaflet-sidebar-v2 and open the "#home" tab 
+            // Setup leaflet-sidebar-v2 and open the "#home" tab
             //----------------------------------------------------------------------
             var sidebar = L.control.sidebar(
                 'sidebar', {
                     position: 'right'
                 }
             ).addTo(map);
-            sidebar.open("home")        
+            sidebar.open("home")
 
             //----------------------------------------------------------------------
             // Setup map selection handlers
@@ -494,7 +494,7 @@
             });
 
             map.addEventListener('click', function(e){
-                
+
                 var curSelPoly = null;
                 if(shiftKeyDown){
                     // Run the inference path
@@ -509,7 +509,7 @@
                     }else{
                         currentSelection.setLatLngs(curSelPoly);
                     }
-   
+
                     requestPatches(curSelPoly);
                 }else{
                     // Run the add sample path
@@ -518,7 +518,7 @@
                             curSelPoly = getPolyAround(e.latlng, CORRECTION_SIZE);
                             var idx = currentPatches.length-1;
                             doSendCorrection(curSelPoly, idx);
-                            
+
                             var rect = L.rectangle(
                                 [curSelPoly[0], curSelPoly[2]],
                                 {
@@ -617,11 +617,11 @@
             $("#btnReset").click(doReset);
             $("#btnDownload").click(doDownloadTile);
             $("#btnNewClass").click(function(){
-                
+
                 var newClassIdx = classList.length + 1;
                 var newColor = getRandomColor();
 
-                
+
                 var newClassElement =  $("<div class='radio'>");
                 //var newPicker = $("<button class=\"circle jscolor\" data-class-name=\"class-"+newClassIdx+"\" data-jscolor=\"{valueElement:null,value:'"+newColor.substring(1)+"',position:'left',zIndex:2001,closable:true,closeText:'Close',onFineChange:'updateClassColor(this)'}\"></button>");
                 var newLabel = $("<label><input type='radio' name='new-class' class='radNewClass' value='class-"+newClassIdx+"'><span id='label-name-class-"+newClassIdx+"' class='label-name'>Class "+newClassIdx+"</span> (<span id='label-counts-class-"+newClassIdx+"'>0</span> samples since last retrain)<i class='fa fa-edit ml-1 label-name-edit'></i></label>");
@@ -641,8 +641,8 @@
                 });
 
                 newClassElement.append(newPicker);
-                newClassElement.append(newLabel);        
-            
+                newClassElement.append(newLabel);
+
                 $("#classList").append(newClassElement);
 
                 classList.push({
@@ -670,7 +670,7 @@
                 var newName = prompt("New label name for '"+oldName+"'");
                 $(this).siblings(".label-name").html(newName);
             });
-            
+
             //----------------------------------------------------------------------
             // Setup the example images list
             //----------------------------------------------------------------------
@@ -684,7 +684,7 @@
             $(".exampleImage").click(function(){
                 $(".exampleImage").removeClass("active");
                 $(this).addClass("active");
-                
+
                 var idx = currentPatches.length-1;
                 activeImgIdx = $(this).attr("im-id");
 

@@ -1,8 +1,7 @@
 import os
 import json
 
-from web_tool import ROOT_DIR
-
+ROOT_DIR = os.environ["WEBTOOL_ROOT"]
 _MODEL_FN = "models.json"
 
 
@@ -20,9 +19,9 @@ def load_models():
 
     for key, model in model_json.items():
         model_object = _load_model(model)
-        
+
         if model_object is False:
-            print("WARNING: files are missing, we will not be able to serve '%s' model" % (key)) 
+            print("WARNING: files are missing, we will not be able to serve '%s' model" % (key))
         else:
             models[key] = model_object
 

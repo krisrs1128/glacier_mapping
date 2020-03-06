@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys, os, time
 import rpyc
 
@@ -15,19 +16,21 @@ class ModelRPC(BackendModel):
         self.rety_timeout = 2
         self.connection = None
 
-        i=0
-        while self.connection is None or i<self.max_retries:
+        i = 0
+        while self.connection is None or i < self.max_retries:
             try:
+                print(port)
                 self.connection = rpyc.connect("localhost", port, config={
                     'allow_public_attrs': False
                 })
                 LOGGER.info("Made a connection")
                 break
-            except ConnectionRefusedError:
-                i+=1
+            except ConnectionRefusedError as e:
+                print(e)
+                i += 1
                 time.sleep(self.rety_timeout)
                 LOGGER.warning("Haven't connected, attempt %d" % (i))
-        
+
     def run(self, naip_data, extent, on_tile=False):
         return deserialize(self.connection.root.exposed_run(serialize(naip_data), extent, on_tile))
     def retrain(self):

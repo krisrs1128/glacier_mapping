@@ -71,7 +71,7 @@
         ]
 
     },
-    "buthan2000_landsat": {
+    "bhutan2000_landsat": {
         "metadata": {
             "displayName": "Bhutan 2000",
             "imageryName": "Landsat Imagery",

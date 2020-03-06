@@ -1,16 +1,13 @@
+#!/usr/bin/env python3
 import time
 import threading
 import subprocess
 import socket
 from queue import Queue
-
 from Session import Session
-
 from ServerModelsRPC import ModelRPC
 from ServerModelsKerasDense import KerasDenseFineTune
-
 from log import LOGGER
-
 from Models import load_models
 MODELS = load_models()
 
@@ -29,17 +26,17 @@ def session_monitor(session_handler, session_timeout_seconds=900):
             time_inactive = time.time() - session.last_interaction_time
             if time_inactive > session_timeout_seconds:
                 session_ids_to_kill.append(session_id)
-        
+
         for session_id in session_ids_to_kill:
             LOGGER.info("SESSION MONITOR - Session (%s) has been inactive for over %d seconds, destroying" % (session_id, session_timeout_seconds))
             session_handler.kill_session(session_id)
-        
+
         time.sleep(5)
 
 
 def get_free_tcp_port():
     '''From: https://gist.github.com/gabrielfalcao/20e567e188f588b65ba2
-    
+
     We use the OS to select a free port for us.
     '''
     tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,7 +63,7 @@ class SessionHandler():
         self._expired_sessions = set()
         self._SESSION_MAP = dict()
         self._SESSION_INFO = dict()
-        
+
         self.local = local
         self.args = args
 
@@ -77,7 +74,7 @@ class SessionHandler():
 
     def is_expired(self, session_id):
         '''This is checked in `manage_sessions` in server.py before each request.
-        
+
         If the user's current session_id is marked as expired, then it has been deleted
         and `manage_sessions` will delete the session content on the actual client side
         (I think by destroying the users's cookie).
@@ -94,7 +91,7 @@ class SessionHandler():
     def cleanup_expired_session(self, session_id):
         '''After `manage_sessions` cleans up the session on the client side, then
         the session_id can be removed from the expired session set.
-        ''' 
+        '''
         self._expired_sessions.remove(session_id)
 
 
@@ -117,7 +114,7 @@ class SessionHandler():
 
         if model_key not in MODELS:
             raise ValueError("%s is not a valid model, check the keys in models.json" % (model_key))
-        
+
         model_fn = MODELS[model_key]["fn"]
         fine_tune_layer = MODELS[model_key]["fine_tune_layer"]
 
@@ -125,6 +122,7 @@ class SessionHandler():
 
         if worker["type"] == "local":
             random_port = get_free_tcp_port()
+            random_port = 4040
             gpu_id = worker["gpu_id"]
             process = self._spawn_local_worker(random_port, model_fn, gpu_id, fine_tune_layer)
             model = ModelRPC(session_id, random_port)
@@ -145,7 +143,7 @@ class SessionHandler():
     def kill_session(self, session_id):
         ''' Two code paths should be able to kill a session:
         - The user kills the session on purpose through /killSession
-        - The `session_monitor` thread sees that the session hasn't had any activity for some time 
+        - The `session_monitor` thread sees that the session hasn't had any activity for some time
         '''
         if self.is_active(session_id):
             # kill the remote process
@@ -156,7 +154,7 @@ class SessionHandler():
 
             # TODO: is there anything that needs to be cleaned up at the session level (e.g. saving data)?
             del self._SESSION_MAP[session_id]
-            
+
             self._set_expired(session_id) # we set this to expired so that it can be cleaned up on the client side
         else:
             raise ValueError("Tried to kill a non-existing Session")

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from web_tool.ServerModelsAbstract import BackendModel
 import torch
 import numpy as np

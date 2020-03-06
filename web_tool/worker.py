@@ -1,21 +1,18 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 # pylint: disable=E1137,E1136,E0110
-import sys
-import os
-import time
-import datetime
-import collections
-import argparse
-
-import numpy as np
-
-import rpyc
-from rpyc.utils.server import OneShotServer, ThreadedServer
-
 from ServerModelsKerasDense import KerasDenseFineTune
-from Utils import serialize, deserialize
+from rpyc.utils.server import OneShotServer, ThreadedServer
+import Utils as utils
+import argparse
+import collections
+import datetime
+import numpy as np
+import os
+import rpyc
+import sys
+import time
 
 from log import setup_logging, LOGGER
 
@@ -32,9 +29,9 @@ class MyService(rpyc.Service):
         pass
 
     def exposed_run(self, naip_data, extent, on_tile=False):
-        naip_data = deserialize(naip_data) # need to serialize/deserialize numpy arrays
+        naip_data = utils.deserialize(naip_data) # need to serialize/deserialize numpy arrays
         output = self.model.run(naip_data, extent, on_tile)
-        return serialize(output) # need to serialize/deserialize numpy arrays
+        return utils.serialize(output) # need to serialize/deserialize numpy arrays
 
     def exposed_retrain(self):
         return self.model.retrain()

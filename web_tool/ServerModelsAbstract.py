@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from abc import ABC, abstractmethod
 
 class BackendModel(ABC):
@@ -7,7 +8,7 @@ class BackendModel(ABC):
         '''Inputs:
         `naip_data` is a (height, width, 4) unnormalized image (all pixels values are in [0,255])
         `extent` is the extent dictionary that is given by the front-end
-        `on_tile` is a flag that specifies whether we are running the model in "download mode" and shouldn't be updating any internal states 
+        `on_tile` is a flag that specifies whether we are running the model in "download mode" and shouldn't be updating any internal states
 
         Outputs:
         `output` should be a (height, width, 4) softmax image (where the last axis sums to 1)
@@ -26,10 +27,10 @@ class BackendModel(ABC):
 
     @abstractmethod
     def add_sample(self, tdst_row, bdst_row, tdst_col, bdst_col, class_idx):
-        '''Takes as input a bounding box and new class label. Should set the area in the previously predicted patch that is covered by the 
-        given bounding box to the new class label. No outputs. 
-        
-        Inputs: 
+        '''Takes as input a bounding box and new class label. Should set the area in the previously predicted patch that is covered by the
+        given bounding box to the new class label. No outputs.
+
+        Inputs:
         `bdst_row` start row of the bounding box
         `tdst_row` end row of the bounding box
         `tdst_col` start column of the bounding box

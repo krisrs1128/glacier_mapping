@@ -1,17 +1,13 @@
+#!/usr/bin/env python3
 import os
-
 import numpy as np
 from enum import Enum
-
 from urllib.request import urlopen
-
 import fiona
 import fiona.transform
 import fiona.crs
-
 import shapely
 import shapely.geometry
-
 import rasterio
 import rasterio.warp
 import rasterio.crs
@@ -19,20 +15,16 @@ import rasterio.io
 import rasterio.mask
 import rasterio.transform
 import rasterio.merge
-
 import rtree
-
 import mercantile
-
 import cv2
 import pickle
-
-from web_tool import ROOT_DIR
 from DataLoaderAbstract import DataLoader
 
 # ------------------------------------------------------
 # Miscellaneous methods
 # ------------------------------------------------------
+ROOT_DIR = os.environ["WEBTOOL_ROOT"]
 
 def extent_to_transformed_geom(extent, dest_crs="EPSG:4269"):
     left, right = extent["xmin"], extent["xmax"]
@@ -54,7 +46,7 @@ def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=1)
     src_height, src_width, num_channels = src_img.shape
 
     src_img_tmp = np.rollaxis(src_img.copy(), 2, 0)
-    
+
     dst_crs = rasterio.crs.CRS.from_epsg(3857)
     dst_bounds = rasterio.warp.transform_bounds(src_crs, dst_crs, *src_bounds)
     dst_transform, width, height = rasterio.warp.calculate_default_transform(
@@ -79,7 +71,7 @@ def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=1)
         resampling=rasterio.warp.Resampling.nearest
     )
     dst_image = np.rollaxis(dst_image, 0, 3)
-    
+
     return dst_image, dst_bounds
 
 
@@ -192,7 +184,7 @@ class DataLoaderCustom(DataLoader):
 # ------------------------------------------------------
 class NAIPTileIndex(object):
     TILES = None
-    
+
     @staticmethod
     def lookup(extent):
         if NAIPTileIndex.TILES is None:
@@ -273,7 +265,7 @@ class DataLoaderUSALayer(DataLoader):
             raise ValueError("GeoDataType not recognized")
 
         return fn
-    
+
     def get_shape_by_extent(self, extent, shape_layer):
         transformed_geom = extent_to_transformed_geom(extent, shapes_crs)
         transformed_shape = shapely.geometry.shape(transformed_geom)
@@ -351,7 +343,7 @@ class DataLoaderBasemap(DataLoader):
         arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
         img = cv2.imdecode(arr, -1)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        return img    
+        return img
 
     def get_tile_as_virtual_raster(self, tile):
         '''NOTE: Here "tile" refers to a mercantile "Tile" object.'''
@@ -367,14 +359,14 @@ class DataLoaderBasemap(DataLoader):
             "crs": "epsg:4326",
             "count": 3,
             "dtype": "uint8"
-        }    
+        }
         test_f = rasterio.io.MemoryFile()
         with test_f.open(**dst_profile) as test_d:
             test_d.write(img[:,:,0], 1)
             test_d.write(img[:,:,1], 2)
             test_d.write(img[:,:,2], 3)
         test_f.seek(0)
-        
+
         return test_f
 
     def get_shape_by_extent(self, extent, shape_layer):
@@ -384,9 +376,9 @@ class DataLoaderBasemap(DataLoader):
         transformed_geom = extent_to_transformed_geom(extent, "epsg:4326")
         transformed_geom = shapely.geometry.shape(transformed_geom)
         buffed_geom = transformed_geom.buffer(self.padding)
-        
+
         minx, miny, maxx, maxy = buffed_geom.bounds
-        
+
         virtual_files = [] # this is nutty
         virtual_datasets = []
         for i, tile in enumerate(mercantile.tiles(minx, miny, maxx, maxy, self.zoom_level)):
@@ -399,7 +391,7 @@ class DataLoaderBasemap(DataLoader):
             ds.close()
         for f in virtual_files:
             f.close()
-        
+
         dst_crs = rasterio.crs.CRS.from_epsg(4326)
         dst_profile = {
             "driver": "GTiff",
@@ -422,7 +414,7 @@ class DataLoaderBasemap(DataLoader):
 
         r,g,b = out_image
         out_image = np.stack([r,g,b,r])
-        
+
         return out_image, dst_crs, out_transform, (minx, miny, maxx, maxy), dst_index
 
     def get_area_from_shape_by_extent(self, extent, shape_layer):

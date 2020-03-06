@@ -1,23 +1,19 @@
-import sys
-import os
-import time
-import datetime
-import collections
-import subprocess
-import shutil
-
-import base64
-import json
-import uuid
-import pickle
-
-import numpy as np
-
-import joblib
-
+#!/usr/bin/env python3
 from Utils import get_random_string, AtomicCounter
-
 from log import LOGGER
+import base64
+import collections
+import datetime
+import joblib
+import json
+import numpy as np
+import os
+import pickle
+import shutil
+import subprocess
+import sys
+import time
+import uuid
 
 SESSION_BASE_PATH = './data/session'
 SESSION_FOLDER = SESSION_BASE_PATH + "/" + datetime.datetime.now().strftime('%Y-%m-%d')

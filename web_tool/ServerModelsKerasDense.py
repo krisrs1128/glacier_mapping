@@ -1,16 +1,14 @@
-import sys, os, time, copy
-import numpy as np
-
-import sklearn.base
-from sklearn.neural_network import MLPClassifier
+#!/usr/bin/env python3
+from ServerModelsAbstract import BackendModel
 from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.neural_network import MLPClassifier
+import numpy as np
+import sklearn.base
+import sys, os, time, copy
+import warnings
+warnings.simplefilter(action="ignore", category=FutureWarning)
 import tensorflow as tf
 import tensorflow.keras as keras
-
-from ServerModelsAbstract import BackendModel
-from web_tool import ROOT_DIR
-
 
 
 class KerasDenseFineTune(BackendModel):

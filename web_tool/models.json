@@ -7,7 +7,7 @@
             "type": "keras_dense",
             "fineTuneLayer": -2,
             "numParameters": 563498,
-            "inputShape": [100,100,4], 
+            "inputShape": [100,100,4],
             "fn": "web_tool/data/sentinel_demo_model.h5"
         }
     },

@@ -63,7 +63,7 @@ var notifySuccess = function(data, textStatus, jqXHR, timeout=500){
         layout: 'topCenter',
         timeout: timeout,
         theme: 'metroui'
-    }).show();        
+    }).show();
 };
 
 var notifyFail = function(jqXHR, textStatus, errorThrown, timeout=2000){
@@ -92,7 +92,7 @@ var isPointInsidePolygon = function(latlng, poly) {
     // From https://stackoverflow.com/questions/31790344/determine-if-a-point-reside-inside-a-leaflet-polygon
     var polyPoints = poly.getLatLngs()[0];
     var x = latlng.lat, y = latlng.lng;
-    
+
     var inside = false;
     for (var i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
         var xi = polyPoints[i].lat, yi = polyPoints[i].lng;
@@ -107,11 +107,11 @@ var isPointInsidePolygon = function(latlng, poly) {
 };
 
 var getPolyAround = function(latlng, radius){
-    // We convert the input lat/lon into the EPSG3857 projection, define our square, then re-convert to lat/lon 
+    // We convert the input lat/lon into the EPSG3857 projection, define our square, then re-convert to lat/lon
     var latlngProjected = L.CRS.EPSG3857.project(latlng);
     var x = latlngProjected.x;
     var y = latlngProjected.y;
-    
+
     var top = y + radius/2;
     var bottom = y - radius/2;
     var left = x - radius/2;
@@ -121,11 +121,11 @@ var getPolyAround = function(latlng, radius){
     bottom = Math.round(bottom);
     left = Math.round(left);
     right = Math.round(right);
-    
+
     // left/right are "x" points while top/bottom are the "y" points
     var topleft = L.CRS.EPSG3857.unproject(L.point(left, top));
     var bottomright = L.CRS.EPSG3857.unproject(L.point(right, bottom));
-    
+
     return [[topleft.lat, topleft.lng],
             [topleft.lat, bottomright.lng],
             [bottomright.lat, bottomright.lng],
@@ -134,7 +134,7 @@ var getPolyAround = function(latlng, radius){
 
 var padNumberWithZeros = function(n, width, z) {
     /* From https://stackoverflow.com/questions/10073699/pad-a-number-with-leading-zeros-in-javascript
-    
+
     Example:
     padNumberWithZeros(10, 4) --> "0010"
     padNumberWithZeros(9, 4) --> "0009"
@@ -249,7 +249,6 @@ var getZoneMap = function(zoneSetId, name, url){
 }
 
 var forEachFeatureOnClick = function(feature, layer) {
-    console.debug("clicked")
     layer.on('click', function (e) {
         gCurrentZone = layer;
         for(k in gZonemaps){
@@ -257,7 +256,7 @@ var forEachFeatureOnClick = function(feature, layer) {
         }
         layer.setStyle(HIGHLIGHTED_ZONE_STYLE);
         layer.bringToFront();
-        
+
         var nameKey = e.target.feature.properties["KEY"];
         if (nameKey !== null){
             $("#lblZoneName").html(e.target.feature.properties[nameKey]);

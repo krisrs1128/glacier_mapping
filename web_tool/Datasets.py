@@ -1,17 +1,15 @@
+#!/usr/bin/env python3
 import os
 import json
-
 import utm
 import fiona
 import fiona.transform
 import shapely
 import shapely.geometry
-
-from web_tool import ROOT_DIR
-
 from DataLoader import DataLoaderCustom, DataLoaderUSALayer, DataLoaderBasemap
 
 _DATASET_FN = "datasets.json"
+ROOT_DIR = os.environ["WEBTOOL_ROOT"]
 
 def get_area_from_geometry(geom, src_crs="epsg:4326"):
     if geom["type"] == "Polygon":

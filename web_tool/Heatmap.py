@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 import collections
 
 import matplotlib
-matplotlib.use("Agg") 
+matplotlib.use("Agg")
 import matplotlib.cm
 
 import numpy as numpy

@@ -444,14 +444,11 @@ def main():
         default=None
     )
     parser.add_argument("--storage_path", action="store", dest="storage_path", type=str, help="Path to directory where output will be stored", default=None)
-
     parser.add_argument("--host", action="store", dest="host", type=str, help="Host to bind to", default="0.0.0.0")
     parser.add_argument("--port", action="store", dest="port", type=int, help="Port to listen on", default=8080)
 
-
     subparsers = parser.add_subparsers(dest="subcommand", help='Help for subcommands') # TODO: If we use Python3.7 we can use the required keyword here
     parser_a = subparsers.add_parser('local', help='For running models on the local server')
-
     parser_b = subparsers.add_parser('remote', help='For running models with RPC calls')
     parser.add_argument("--remote_host", action="store", dest="remote_host", type=str, help="RabbitMQ host", default="0.0.0.0")
     parser.add_argument("--remote_port", action="store", dest="remote_port", type=int, help="RabbitMQ port", default=8080)

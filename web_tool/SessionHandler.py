@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-import time
-import threading
-import subprocess
-import socket
-from queue import Queue
-from Session import Session
-from ServerModelsRPC import ModelRPC
-from ServerModelsKerasDense import KerasDenseFineTune
-from log import LOGGER
 from Models import load_models
+from ServerModelsKerasDense import KerasDenseFineTune
+from ServerModelsRPC import ModelRPC
+from Session import Session
+from log import LOGGER
+from queue import Queue
+import socket
+import subprocess
+import threading
+import time
 MODELS = load_models()
 
 
@@ -95,12 +95,13 @@ class SessionHandler():
         self._expired_sessions.remove(session_id)
 
 
-    def _spawn_local_worker(self, port, model_fn, gpu_id, fine_tune_layer):
+    def _spawn_local_worker(self, type, fn, gpu_id, fineTuneLayer, port,
+                            **kwargs):
         command = [
             "/usr/bin/env", "python3", "web_tool/worker.py",
-            "--model", "keras_dense",
-            "--model_fn", model_fn,
-            "--fine_tune_layer", str(fine_tune_layer),
+            "--model", type,
+            "--model_fn", fn,
+            "--fine_tune_layer", str(fineTuneLayer),
             "--gpu", str(gpu_id),
             "--port", str(port)
         ]
@@ -108,22 +109,20 @@ class SessionHandler():
         return process
 
 
-    def create_session(self, session_id, model_key):
+    def create_session(self, session_id, model_key, port=4041):
         if session_id in self._SESSION_MAP:
             raise ValueError("session_id %d has already been created" % (session_id))
 
         if model_key not in MODELS:
             raise ValueError("%s is not a valid model, check the keys in models.json" % (model_key))
 
-        model_fn = MODELS[model_key]["fn"]
-        fine_tune_layer = MODELS[model_key]["fine_tune_layer"]
-
         worker = self._WORKER_POOL.get() # this will block until we have a free one
+        MODELS[model_key].update({"gpu_id": worker["gpu_id"], "port": port})
 
         if worker["type"] == "local":
             gpu_id = worker["gpu_id"]
-            process = self._spawn_local_worker(4040, model_fn, gpu_id, fine_tune_layer)
-            model = ModelRPC(session_id, random_port)
+            process = self._spawn_local_worker(**MODELS[model_key])
+            model = ModelRPC(session_id, port)
             session = Session(session_id, model)
             self._SESSION_MAP[session_id] = session
             self._SESSION_INFO[session_id] = {

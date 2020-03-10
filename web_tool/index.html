@@ -1,29 +1,20 @@
 <!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="favicon.ico">
-
-    <title>Glacier Mapping - Labeling Tool</title>
-
-    <!-- Core CSS -->
-    <link href="css/leaflet.css" rel="stylesheet" />
-    <link href="css/leaflet-slider.css" rel="stylesheet" />
-    <link href="css/leaflet-sidebar.css" rel="stylesheet" />
-    <link href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
-    <link href="css/noty.css" rel="stylesheet">
-
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.    console.log("requesting patch")
-    console.log(polygon)
-1.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="css/main.css" rel="stylesheet">
-
-
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content=""> <meta name="author" content="">
+        <link rel="icon" href="favicon.ico">
+        <title>Glacier Mapping - Labeling Tool</title>
+        <!-- Core CSS -->
+        <link href="css/leaflet.css" rel="stylesheet" />
+        <link href="css/leaflet-slider.css" rel="stylesheet" />
+        <link href="css/leaflet-sidebar.css" rel="stylesheet" />
+        <link href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+        <link href="css/noty.css" rel="stylesheet">
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href="css/main.css" rel="stylesheet">
 </head>
 
 <body>
@@ -283,7 +274,6 @@
                     dataType: "json",
                     url: tileLayers[DATASET]["shapes"],
                     success: function(data) {
-                        console.debug(data);
                         L.geoJSON(data, {
                             style: {
                                 "fillOpacity": 0,
@@ -513,7 +503,7 @@
                         currentSelection.setLatLngs(curSelPoly);
                     }
 
-                    requestPatches(curSelPoly);
+                    requestPatches([], curSelPoly);
                 }else{
                     // Run the add sample path
                     if(currentSelection !== null){

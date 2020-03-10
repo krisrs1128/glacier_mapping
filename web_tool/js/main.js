@@ -30,7 +30,7 @@ var doRetrain = function(){
                     [t[2]["lat"], t[2]["lng"]],
                     [t[3]["lat"], t[3]["lng"]]
                 ];
-                requestPatches(curSelPoly);
+                requestPatches(currentPatches, curSelPoly);
             }
         },
         error: notifyFail,
@@ -253,16 +253,19 @@ var doUndo = function(){
 //-----------------------------------------------------------------
 // Get predictions
 //-----------------------------------------------------------------
-var requestPatches = function(polygon){
+var requestPatches = function(currentPatches, polygon){
     // Setup placeholders for the predictions from the current click to be saved to
+    var bounds = L.polygon(polygon).getBounds(),
+        overlay = L.imageOverlay("", bounds, {pane: "labels"});
     currentPatches.push({
         "naipImg": null,
-        "imageLayer": L.imageOverlay("", L.polygon(polygon).getBounds(), {pane: "labels"}).addTo(map),
+        "imageLayer": overlay.addTo(map),
         "patches": [],
         "activeImgIdx": activeImgIdx
     });
 
     var idx = currentPatches.length-1;
+    console.log(idx)
     requestInputPatch(idx, polygon, BACKEND_URL);
     currentPatches[idx]["patches"].push({"srcs": null});
     requestPatch(idx, polygon, 0, BACKEND_URL);
@@ -330,11 +333,13 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL){
 // Get NAIP input
 //-----------------------------------------------------------------
 var requestInputPatch = function(idx, polygon, serviceURL){
-    var topleft = L.latLng(polygon[0][0], polygon[0][1]);
-    var topleftProjected = L.CRS.EPSG3857.project(topleft);
-    var bottomright = L.latLng(polygon[2][0], polygon[2][1]);
-    var bottomrightProjected = L.CRS.EPSG3857.project(bottomright);
+    var currentPatches = [],
+        topleft = L.latLng(polygon[0][0], polygon[0][1]),
+        topleftProjected = L.CRS.EPSG3857.project(topleft),
+        bottomright = L.latLng(polygon[2][0], polygon[2][1]),
+        bottomrightProjected = L.CRS.EPSG3857.project(bottomright);
 
+    console.log(DATASET)
     var request = {
         "type": "getInput",
         "dataset": DATASET,
@@ -349,6 +354,7 @@ var requestInputPatch = function(idx, polygon, serviceURL){
             }
         }
     };
+    console.log(request)
 
     $.ajax({
         type: "POST",

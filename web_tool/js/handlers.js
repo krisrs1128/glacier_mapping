@@ -10,7 +10,7 @@ var addInferenceMouseHandlers = function(){
         }else{
             curSelPoly = getPolyAround(e.latlng, INFERENCE_WINDOW_SIZE);
         }
-        
+
         if(gSelectionBox === null){
             gSelectionBox = L.polygon(curSelPoly, {
                 color: "#000000",
@@ -29,9 +29,9 @@ var addInferenceMouseHandlers = function(){
             gSelectionBox.setLatLngs(curSelPoly);
         }
     });
-    
+
     gMap.addEventListener('click', function(e){
-        
+
         var curSelPoly = null;
         if(gShiftKeyDown){
             // Run the inference path
@@ -46,8 +46,8 @@ var addInferenceMouseHandlers = function(){
             }else{
                 gCurrentSelection.setLatLngs(curSelPoly);
             }
-    
-            requestPatches(curSelPoly);
+
+            requestPatches([], curSelPoly);
         }else{
             // Run the add sample path
             if(gCurrentSelection !== null){
@@ -56,7 +56,7 @@ var addInferenceMouseHandlers = function(){
                         curSelPoly = getPolyAround(e.latlng, CORRECTION_WINDOW_SIZE);
                         var idx = gCurrentPatches.length-1;
                         doSendCorrection(curSelPoly, idx);
-                        
+
                         var rect = L.rectangle(
                             [curSelPoly[0], curSelPoly[2]],
                             {
@@ -67,7 +67,7 @@ var addInferenceMouseHandlers = function(){
                             }
                         ).addTo(gMap);
                         gUserPointList.push([rect, gSelectedClassIdx]);
-    
+
                         gMap.dragging.disable();
                         gNumClicks += 1
                         window.setTimeout(function(){
@@ -92,7 +92,7 @@ var addDrawControlHandlers = function(){
     gMap.on("draw:created", function (e) {
         var layer = e.layer;
         var type = e.layerType;
-        
+
         if (type === 'polygon') {
             L.Util.setOptions(layer, {pane: "customPolygons"});
             if(gCurrentCustomPolygon !== null){
@@ -102,11 +102,11 @@ var addDrawControlHandlers = function(){
             gCurrentCustomPolygon = layer;
         }
     });
-    
+
     gMap.on("draw:deleted", function(e){
         var layer = e.layer;
         var type = e.layerType;
-    
+
         if (type === "draw:deleted"){
             gCurrentCustomPolygon = null;
         }

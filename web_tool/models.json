@@ -16,11 +16,11 @@
             "displayName": "UNet Shima Kind Durian 140"
         },
         "model": {
-            "type": "keras_dense",
-            "fineTuneLayer": -4,
+            "type": "pytorch",
             "numParameters": 7790949,
             "inputShape": [512,512,10],
-            "fn": "web_tool/data/model_188.pt"
+            "fn": "web_tool/data/model_188.pt",
+            "fineTuneLayer": 0
         }
     }
 }

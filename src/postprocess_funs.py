@@ -18,8 +18,9 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0):
     :param filter_channel: The channel to do the filtering on.
     """
     keep_ids = []
+    print(slice_meta)
 
-    img_paths, mask_paths = slice_meta["img_slice"].values, slice_meta["mask_slices"].values
+    img_paths, mask_paths = slice_meta["img_slice"].values, slice_meta["mask_slice"].values
     for i, mask_path in enumerate(mask_paths):
         mask = np.load(mask_path)
 
@@ -35,6 +36,7 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0):
 
     return keep_ids
 
+
 def random_split(ids, split_ratio, **kwargs):
     ids = random.shuffle(ids)
     sizes = len(ids) * np.array(split_ratio)
@@ -45,10 +47,8 @@ def random_split(ids, split_ratio, **kwargs):
         "test": ids[ix[1]:ix[2]]
     }
 
-def reshuffle(split_ids, out_dir=None):
-    if not out_dir:
-        out_dir = "output/"
 
+def reshuffle(split_ids, out_dir="output/"):
     for split_type in split_ids:
         path = Path(out_dir, split_type)
         os.mkdirs(path)
@@ -68,18 +68,58 @@ def reshuffle(split_ids, out_dir=None):
     return target_locs
 
 
+def generate_stats(image_paths, sample_size, outpath="stats.json"):
+    """
+    Function to generate statistics of the input image channels
 
-if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument("-d", "--slice_dir", type=str, help="path to directory with all the slices")
-    parser.add_argument("-o", "--output_dir", type=str, help="path to output directory for postprocessed files")
-    args = parser.parse_args()
+    :param image_paths: List of Paths to images in directory
+    :param sample_size: int giving the size of the sample from which to compute the statistics
+    :param outpath: str The path to the output json file containing computed statistics
 
-    opts = Dict({"filter": True, "filter_percentage": 0, "filter_channel":0})
-    mask_paths = glob.glob(args.slice_dir +"*mask*")
+    :return Dictionary with keys for means and stds across the channels in input images
+    """
+    image_paths = np.random.choice(image_paths, sample_size, replace=False)
+    images = [np.load(image_path) for image_path in image_paths]
+    batch = np.stack(images)
+    means = np.nanmean(batch, axis=(0,1,2))
+    stds = np.nanstd(batch, axis=(0,1,2))
 
-    for path in mask_paths:
-        mask = np.load(path)
+    with open(outpath, "w") as f:
+        stats = {
+            "means": means.tolist(),
+            "stds": stds.tolist()
+        }
+
+        json.dump(stats,f)
+    return(stats)
 
 
-    keep_ids = filter_directory(input_dir, filter_perc=0.2, filter_channel=0)
+def normalize_(img, means, stds, **kwargs):
+    """
+        :param img: Input image to normalize
+        :param means: Computed mean of the input channels
+        :param stds: Computed standard deviation of the input channels
+
+        :return img: Normalized img
+    """
+    for i in range(img.shape[2]):
+        img[:,:,i] -= means[i]
+        if stds[i] > 0:
+            img[:,:,i] /= stds[i]
+        else:
+            img[:,:,i] = 0
+
+    return img
+
+
+def normalize(img, mask, stats, **kwargs):
+    """wrapper for postprocess"""
+    img = normalize_(img, stats["means"], stats["stds"])
+    return img, mask
+
+
+def postprocess(img, mask, funs_seq, **kwargs):
+    for f in funs_seq:
+        img, mask = f(img, mask, **kwargs)
+
+    return img, mask

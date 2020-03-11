@@ -1,4 +1,4 @@
-# normalize 
+# normalize
 import pickle
 from argparse import ArgumentParser
 from pathlib import Path

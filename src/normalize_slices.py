@@ -3,8 +3,6 @@ import os
 import glob
 import json
 
-imgs = glob.glob('/scratch/akera/glacier_slices/*img*')
-
 def generate_stats(image_paths, sample_size, outpath="stats.json"):
     """
     Function to generate statistics of the input image channels

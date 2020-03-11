@@ -67,6 +67,7 @@ var notifySuccess = function(data, textStatus, jqXHR, timeout=500){
 };
 
 var notifyFail = function(jqXHR, textStatus, errorThrown, timeout=2000){
+    console.log(jqXHR)
     var response = $.parseJSON(jqXHR.responseText);
     console.log("Error in processing server: " + response.error);
     new Noty({

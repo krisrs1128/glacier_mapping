@@ -109,15 +109,12 @@ class Session():
         current_request_counter = self.current_request_counter.increment()
         data["current_request_index"] = current_request_counter
 
-        assert "experiment" in data
-
         if self.storage_type == "file":
             self.request_list.append(data)
 
         elif self.storage_type == "table":
-
             data["PartitionKey"] = self.current_snapshot_string
-            data["RowKey"] = "%s_%d" % (data["experiment"], current_request_counter)
+            data["RowKey"] = "%d" % (current_request_counter)
 
             for k in data.keys():
                 if isinstance(data[k], dict) or isinstance(data[k], list):

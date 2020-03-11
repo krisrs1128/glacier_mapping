@@ -10,9 +10,8 @@ var addCustomLogoControl = function(){
     logoControl.append("<span class='logo-text-small'>Version: alpha</span>");
     logoControl.append("<br/>");
     logoControl.append("<span class='logo-text-small'>Location: "+DATASETS[gCurrentDataset]["metadata"]["displayName"]+"</span>");
-    
-    $(".leaflet-top.leaflet-left").append(logoControl)
 
+    $(".leaflet-top.leaflet-left").append(logoControl)
     $("#lblModelInput").html(DATASETS[gCurrentDataset]["metadata"]["locationName"]);
     return logoControl;
 };
@@ -22,9 +21,7 @@ var addZoomControls = function(){
     //----------------------------------------------------------------------
     // Custom initialization of the map zoom controls (versus adding it in the initial map creation) so that we can position it where we want
     //----------------------------------------------------------------------
-    var zoomControl = L.control.zoom({
-        position:'topleft'
-    })
+    var zoomControl = L.control.zoom({position:'topleft'})
     zoomControl.addTo(gMap);
     return zoomControl;
 };
@@ -105,7 +102,7 @@ var addSharpnessToggleSlider = function(){
     //----------------------------------------------------------------------
     var sharpnessToggleSlider = L.control.slider(
         function(value){
-            gDisplayHard = value == 1; 
+            gDisplayHard = value == 1;
 
             for(idx=0; idx<gCurrentPatches.length; idx++){
                 var tActiveImgIdx = gCurrentPatches[idx]["activeImgIdx"];
@@ -149,7 +146,7 @@ var addSharpnessToggleSlider = function(){
 
 var addSideBar = function(){
     //----------------------------------------------------------------------
-    // Setup leaflet-sidebar-v2 and open the "#home" tab 
+    // Setup leaflet-sidebar-v2 and open the "#home" tab
     //----------------------------------------------------------------------
     var sidebar = L.control.sidebar(
         'sidebar', {

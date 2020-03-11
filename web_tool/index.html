@@ -244,6 +244,7 @@
             var baseLayer = tileLayers[DATASET]["tileObject"];
             START_CENTER = tileLayers[DATASET]["location"][0];
             START_ZOOM = tileLayers[DATASET]["location"][1];
+            console.log(tileLayers[DATASET]["location"])
 
 
             var cities = L.layerGroup(interestingLocations);
@@ -259,6 +260,7 @@
             });
             map.createPane('labels');
             map.getPane('labels').style.zIndex = 200;
+            console.log(map)
 
             for(var i=0;i < interestingLocations.length;i++){
                 interestingLocations[i].on('click', function(e){

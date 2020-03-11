@@ -3,7 +3,8 @@
         "metadata": {
             "displayName": "Hindu Kush Himalaya 2000",
             "imageryName": "Landsat Imagery",
-            "locationName": null
+            "locationName": null,
+            "id": "hkh2000_landsat"
         },
         "dataLayer": {
             "type": "CUSTOM",
@@ -13,7 +14,10 @@
         "basemapLayer": {
             "initialZoom": 11,
             "url": "tiles/hkh/{z}/{x}/{y}.png",
-            "initialLocation": [ 34.0322, 78.1650],
+            "initialLocation": [
+                34.0322,
+                78.165
+            ],
             "args": {
                 "attribution": "Georeferenced Image",
                 "tms": true,
@@ -26,17 +30,17 @@
         "shapeLayers": [
             {
                 "shapesFn": "shapes/hkh.geojson",
-                "zoneNameKey": "HKH",
+                "zoneNameId": "HKH",
                 "name": "Area Boundaries"
             }
         ]
-
     },
     "nepal2000_landsat": {
         "metadata": {
             "displayName": "Nepal 2000",
             "imageryName": "Landsat Imagery",
-            "locationName": null
+            "locationName": null,
+            "id": "nepal2000_landsat"
         },
         "dataLayer": {
             "type": "CUSTOM",
@@ -46,7 +50,10 @@
         "basemapLayer": {
             "initialZoom": 11,
             "url": "tiles/nepal/{z}/{x}/{y}.png",
-            "initialLocation": [ 28.3949, 84.1240],
+            "initialLocation": [
+                28.3949,
+                84.124
+            ],
             "args": {
                 "attribution": "Georeferenced Image",
                 "tms": true,
@@ -57,25 +64,24 @@
             "bounds": null
         },
         "shapeLayers": [
-
             {
                 "shapesFn": "shapes/nepal_province.geojson",
-                "zoneNameKey": "NAME_1",
+                "zoneNameId": "NAME_1",
                 "name": "Provinces"
             },
             {
                 "shapesFn": "shapes/nepal_district.geojson",
-                "zoneNameKey": "NAME_2",
+                "zoneNameId": "NAME_2",
                 "name": "Districts"
             }
         ]
-
     },
     "bhutan2000_landsat": {
         "metadata": {
             "displayName": "Bhutan 2000",
             "imageryName": "Landsat Imagery",
-            "locationName": null
+            "locationName": null,
+            "id": "bhutan2000_landsat"
         },
         "dataLayer": {
             "type": "CUSTOM",
@@ -85,7 +91,10 @@
         "basemapLayer": {
             "initialZoom": 11,
             "url": "tiles/bhutan/{z}/{x}/{y}.png",
-            "initialLocation": [ 28.3949, 84.1240],
+            "initialLocation": [
+                28.3949,
+                84.124
+            ],
             "args": {
                 "attribution": "Georeferenced Image",
                 "tms": true,
@@ -95,11 +104,6 @@
             },
             "bounds": null
         },
-        "shapeLayers": [
-
-        ]
-
+        "shapeLayers": []
     }
-
-
 }

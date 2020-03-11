@@ -65,7 +65,7 @@ var gOpacitySlider;
 var gDisplayHard = true;
 var gActiveImgIdx = 0;
 
-var gBackendURL = "http://anthony2gpus.eastus.cloudapp.azure.com:8080/"; // this will be the base URL of the backend server we make requests to, e.g. "http://msrcalebubuntu1.eastus.cloudapp.azure.com:8080/". Note, a trailing "/" is necessary.
+var gBackendURL = "http://52.247.203.144:4040/"; // this will be the base URL of the backend server we make requests to, e.g. "http://msrcalebubuntu1.eastus.cloudapp.azure.com:8080/". Note, a trailing "/" is necessary.
 
 var gSelectedClassIdx = 0;
 var gUserPointList = []

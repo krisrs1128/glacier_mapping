@@ -95,4 +95,5 @@ def load_datasets():
         else:
             datasets[key] = dataset_object
 
+    print("loading datasets")
     return datasets

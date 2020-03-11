@@ -175,15 +175,6 @@
             }
 
             //----------------------------------------------------------------------
-            // Start user study if necessary
-            //----------------------------------------------------------------------
-            var userStudy = false;
-            if(args.maxTime !== null){
-                runUserStudyTimer(args.maxTime);
-                userStudy = true;
-            }
-
-            //----------------------------------------------------------------------
             // Load the dataset specific shapes
             //----------------------------------------------------------------------
             // TODO: This needs to be refactored out of main() somehow. e.g. If I want to create a new interface that handles zone clicks differently then it should be easy to do, while currently I would have to break everything about how zones are currently handled.
@@ -208,6 +199,7 @@
             //----------------------------------------------------------------------
 
             // Create the basemap for the current dataset
+            console.log(DATASETS)
             var baseLayer = L.tileLayer(DATASETS[gCurrentDataset]["basemapLayer"]["url"], DATASETS[gCurrentDataset]["basemapLayer"]["args"]);
 
             // This is the list of basemaps that will be displayed on the control in bottom left of GUI
@@ -215,7 +207,6 @@
             gBasemaps[DATASETS[gCurrentDataset]["metadata"]["imageryName"]] = baseLayer;
             gBasemaps["OpenStreetMap"] = getOSMLayer();
             gBasemaps["ESRI World Imagery"] = getESRILayer();
-
 
             // Setup the initial layers to be displayed on the map. This consists of the basemap from the dataset and, if defined, the first shape layer.
             var initialLayers = [baseLayer];
@@ -236,6 +227,7 @@
             });
             gMap.createPane('customPolygons');
             gMap.getPane('customPolygons').style.zIndex = 2001;
+            console.log(gMap)
 
             gMap.createPane('polygons');
             gMap.getPane('polygons').style.zIndex = 2000;
@@ -245,8 +237,6 @@
 
             gMap.createPane('downloadOutput');
             gMap.getPane('downloadOutput').style.zIndex = 200;
-
-
 
             //----------------------------------------------------------------------
             // Create UI components. These are all defined in `js/components.js`.
@@ -261,12 +251,7 @@
             var zonePickerControlContainer = zonePickerControl.getContainer();
 
             var opacitySlider = addOpacitySlider();
-            // addInferenceWindowSizeSlider();
-            // addCorrectionWindowSizeSlider();
-            // addSharpnessToggleSlider();
-
             addSideBar();
-
 
             var uploadControl = addUploadControl();
             uploadControl.loader.on('data:loaded', function (e) {
@@ -274,7 +259,7 @@
 
                 if(zoneName in gZonemaps){ // if there is an entry in gZonemaps with the same filename then we have already loaded this file
                     console.debug("Error, already loaded this file");
-                }else{
+                } else {
                     if(gCurrentZoneLayerName !== null){
                         console.debug("Removing existing zone layer");
                         gMap.removeLayer(gZonemaps[gCurrentZoneLayerName]);
@@ -292,25 +277,11 @@
             //----------------------------------------------------------------------
             // Register handlers. These are all defined in `js/handlers.js`
             //----------------------------------------------------------------------
-
             addInferenceMouseHandlers();
             addDrawControlHandlers();
             addOpacityKeyHandlers(opacitySlider);
             addRetrainKeyHandler();
             addGUIKeyHandlers();
-
-
-            // $(zonePickerControlContainer).find('input[type=radio]').change(function() {
-            //     var name = $(this).siblings()[0].innerHTML.trim();
-            //     gCurrentZoneLayerName = name;
-            //     console.debug("Switched zone layer to: " + name);
-            // });
-
-            // $(basemapPickerControlContainer).find('input[type=radio]').change(function() {
-            //     var name = $(this).siblings()[0].innerHTML.trim();
-            //     gCurrentBasemapLayerName = name;
-            //     console.debug("Switched basemap layer to: " + name);
-            // });
 
             gMap.on('baselayerchange', function(e) {
                 //https://gis.stackexchange.com/questions/171911/getting-current-layer-in-control-event-of-leaflet
@@ -326,7 +297,6 @@
 
 
             $("#btnNewClass").click(function(){
-
                 var newClassIdx = CLASSES.length + 1;
                 var newColor = getRandomColor();
 
@@ -351,7 +321,6 @@
                 newClassElement.append(newLabel);
 
                 $("#classList").append(newClassElement);
-
                 CLASSES.push({
                     "name": "Class " + newClassIdx,
                     "color": newColor,
@@ -382,15 +351,11 @@
 
                 var classIdx = findClassByName(oldName)
                 CLASSES[classIdx]["name"] = newName;
-
-
             });
 
             //----------------------------------------------------------------------
             // Setup the example images list
             //----------------------------------------------------------------------
-
-            //for(var i=0; i<SERVERS.length; i++){
             for(var i=0; i<1; i++){
                 var img = $("<img class='exampleImage'>");
                 img.attr("im-id", i);

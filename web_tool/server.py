@@ -253,7 +253,6 @@ def pred_patch():
     # Step 2
     #   Load the input data sources for the given tile
     # ------------------------------------------------------
-
     if dataset not in DATASETS:
         raise ValueError("Dataset doesn't seem to be valid, do the datasets in js/tile_layers.js correspond to those in TileLayers.py")
 
@@ -379,6 +378,7 @@ def pred_tile():
 def get_input():
     ''' Method called for POST `/getInput`
     '''
+    print("getting input")
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
     data["remote_address"] = bottle.request.client_ip
@@ -387,12 +387,14 @@ def get_input():
 
     # Inputs
     extent = data["extent"]
-    dataset = data["dataset"]
+    data_id = data["dataset"]["metadata"]["id"]
+    print(data)
+    print(DATASETS)
 
-    if dataset not in DATASETS:
+    if data_id not in DATASETS:
         raise ValueError("Dataset doesn't seem to be valid, please check Datasets.py")
 
-    naip_data, naip_crs, naip_transform, naip_bounds, naip_index = DATASETS[dataset]["data_loader"].get_data_from_extent(extent)
+    naip_data, naip_crs, naip_transform, naip_bounds, naip_index = DATASETS[data_id]["data_loader"].get_data_from_extent(extent)
     naip_data = np.rollaxis(naip_data, 0, 3)
 
     naip_data, new_bounds = warp_data_to_3857(naip_data, naip_crs, naip_transform, naip_bounds)

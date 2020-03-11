@@ -257,18 +257,19 @@ var requestPatches = function(currentPatches, polygon){
     // Setup placeholders for the predictions from the current click to be saved to
     var bounds = L.polygon(polygon).getBounds(),
         overlay = L.imageOverlay("", bounds, {pane: "labels"});
+
     currentPatches.push({
         "naipImg": null,
-        "imageLayer": overlay.addTo(map),
+        "imageLayer": overlay.addTo(gMap),
         "patches": [],
-        "activeImgIdx": activeImgIdx
+        "activeImgIdx": gActiveImgIdx
     });
 
     var idx = currentPatches.length-1;
     console.log(idx)
-    requestInputPatch(idx, polygon, BACKEND_URL);
+    requestInputPatch(idx, polygon, gBackendURL);
     currentPatches[idx]["patches"].push({"srcs": null});
-    requestPatch(idx, polygon, 0, BACKEND_URL);
+    requestPatch(idx, polygon, 0, gBackendURL);
 };
 
 var requestPatch = function(idx, polygon, currentImgIdx, serviceURL){
@@ -333,17 +334,15 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL){
 // Get NAIP input
 //-----------------------------------------------------------------
 var requestInputPatch = function(idx, polygon, serviceURL){
-    var currentPatches = [],
-        topleft = L.latLng(polygon[0][0], polygon[0][1]),
+    console.log("requesting input")
+    var topleft = L.latLng(polygon[0][0], polygon[0][1]),
         topleftProjected = L.CRS.EPSG3857.project(topleft),
         bottomright = L.latLng(polygon[2][0], polygon[2][1]),
         bottomrightProjected = L.CRS.EPSG3857.project(bottomright);
 
-    console.log(DATASET)
     var request = {
         "type": "getInput",
-        "dataset": DATASET,
-        "experiment": EXP_NAME,
+        "dataset": DATASETS[gCurrentDataset],
         "extent": {
             "xmax": bottomrightProjected.x,
             "xmin": topleftProjected.x,
@@ -355,15 +354,17 @@ var requestInputPatch = function(idx, polygon, serviceURL){
         }
     };
     console.log(request)
+    console.log(JSON.stringify(request))
+    console.log(serviceURL + "/getInput")
 
     $.ajax({
         type: "POST",
-        url: serviceURL + "getInput",
+        url: serviceURL + "/getInput",
         data: JSON.stringify(request),
         success: function(data, textStatus, jqXHR){
             var resp = data;
             var naipImg = "data:image/png;base64," + resp.input_naip;
-            currentPatches[idx]["naipImg"] = naipImg
+            gCurrentPatches[idx]["naipImg"] = naipImg
             $("#inputImage").attr("src", naipImg);
 
             if(pred0_naip1 == 1){

@@ -31,7 +31,6 @@ var addInferenceMouseHandlers = function(){
     });
 
     gMap.addEventListener('click', function(e){
-
         var curSelPoly = null;
         if(gShiftKeyDown){
             // Run the inference path
@@ -43,7 +42,7 @@ var addInferenceMouseHandlers = function(){
                     weight: 2
                 });
                 gCurrentSelection.addTo(gMap);
-            }else{
+            } else {
                 gCurrentSelection.setLatLngs(curSelPoly);
             }
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-import os
-import json
-import utm
+import DataLoader as DL
 import fiona
 import fiona.transform
+import json
+import os
 import shapely
 import shapely.geometry
-from DataLoader import DataLoaderCustom, DataLoaderUSALayer, DataLoaderBasemap
+import utm
 
 _DATASET_FN = "datasets.json"
 ROOT_DIR = os.environ["WEBTOOL_ROOT"]
@@ -70,11 +70,13 @@ def _load_dataset(dataset):
 
     # Step 3: setup the appropriate DatasetLoader
     if dataset["dataLayer"]["type"] == "CUSTOM":
-        data_loader = DataLoaderCustom(dataset["dataLayer"]["path"], shape_layers, dataset["dataLayer"]["padding"])
+        data_loader = DL.DataLoaderCustom(dataset["dataLayer"]["path"], shape_layers, dataset["dataLayer"]["padding"])
     elif dataset["dataLayer"]["type"] == "USA_LAYER":
-        data_loader = DataLoaderUSALayer(shape_layers, dataset["dataLayer"]["padding"])
+        data_loader = DL.DataLoaderUSALayer(shape_layers, dataset["dataLayer"]["padding"])
     elif dataset["dataLayer"]["type"] == "BASEMAP":
-        data_loader = DataLoaderBasemap(dataset["dataLayer"]["path"], dataset["dataLayer"]["padding"])
+        data_loader = DL.DataLoaderBasemap(dataset["dataLayer"]["path"], dataset["dataLayer"]["padding"])
+    elif dataset["dataLayer"]["type"] == "GLACIER":
+        data_loader = DL.DataLoaderGlacier(dataset["dataLayer"]["path"], dataset["dataLayer"]["padding"])
     else:
         return False # TODO: maybe we should make these errors more descriptive (explain why we can't load a dataset)
 

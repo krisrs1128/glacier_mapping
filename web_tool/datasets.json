@@ -7,7 +7,7 @@
             "id": "hkh2000_landsat"
         },
         "dataLayer": {
-            "type": "CUSTOM",
+            "type": "GLACIER",
             "path": "tiles/hkh.tif",
             "padding": 1100
         },
@@ -43,7 +43,7 @@
             "id": "nepal2000_landsat"
         },
         "dataLayer": {
-            "type": "CUSTOM",
+            "type": "GLACIER",
             "path": "tiles/nepal.tif",
             "padding": 1100
         },
@@ -84,7 +84,7 @@
             "id": "bhutan2000_landsat"
         },
         "dataLayer": {
-            "type": "CUSTOM",
+            "type": "GLACIER",
             "path": "tiles/bhutan.tif",
             "padding": 1100
         },

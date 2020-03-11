@@ -121,13 +121,6 @@ class DataLoaderCustom(DataLoader):
         # passed into the model
         src_image, src_transform = rasterio.mask.mask(f, [geom], crop=True)
         f.close()
-
-        # if src_image.shape[0] == 3:
-        #     src_image = np.concatenate([
-        #             src_image,
-        #             src_image[0][np.newaxis]
-        #         ], axis=0)
-
         return src_image, src_crs, src_transform, buffed_geom.bounds, src_index
 
     def get_area_from_shape_by_extent(self, extent, shape_layer):
@@ -147,12 +140,6 @@ class DataLoaderCustom(DataLoader):
         transformed_mask_geom = fiona.transform.transform_geom(self.shapes[shape_layer]["crs"], src_crs, mask_geom)
         src_image, src_transform = rasterio.mask.mask(f, [transformed_mask_geom], crop=True, all_touched=True, pad=False)
         f.close()
-
-        # if src_image.shape[0] == 3:
-        #     src_image = np.concatenate([
-        #             src_image,
-        #             src_image[0][np.newaxis]
-        #         ], axis=0)
 
         return src_image, src_profile, src_transform, shapely.geometry.shape(transformed_mask_geom).bounds, src_crs
 

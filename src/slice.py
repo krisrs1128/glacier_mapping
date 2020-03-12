@@ -61,7 +61,7 @@ def write_pair_slices(img_path, mask_path, out_dir=None, out_base="slice",
         })
 
     metadata = pd.DataFrame(metadata)
-    metadata.to_csv(pathlib.Path(out_dir, metadata_path), mode="a", index=False)
+    metadata.to_csv(pathlib.Path(out_dir, metadata_path), mode="a", header=False, index=False)
     return metadata
 
 

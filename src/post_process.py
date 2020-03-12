@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 from addict import Dict
 from argparse import ArgumentParser
-import addict
 from pathlib import Path
-import glob
+import addict
 import numpy as np
-import os
 import pandas as pd
-import yaml
 import postprocess_funs as pf
+import yaml
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-d", "--slice_dir", type=str, help="path to directory with all the slices")
     parser.add_argument("-m", "--slice_meta", type=str, help="path to the slices metadata")
-    parser.add_argument("-o", "--output_dir", type=str, default="processed", help="path to output directory for postprocessed files")
+    parser.add_argument("-o", "--output_dir", type=str, default="./processed", help="path to output directory for postprocessed files")
     parser.add_argument("-c", "--conf", type=str, default="conf/postprocess.yaml", help="Path to the file specifying postprocessing options.")
     args = parser.parse_args()
 
@@ -29,16 +27,15 @@ if __name__ == "__main__":
     )
 
     # validation: get ids for the ones that will be training vs. testing.
-    split_fun = getattr(pf, args.split_method)
-    split_ids = split_fun(keep_ids, split_ratio, slices_meta)
-    target_locs = pf.reshuffle(args.slice_dir, split_ids)
+    split_fun = getattr(pf, conf.split_method)
+    split_ids = split_fun(keep_ids, conf.split_ratio, slice_meta=slice_meta)
+    target_locs = pf.reshuffle(split_ids, args.output_dir)
 
     # global statistics: get the means and variances in the train split
-    train_img_paths = glob.glob(Path(args.output_dir, "train", "*img*"))
     stats = pf.generate_stats(
-        train_img_paths,
+        [p["img"] for p in target_locs["train"]],
         conf.normalization_sample_size,
-        path(args.output_dir, "stats_train.json")
+        Path(args.output_dir, "stats_train.json")
     )
 
     # postprocess individual images (all the splits)

@@ -1,15 +1,17 @@
-import pandas as pd
-import numpy as np
-import addict
+#!/usr/bin/env python
 from addict import Dict
+from joblib import Parallel, delayed
 from pathlib import Path
-import pdb
-import glob
+from shutil import copy
+import addict
+import json
+import numpy as np
 import os
-from argparse import ArgumentParser
+import pandas as pd
+import random
 
 
-def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0):
+def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0, n_cpu=10):
     """
     Return Paths for Pairs passing Filter Criteria
 
@@ -17,30 +19,29 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0):
       to pass the filter.
     :param filter_channel: The channel to do the filtering on.
     """
-    keep_ids = []
-    print(slice_meta)
-
     img_paths, mask_paths = slice_meta["img_slice"].values, slice_meta["mask_slice"].values
-    for i, mask_path in enumerate(mask_paths):
-        mask = np.load(mask_path)
 
+    def wrapper(i):
         if i % 10 == 0:
             print(f"{i}/{len(img_paths)}")
+
+        cur_ids = []
+        mask = np.load(mask_paths[i])
         perc = mask[:, :, filter_channel].mean()
+        if perc >= filter_perc:
+            cur_ids.append({"img": img_paths[i], "mask": mask_paths[i]})
 
-        if perc > filter_perc:
-            keep_ids.append({
-                "img": img_paths[i],
-                "mask": mask_path
-            })
+        return cur_ids
 
-    return keep_ids
+    para = Parallel(n_jobs=n_cpu)
+    keep_ids = para(delayed(wrapper)(i) for i in range(len(mask_paths)))
+    return sum(keep_ids, [])
 
 
 def random_split(ids, split_ratio, **kwargs):
-    ids = random.shuffle(ids)
+    random.shuffle(ids)
     sizes = len(ids) * np.array(split_ratio)
-    ix = np.cumsum(sizes)
+    ix = [int(s) for s in np.cumsum(sizes)]
     return {
         "train": ids[:ix[0]],
         "dev": ids[ix[0]:ix[1]],
@@ -48,21 +49,21 @@ def random_split(ids, split_ratio, **kwargs):
     }
 
 
-def reshuffle(split_ids, out_dir="output/"):
+def reshuffle(split_ids, output_dir="output/"):
     for split_type in split_ids:
-        path = Path(out_dir, split_type)
-        os.mkdirs(path)
+        path = Path(output_dir, split_type)
+        os.makedirs(path, exist_ok=True)
 
-    target_locs = []
+    target_locs = {}
     for split_type in split_ids:
         n_ids = len(split_ids[split_type])
-        target_locs.append({split_type: n_ids * [{}]})
+        target_locs[split_type] = n_ids * [{}]
 
         for i in range(n_ids):
             for im_type in ["img", "mask"]:
                 source = split_ids[split_type][i][im_type]
-                target = Path(out_dir, os.path.basename(source))
-                os.replace(source, target)
+                target = Path(output_dir, split_type, os.path.basename(source))
+                copy(source, target)
                 target_locs[split_type][i][im_type] = target
 
     return target_locs
@@ -78,6 +79,7 @@ def generate_stats(image_paths, sample_size, outpath="stats.json"):
 
     :return Dictionary with keys for means and stds across the channels in input images
     """
+    sample_size = min(sample_size, len(image_paths))
     image_paths = np.random.choice(image_paths, sample_size, replace=False)
     images = [np.load(image_path) for image_path in image_paths]
     batch = np.stack(images)
@@ -118,7 +120,9 @@ def normalize(img, mask, stats, **kwargs):
     return img, mask
 
 
-def postprocess(img, mask, funs_seq, **kwargs):
+def postprocess(img_path, mask_path, funs_seq, **kwargs):
+    """process a single image / mask pair"""
+    img, mask = np.load(img_path), np.load(mask_path)
     for f in funs_seq:
         img, mask = f(img, mask, **kwargs)
 

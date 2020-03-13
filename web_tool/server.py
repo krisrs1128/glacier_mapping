@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 # pylint: disable=E1137,E1136,E0110,E1101
-from DataLoader import warp_data_to_3857, crop_data_by_extent
+import DataLoader as DL
 from Datasets import load_datasets, get_area_from_geometry
 from Heatmap import Heatmap
 from Session import Session, manage_session_folders, SESSION_FOLDER
@@ -256,7 +256,7 @@ def pred_patch():
     if dataset not in DATASETS:
         raise ValueError("Dataset doesn't seem to be valid, do the datasets in js/tile_layers.js correspond to those in TileLayers.py")
 
-    naip_data, naip_crs, naip_transform, naip_bounds, naip_index = DATASETS[dataset]["data_loader"].get_data_from_extent(extent)
+    loaded_data, crs = DATASETS[dataset]["data_loader"].get_data_from_extent(extent)
     naip_data = np.rollaxis(naip_data, 0, 3) # we do this here instead of get_data_by_extent because not all GeoDataTypes will have a channel dimension
     SESSION_HANDLER.get_session(bottle.request.session.id).current_transform = (naip_crs, naip_transform, naip_index)
 
@@ -274,8 +274,8 @@ def pred_patch():
     # Step 4
     #   Warp output to EPSG:3857 and crop off the padded area
     # ------------------------------------------------------
-    output, output_bounds = warp_data_to_3857(output, naip_crs, naip_transform, naip_bounds)
-    output = crop_data_by_extent(output, output_bounds, extent)
+    output, output_bounds = DL.warp_data_to_3857(output, naip_crs, naip_transform, naip_bounds)
+    output = DL.crop_data_by_extent(output, output_bounds, extent)
 
     # ------------------------------------------------------
     # Step 5
@@ -340,7 +340,7 @@ def pred_tile():
     img_hard = cv2.cvtColor(img_hard, cv2.COLOR_RGB2BGRA)
     img_hard[nodata_mask] = [0,0,0,0]
 
-    img_hard, img_hard_bounds = warp_data_to_3857(img_hard, raster_crs, raster_transform, raster_bounds, resolution=10)
+    img_hard, img_hard_bounds = DL.warp_data_to_3857(img_hard, raster_crs, raster_transform, raster_bounds, resolution=10)
 
     cv2.imwrite(os.path.join(ROOT_DIR, "downloads/%s.png" % (tmp_id)), img_hard)
     data["downloadPNG"] = "downloads/%s.png" % (tmp_id)
@@ -388,27 +388,16 @@ def get_input():
     # Inputs
     extent = data["extent"]
     data_id = data["dataset"]["metadata"]["id"]
-    print(data)
-    print(DATASETS)
 
     if data_id not in DATASETS:
         raise ValueError("Dataset doesn't seem to be valid, please check Datasets.py")
 
-    naip_data, naip_crs, naip_transform, naip_bounds, naip_index = DATASETS[data_id]["data_loader"].get_data_from_extent(extent)
-    naip_data = np.rollaxis(naip_data, 0, 3)
-
-    naip_data, new_bounds = warp_data_to_3857(naip_data, naip_crs, naip_transform, naip_bounds)
-    naip_data = crop_data_by_extent(naip_data, new_bounds, extent)
-
-    naip_img = naip_data[:,:,:3].copy().astype(np.uint8) # keep the RGB channels to save as a color image
-
-    naip_img = cv2.imencode(".png", cv2.cvtColor(naip_img, cv2.COLOR_RGB2BGR))[1].tostring()
-    naip_img = base64.b64encode(naip_img).decode("utf-8")
-    data["input_naip"] = naip_img
-
+    loaded_query = DATASETS[data_id]["data_loader"].get_data_from_extent(extent)
+    img_data, img_bounds = DL.warp_data_to_3857(**loaded_query)
+    img_data = DL.crop_data_by_extent(img_data, img_bounds, extent)
+    data["input_rgb"] = DL.encode_rgb(img_data)
     bottle.response.status = 200
     return json.dumps(data)
-
 
 def whoami():
     return str(bottle.request.session) + " " + str(bottle.request.session.id)
@@ -416,8 +405,6 @@ def whoami():
 
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
-
-
 def get_landing_page():
     return bottle.static_file("landing_page.html", root=ROOT_DIR + "/")
 

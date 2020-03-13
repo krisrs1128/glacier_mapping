@@ -47,7 +47,7 @@ var gCurrentSelection = null;
 
 var gCustomDrawnItems = new L.FeatureGroup();
 
-var gCurrentPatches = [];
+var gCurrentPatches = [{}];
 var gCurrentZone = null;
 var gCurrentZoneLayerName = null;
 var gCurrentBasemapLayerName = null;

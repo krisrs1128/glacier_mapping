@@ -1,25 +1,28 @@
 #!/usr/bin/env python3
-import os
-import numpy as np
+from DataLoaderAbstract import DataLoader
 from enum import Enum
+from pathlib import Path
+import base64
+from rasterio.vrt import WarpedVRT
+from rasterio.windows import from_bounds
 from urllib.request import urlopen
+import cv2
 import fiona
-import fiona.transform
 import fiona.crs
-import shapely
-import shapely.geometry
+import fiona.transform
+import mercantile
+import numpy as np
+import os
 import rasterio
-import rasterio.warp
 import rasterio.crs
 import rasterio.io
 import rasterio.mask
-import rasterio.transform
 import rasterio.merge
+import rasterio.transform
+import rasterio.warp
 import rtree
-import mercantile
-import cv2
-import pickle
-from DataLoaderAbstract import DataLoader
+import shapely
+import shapely.geometry
 
 # ------------------------------------------------------
 # Miscellaneous methods
@@ -83,6 +86,10 @@ def crop_data_by_extent(src_img, src_bounds, extent):
     diff = np.round(original_bounds - new_bounds).astype(int)
     return src_img[diff[1]:diff[3], diff[0]:diff[2], :]
 
+
+def encode_rgb(x):
+    x_im = cv2.imencode(".png", cv2.cvtColor(x, cv2.COLOR_RGB2BGR))[1]
+    return base64.b64encode(x_im.tostring()).decode("utf-8")
 
 
 # ------------------------------------------------------
@@ -168,44 +175,63 @@ class DataLoaderCustom(DataLoader):
         return src_image, src_profile, src_transform, shapely.geometry.shape(transformed_mask_geom).bounds, src_crs
 
 
-# ------------------------------------------------------
-# DataLoader for US NAIP data and other aligned layers
-# ------------------------------------------------------
-class NAIPTileIndex(object):
-    TILES = None
+class DataLoaderGlacier(DataLoader):
+    @property
+    def shapes(self):
+        return self._shapes
 
-    @staticmethod
-    def lookup(extent):
-        if NAIPTileIndex.TILES is None:
-            assert all([os.path.exists(fn) for fn in [
-                ROOT_DIR + "/data/tile_index.dat",
-                ROOT_DIR + "/data/tile_index.idx",
-                ROOT_DIR + "/data/tiles.p"
-            ]]), "You do not have the correct files, did you setup the project correctly"
-            NAIPTileIndex.TILES = pickle.load(open(ROOT_DIR + "/data/tiles.p", "rb"))
-        return NAIPTileIndex.lookup_naip_tile_by_geom(extent)
+    @shapes.setter
+    def shapes(self, value):
+        self._shapes = value
 
-    @staticmethod
-    def lookup_naip_tile_by_geom(extent):
-        tile_index = rtree.index.Index(ROOT_DIR + "/data/tile_index")
+    @property
+    def padding(self):
+        return self._padding
 
-        geom = extent_to_transformed_geom(extent, "EPSG:4269")
-        minx, miny, maxx, maxy = shapely.geometry.shape(geom).bounds
-        geom = shapely.geometry.mapping(shapely.geometry.box(minx, miny, maxx, maxy, ccw=True))
+    @padding.setter
+    def padding(self, value):
+        self._padding = value
 
-        geom = shapely.geometry.shape(geom)
-        intersected_indices = list(tile_index.intersection(geom.bounds))
-        for idx in intersected_indices:
-            intersected_fn = NAIPTileIndex.TILES[idx][0]
-            intersected_geom = NAIPTileIndex.TILES[idx][1]
-            if intersected_geom.contains(geom):
-                print("Found %d intersections, returning at %s" % (len(intersected_indices), intersected_fn))
-                return intersected_fn
+    def __init__(self, padding, path):
+        self._padding = padding
+        self._path = path
 
-        if len(intersected_indices) > 0:
-            raise ValueError("Error, there are overlaps with tile index, but no tile completely contains selection")
-        else:
-            raise ValueError("No tile intersections")
+    def get_data_from_extent(self, extent):
+        # transform the query extent to the source tiff's CRS
+        source_img = rasterio.open(Path("web_tool", self._path))
+        img_crs = source_img.meta["crs"]
+        extent = extent_to_transformed_geom(extent, img_crs.to_string())
+        extent = shapely.geometry.shape(extent)
+
+        # extract that subwindow from the overall tiff
+        bounds = extent.bounds
+        window = from_bounds(
+            left=extent.bounds[0],
+            bottom=extent.bounds[1],
+            right=extent.bounds[2],
+            top=extent.bounds[3],
+            transform=source_img.transform
+        )
+        img_data = WarpedVRT(source_img).read(window=window)
+
+        return {
+            "src_img": np.rollaxis(img_data, 0, 3),
+            "src_crs": img_crs,
+            "src_bounds": bounds,
+            "src_transform": source_img.transform,
+        }
+
+    def get_data_from_shape_by_extent(self, extent, shape_layer):
+        pass
+
+    def get_data_from_shape(self, shape):
+        pass
+
+    def get_area_from_shape_by_extent(self, extent, shape_layer):
+        pass
+
+    def get_shape_by_extent(extent, shape_layer):
+        pass
 
 class USALayerGeoDataTypes(Enum):
     NAIP = 1

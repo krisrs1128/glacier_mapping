@@ -3,9 +3,7 @@ from web_tool.ServerModelsAbstract import BackendModel
 import torch
 import numpy as np
 import torch.nn as nn
-import copy
-import os, json
-#from training.pytorch.utils.eval_segm import mean_IoU, pixel_accuracy
+import os
 from src.unet import Unet
 from torch.autograd import Variable
 import time

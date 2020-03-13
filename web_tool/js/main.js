@@ -272,12 +272,11 @@ var requestPatches = function(currentPatches, polygon){
     requestPatch(idx, polygon, 0, gBackendURL);
 };
 
-var requestPatch = function(idx, polygon, currentImgIdx, serviceURL){
+var requestPatch = function(idx, polygon, currentImgIdx, serviceURL) {
     var topleft = L.latLng(polygon[0][0], polygon[0][1]);
     var topleftProjected = L.CRS.EPSG3857.project(topleft);
     var bottomright = L.latLng(polygon[2][0], polygon[2][1]);
     var bottomrightProjected = L.CRS.EPSG3857.project(bottomright);
-    console.log("requesting predictions")
     console.log(DATASET)
 
     var request = {
@@ -334,7 +333,6 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL){
 // Get NAIP input
 //-----------------------------------------------------------------
 var requestInputPatch = function(idx, polygon, serviceURL){
-    console.log("requesting input")
     var topleft = L.latLng(polygon[0][0], polygon[0][1]),
         topleftProjected = L.CRS.EPSG3857.project(topleft),
         bottomright = L.latLng(polygon[2][0], polygon[2][1]),
@@ -353,9 +351,6 @@ var requestInputPatch = function(idx, polygon, serviceURL){
             }
         }
     };
-    console.log(request)
-    console.log(JSON.stringify(request))
-    console.log(serviceURL + "/getInput")
 
     $.ajax({
         type: "POST",
@@ -363,9 +358,9 @@ var requestInputPatch = function(idx, polygon, serviceURL){
         data: JSON.stringify(request),
         success: function(data, textStatus, jqXHR){
             var resp = data;
-            var naipImg = "data:image/png;base64," + resp.input_naip;
-            gCurrentPatches[idx]["naipImg"] = naipImg
-            $("#inputImage").attr("src", naipImg);
+            var input_rgb = "data:image/png;base64," + resp.input_rgb;
+            gCurrentPatches[idx]["input_rgb"] = input_rgb;
+            $("#inputImage").attr("src", input_rgb);
 
             if(pred0_naip1 == 1){
                 //var imageLayer = L.imageOverlay(naipImg, L.polygon(polygon).getBounds()).addTo(map);

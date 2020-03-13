@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 from ServerModelsAbstract import BackendModel
 import numpy as np
-import sys, os, time, copy
 import torch
 import pathlib
-import warnings
 
 
 class PytorchUNet(BackendModel):
@@ -17,7 +15,6 @@ class PytorchUNet(BackendModel):
         else:
             self.model = torch.load(model_path, map_location=torch.device("cpu"))
         self.verbose = verbose
-
 
 
     def run(self, input_data, extent, on_tile=False):

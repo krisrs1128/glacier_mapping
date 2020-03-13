@@ -76,7 +76,7 @@ def _load_dataset(dataset):
     elif dataset["dataLayer"]["type"] == "BASEMAP":
         data_loader = DL.DataLoaderBasemap(dataset["dataLayer"]["path"], dataset["dataLayer"]["padding"])
     elif dataset["dataLayer"]["type"] == "GLACIER":
-        data_loader = DL.DataLoaderGlacier(dataset["dataLayer"]["path"], dataset["dataLayer"]["padding"])
+        data_loader = DL.DataLoaderGlacier(dataset["dataLayer"]["padding"], dataset["dataLayer"]["path"])
     else:
         return False # TODO: maybe we should make these errors more descriptive (explain why we can't load a dataset)
 

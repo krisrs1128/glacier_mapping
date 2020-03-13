@@ -7,13 +7,10 @@ from ServerModelsPytorch import PytorchUNet
 from rpyc.utils.server import OneShotServer, ThreadedServer
 import Utils as utils
 import argparse
-import collections
-import datetime
 import numpy as np
 import os
 import rpyc
 import sys
-import time
 
 from log import setup_logging, LOGGER
 

@@ -1,4 +1,4 @@
-var INFERENCE_WINDOW_SIZE = 300, // number of units (meters) in EPSG:3857 (the number of _actual_ meters this represents will vary based on latitute)
+var INFERENCE_WINDOW_SIZE = 21000, // number of units (meters) in EPSG:3857 (the number of _actual_ meters this represents will vary based on latitute)
     CORRECTION_WINDOW_SIZE = 1, // same as `INFERENCE_WINDOW_SIZE`
     SESSION_ID = 1,//getRandomString(10);
     DEFAULT_ZONE_LINE_WEIGHTS = [

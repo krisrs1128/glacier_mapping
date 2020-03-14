@@ -22,6 +22,7 @@ class PytorchUNet(BackendModel):
 
         self.model = Unet(input_size[2], 1, 4)
         self.model.load_state_dict(state)
+        self.model.eval()
         self.verbose = verbose
 
     def run(self, input_data, extent, on_tile=False):
@@ -29,8 +30,7 @@ class PytorchUNet(BackendModel):
         makes predictions given
         """
         print("running")
-        output, output_features = self.run_model_on_tile(input_data)
-        return output
+        return self.run_model_on_tile(input_data)
 
     def run_model_on_batch(self, batch_data, batch_size=32, predict_central_pixel_only=False):
         """ Expects batch_data to have shape (none, 240, 240, 4) and have values in the [0, 255] range.
@@ -130,9 +130,6 @@ class PytorchUNet(BackendModel):
         """
         height, width, _ = img.shape
 
-        # output = np.zeros((height, width, self.output_channels), dtype=np.float32)
-        # output_features = np.zeros((height, width, self.output_features), dtype=np.float32)
-
         counts = np.zeros((height, width), dtype=np.float32) + 0.000000001
         kernel = np.ones((self.input_size[0], self.input_size[1]), dtype=np.float32) * 0.1
         kernel[10:-10, 10:-10] = 1
@@ -143,25 +140,23 @@ class PytorchUNet(BackendModel):
         batch_indices = []
         batch_count = 0
 
-        for y_index in (list(range(0, height - self.input_size[1], self.stride_y)) + [height - self.input_size[1],]):
-            for x_index in (list(range(0, width - self.input_size[0], self.stride_x)) + [width - self.input_size[0],]):
-                window = img[y_index:y_index+self.input_size[1], x_index:x_index+self.input_size[0], :]
-
+        for y_index in (list(range(0, height - self.input_size[0], self.stride_y)) + [height - self.input_size[0],]):
+            for x_index in (list(range(0, width - self.input_size[1], self.stride_x)) + [width - self.input_size[1],]):
+                window = img[y_index:y_index+self.input_size[0], x_index:x_index+self.input_size[1], :]
                 batch.append(window)
                 batch_indices.append((y_index, x_index))
                 batch_count += 1
 
-        print(np.array(batch))
-        print(np.array(batch).shape)
-        y_hat = self.model(torch.from_numpy(np.array(batch)))
+        batch = np.transpose(np.array(batch), (0, 3, 1, 2)) # batch, channel, height, width
+        batch = batch[:, :10, :, :] # temporary hack, to match channels
 
+        with torch.no_grad():
+            y_hat = self.model(torch.from_numpy(batch))
+            y_hat = y_hat.detach().numpy()
+
+        output = np.zeros((height, width), dtype=np.float32)
         for i, (y, x) in enumerate(batch_indices):
-            output[y:y+self.input_size, x:x+self.input_size] += model_output[0][i] * kernel[..., np.newaxis]
-            output_features[y:y+self.input_size, x:x+self.input_size] += model_output[1][i] * kernel[..., np.newaxis]
-            counts[y:y+self.input_size, x:x+self.input_size] += kernel
+            output[y:y+self.input_size[0], x:x+self.input_size[1]] += y_hat[i] * kernel
+            counts[y:y+self.input_size[0], x:x+self.input_size[1]] += kernel
 
-        output = output / counts[..., np.newaxis]
-        output = output[:,:,1:5]
-        output_features = output_features / counts[..., np.newaxis]
-
-        return output, output_features
+        return (output / counts)[:, :, np.newaxis]

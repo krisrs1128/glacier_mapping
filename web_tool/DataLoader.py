@@ -87,8 +87,7 @@ def crop_data_by_extent(src_img, src_bounds, extent):
     diff = np.round(original_bounds - new_bounds).astype(int)
     return src_img[diff[1]:diff[3], diff[0]:diff[2], :]
 
-
-def encode_rgb(x):
+def encode_rgb(test_img):
     x_im = cv2.imencode(".png", cv2.cvtColor(x, cv2.COLOR_RGB2BGR))[1]
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 

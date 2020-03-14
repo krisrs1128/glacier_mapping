@@ -5,6 +5,7 @@
 import DataLoader as DL
 from Datasets import load_datasets, get_area_from_geometry
 from Heatmap import Heatmap
+import pdb
 from Session import Session, manage_session_folders, SESSION_FOLDER
 from SessionHandler import SessionHandler
 from log import setup_logging, LOGGER
@@ -172,7 +173,6 @@ def record_correction():
     blat, blon = data["extent"]["ymin"], data["extent"]["xmax"]
     class_list = data["classes"]
     name_list = [item["name"] for item in class_list]
-    color_list = [item["color"] for item in class_list]
     class_idx = data["value"] # what we want to switch the class to
     origin_crs = "epsg:%d" % (data["extent"]["spatialReference"]["latestWkid"])
 
@@ -241,7 +241,6 @@ def pred_patch():
     extent = data.extent
     dataset = data.dataset
     name_list = [item.name for item in dataset.class_list]
-    color_list = [item.color for item in dataset.class_list]
 
     # ------------------------------------------------------
     # Step 1
@@ -267,6 +266,8 @@ def pred_patch():
     # ------------------------------------------------------
     model = SESSION_HANDLER.get_session(bottle.request.session.id).model
     output = model.run(loaded_query["src_img"], extent, False)
+    loaded_query["src_img"] = None # save memory
+    print(output.shape)
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
     assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
 
@@ -274,23 +275,21 @@ def pred_patch():
     # Step 4
     #   Warp output to EPSG:3857 and crop off the padded area
     # ------------------------------------------------------
-    output, output_bounds = DL.warp_data_to_3857(output, naip_crs, naip_transform, naip_bounds)
-    output = DL.crop_data_by_extent(output, output_bounds, extent)
+    output, output_bounds = DL.warp_data_to_3857(
+        output,
+        loaded_query["src_crs"],
+        loaded_query["src_transform"],
+        loaded_query["src_bounds"]
+    )
 
     # ------------------------------------------------------
     # Step 5
     #   Convert images to base64 and return
     # ------------------------------------------------------
-    img_soft = np.round(utils.class_prediction_to_img(output, False, color_list)*255,0).astype(np.uint8)
-    img_soft = cv2.imencode(".png", cv2.cvtColor(img_soft, cv2.COLOR_RGB2BGR))[1].tostring()
-    img_soft = base64.b64encode(img_soft).decode("utf-8")
-    data["output_soft"] = img_soft
-
-    img_hard = np.round(utils.class_prediction_to_img(output, True, color_list)*255,0).astype(np.uint8)
-    img_hard = cv2.imencode(".png", cv2.cvtColor(img_hard, cv2.COLOR_RGB2BGR))[1].tostring()
-    img_hard = base64.b64encode(img_hard).decode("utf-8")
-    data["output_hard"] = img_hard
-
+    img_soft = np.round(utils.class_prediction_to_img(output * 255)).astype(np.uint8)
+    del output
+    print(img_soft.shape)
+    data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
     return json.dumps(data)
 
@@ -307,7 +306,6 @@ def pred_tile():
     geom = data["polygon"]
     class_list = data["classes"]
     name_list = [item["name"] for item in class_list]
-    color_list = [item["color"] for item in class_list]
     dataset = data["dataset"]
     zone_layer_name = data["zoneLayerName"]
 
@@ -336,7 +334,7 @@ def pred_tile():
     #   Convert images to base64 and return
     # ------------------------------------------------------
     tmp_id = utils.get_random_string(8)
-    img_hard = np.round(utils.class_prediction_to_img(output, True, color_list)*255,0).astype(np.uint8)
+    img_hard = np.round(utils.class_prediction_to_img(output * 255,0)).astype(np.uint8)
     img_hard = cv2.cvtColor(img_hard, cv2.COLOR_RGB2BGRA)
     img_hard[nodata_mask] = [0,0,0,0]
 
@@ -393,8 +391,7 @@ def get_input():
 
     loaded_query = DATASETS[data_id]["data_loader"].get_data_from_extent(extent)
     img_data, img_bounds = DL.warp_data_to_3857(**loaded_query)
-    img_data = DL.crop_data_by_extent(img_data, img_bounds, extent)
-    data["input_rgb"] = DL.encode_rgb(img_data)
+    data["input_rgb"] = DL.encode_rgb(img_data[:, :, [2, 4, 5]])
     bottle.response.status = 200
     return json.dumps(data)
 

@@ -8,7 +8,7 @@
         },
         "dataLayer": {
             "type": "GLACIER",
-            "path": "tiles/hkh.tif",
+            "path": "tiles/hkh_10_channel.vrt",
             "padding": 1100
         },
         "basemapLayer": {

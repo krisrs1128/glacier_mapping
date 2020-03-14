@@ -1,5 +1,5 @@
 filter_channel: 0
-filter_percentage: 0
+filter_percentage: 0.5
 funs: ["normalize"]
 split_method: random_split
 split_ratio: [0.7,0.1,0.2]

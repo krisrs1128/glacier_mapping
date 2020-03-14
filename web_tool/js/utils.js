@@ -68,15 +68,17 @@ var notifySuccess = function(data, textStatus, jqXHR, timeout=500){
 
 var notifyFail = function(jqXHR, textStatus, errorThrown, timeout=2000){
     console.log(jqXHR)
-    var response = $.parseJSON(jqXHR.responseText);
-    console.log("Error in processing server: " + response.error);
-    new Noty({
-        type: "error",
-        text: "Error in processing server: " + response.error,
-        layout: 'topCenter',
-        timeout: timeout,
-        theme: 'metroui'
-    }).show();
+    console.log(textStatus)
+    console.log(errorThrown)
+    // var response = $.parseJSON(jqXHR.responseText);
+    // console.log("Error in processing server: " + response.error);
+    // new Noty({
+    //     type: "error",
+    //     text: "Error in processing server: " + response.error,
+    //     layout: 'topCenter',
+    //     timeout: timeout,
+    //     theme: 'metroui'
+    // }).show();
 };
 
 var notifyFailMessage = function(message, timeout=2000){

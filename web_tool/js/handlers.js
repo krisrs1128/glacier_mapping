@@ -46,8 +46,8 @@ var addInferenceMouseHandlers = function(){
                 gCurrentSelection.setLatLngs(curSelPoly);
             }
 
-            requestPatches([], curSelPoly);
-        }else{
+            requestPatches(curSelPoly);
+        } else {
             // Run the add sample path
             if(gCurrentSelection !== null){
                 if(isPointInsidePolygon(e.latlng, gCurrentSelection)){

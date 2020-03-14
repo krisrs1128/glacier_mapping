@@ -4,7 +4,7 @@
 var doRetrain = function(){
     var request = {
         "type": "retrain",
-        "dataset": DATASET,
+        "dataset": DATASETS[gCurrentDataset],
         "experiment": EXP_NAME,
         "retrainArgs": retrainArgs
     };
@@ -30,7 +30,7 @@ var doRetrain = function(){
                     [t[2]["lat"], t[2]["lng"]],
                     [t[3]["lat"], t[3]["lng"]]
                 ];
-                requestPatches(currentPatches, curSelPoly);
+                requestPatches(curSelPoly);
             }
         },
         error: notifyFail,
@@ -104,7 +104,7 @@ var doDownloadTile = function(){
                 "latestWkid": 3857
             }
         },
-        "colors": colorList
+        "colors": CLASSES.map((d) => d.color)
     };
 
     $.ajax({
@@ -122,6 +122,7 @@ var doDownloadTile = function(){
             }).show();
             var pngURL = window.location.origin + "/" + data["downloadPNG"];
             var tiffURL = window.location.origin + "/" + data["downloadTIFF"];
+            console.log(tiffURL)
             $("#lblPNG").html("<a href='"+pngURL+"' target='_blank'>Download PNG</a>");
             $("#lblTIFF").html("<a href='"+tiffURL+"' target='_blank'>Download TIFF</a>");
 
@@ -196,7 +197,7 @@ var doUndo = function(){
 
     var request = {
         "type": "undo",
-        "dataset": DATASET,
+        "dataset": DATASETS[gCurrentDataset],
         "experiment": EXP_NAME,
     };
 
@@ -208,8 +209,6 @@ var doUndo = function(){
             success: function(data, textStatus, jqXHR){
 
                 // remove previously added point
-                console.debug(data);
-
                 for(var i=0;i<data["count"];i++){
                     var removedPoint = userPointList.pop();
                     map.removeLayer(removedPoint[0]);
@@ -253,22 +252,24 @@ var doUndo = function(){
 //-----------------------------------------------------------------
 // Get predictions
 //-----------------------------------------------------------------
-var requestPatches = function(currentPatches, polygon){
+var requestPatches = function(polygon){
     // Setup placeholders for the predictions from the current click to be saved to
     var bounds = L.polygon(polygon).getBounds(),
         overlay = L.imageOverlay("", bounds, {pane: "labels"});
 
-    currentPatches.push({
-        "naipImg": null,
+    gCurrentPatches.push({
+        "inpug_rgb": null,
         "imageLayer": overlay.addTo(gMap),
         "patches": [],
         "activeImgIdx": gActiveImgIdx
     });
 
-    var idx = currentPatches.length-1;
-    console.log(idx)
+    idx = gCurrentPatches.length - 1;
     requestInputPatch(idx, polygon, gBackendURL);
-    currentPatches[idx]["patches"].push({"srcs": null});
+    gCurrentPatches[idx]["patches"].push({"srcs": null});
+    console.log(idx)
+    console.log(polygon)
+    console.log(gBackendURL)
     requestPatch(idx, polygon, 0, gBackendURL);
 };
 
@@ -277,11 +278,10 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL) {
     var topleftProjected = L.CRS.EPSG3857.project(topleft);
     var bottomright = L.latLng(polygon[2][0], polygon[2][1]);
     var bottomrightProjected = L.CRS.EPSG3857.project(bottomright);
-    console.log(DATASET)
 
     var request = {
         "type": "runInference",
-        "dataset": DATASET,
+        "dataset": DATASETS[gCurrentDataset],
         "experiment": EXP_NAME,
         "extent": {
             "xmax": bottomrightProjected.x,
@@ -292,12 +292,12 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL) {
                 "latestWkid": 3857
             }
         },
-        "colors": colorList,
+        "colors": CLASSES.map((d) => d.color),
     };
 
     $.ajax({
         type: "POST",
-        url: serviceURL + "predPatch",
+        url: serviceURL + "/predPatch",
         data: JSON.stringify(request),
         success: function(data, textStatus, jqXHR){
             console.log("predicting")
@@ -310,16 +310,14 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL) {
             var img = $("#exampleImage_"+currentImgIdx);
             img.attr("src", srcs[soft0_hard1]);
             img.attr("data-name", resp.model_name);
+            console.log(img)
 
-            if(currentImgIdx == currentPatches[idx]["activeImgIdx"]){
+            if(currentImgIdx == gCurrentPatches[idx]["activeImgIdx"]){
                 img.addClass("active");
-
-                if(pred0_naip1 == 0){
-                    //var imageLayer = L.imageOverlay(srcs[soft0_hard1], L.polygon(polygon).getBounds()).addTo(map);
-                    currentPatches[idx]["imageLayer"].setUrl(srcs[soft0_hard1]);
-                }
             }
-            currentPatches[idx]["patches"][currentImgIdx]["srcs"] = srcs;
+            gCurrentPatches[idx]["patches"][currentImgIdx]["srcs"] = srcs;
+            console.log(gCurrentPatches)
+            console.log("end predicting")
         },
         error: notifyFail,
         dataType: "json",
@@ -361,11 +359,7 @@ var requestInputPatch = function(idx, polygon, serviceURL){
             var input_rgb = "data:image/png;base64," + resp.input_rgb;
             gCurrentPatches[idx]["input_rgb"] = input_rgb;
             $("#inputImage").attr("src", input_rgb);
-
-            if(pred0_naip1 == 1){
-                //var imageLayer = L.imageOverlay(naipImg, L.polygon(polygon).getBounds()).addTo(map);
-                currentPatches[idx]["imageLayer"].setUrl(naipImg);
-            }
+            gCurrentPatches[idx]["imageLayer"].setUrl(input_rgb);
         },
         error: notifyFail,
         dataType: "json",

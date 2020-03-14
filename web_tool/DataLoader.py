@@ -88,7 +88,9 @@ def crop_data_by_extent(src_img, src_bounds, extent):
 
 
 def encode_rgb(x):
+    print(x.shape)
     x_im = cv2.imencode(".png", cv2.cvtColor(x, cv2.COLOR_RGB2BGR))[1]
+    print(x_im)
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 
 

@@ -41,7 +41,7 @@ var CLASSES = [
     {"name": "Built", "color": "#806060", "count": 0},
 ];
 
-//GUI elements
+// GUI elements
 var gSelectionBox = null;
 var gCurrentSelection = null;
 

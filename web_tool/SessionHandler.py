@@ -109,7 +109,7 @@ class SessionHandler():
         return process
 
 
-    def create_session(self, session_id, model_key, port=4041):
+    def create_session(self, session_id, model_key):
         if session_id in self._SESSION_MAP:
             raise ValueError("session_id %d has already been created" % (session_id))
 
@@ -117,6 +117,7 @@ class SessionHandler():
             raise ValueError("%s is not a valid model, check the keys in models.json" % (model_key))
 
         worker = self._WORKER_POOL.get() # this will block until we have a free one
+        port = get_free_tcp_port()
         MODELS[model_key].update({"gpu_id": worker["gpu_id"], "port": port})
 
         if worker["type"] == "local":

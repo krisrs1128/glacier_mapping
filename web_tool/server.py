@@ -237,6 +237,7 @@ def pred_patch():
     SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
 
     # Inputs
+    print(data)
     extent = data["extent"]
     dataset = data["dataset"]
     class_list = data["classes"]

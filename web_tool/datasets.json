@@ -33,6 +33,23 @@
                 "zoneNameId": "HKH",
                 "name": "Area Boundaries"
             }
+        ],
+        "classes": [
+            {
+                "name": "Background",
+                "color": "#0000FF",
+                "count": 0
+            },
+            {
+                "name": "Ice",
+                "color": "#008000",
+                "count": 0
+            },
+            {
+                "name": "Debris",
+                "color": "#80FF80",
+                "count": 0
+            }
         ]
     },
     "nepal2000_landsat": {

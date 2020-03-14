@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from Models import load_models
 from ServerModelsKerasDense import KerasDenseFineTune
-from ServerModelsRPC import ModelRPC
+from ServerModelsPytorch import PytorchUNet
 from Session import Session
 from log import LOGGER
 from queue import Queue
@@ -123,7 +123,7 @@ class SessionHandler():
         if worker["type"] == "local":
             gpu_id = worker["gpu_id"]
             process = self._spawn_local_worker(**MODELS[model_key])
-            model = ModelRPC(session_id, port)
+            model = PytorchUNet(gpu_id)
             session = Session(session_id, model)
             self._SESSION_MAP[session_id] = session
             self._SESSION_INFO[session_id] = {

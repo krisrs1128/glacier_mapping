@@ -35,10 +35,9 @@ var DATASETS = (function () {
 })();
 
 var CLASSES = [
-    {"name": "Water", "color": "#0000FF", "count": 0},
-    {"name": "Tree Canopy", "color": "#008000", "count": 0},
-    {"name": "Field", "color": "#80FF80", "count": 0},
-    {"name": "Built", "color": "#806060", "count": 0},
+    {"name": "Background", "color": "#0000FF", "count": 0},
+    {"name": "Ice", "color": "#008000", "count": 0},
+    {"name": "Debris", "color": "#80FF80", "count": 0},
 ];
 
 // GUI elements

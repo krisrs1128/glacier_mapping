@@ -9,6 +9,7 @@ from Session import Session, manage_session_folders, SESSION_FOLDER
 from SessionHandler import SessionHandler
 from log import setup_logging, LOGGER
 import Utils as utils
+from addict import Dict
 import argparse
 import base64
 import beaker.middleware
@@ -231,18 +232,16 @@ def do_undo():
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
     bottle.response.content_type = 'application/json'
-    data = bottle.request.json
+    data = Dict(bottle.request.json)
     data["remote_address"] = bottle.request.client_ip
 
     SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
 
     # Inputs
-    print(data)
-    extent = data["extent"]
-    dataset = data["dataset"]
-    class_list = data["classes"]
-    name_list = [item["name"] for item in class_list]
-    color_list = [item["color"] for item in class_list]
+    extent = data.extent
+    dataset = data.dataset
+    name_list = [item.name for item in dataset.class_list]
+    color_list = [item.color for item in dataset.class_list]
 
     # ------------------------------------------------------
     # Step 1
@@ -254,12 +253,11 @@ def pred_patch():
     # Step 2
     #   Load the input data sources for the given tile
     # ------------------------------------------------------
-    if dataset not in DATASETS:
+    if dataset.metadata.id not in DATASETS:
         raise ValueError("Dataset doesn't seem to be valid, do the datasets in js/tile_layers.js correspond to those in TileLayers.py")
 
-    loaded_data, crs = DATASETS[dataset]["data_loader"].get_data_from_extent(extent)
-    naip_data = np.rollaxis(naip_data, 0, 3) # we do this here instead of get_data_by_extent because not all GeoDataTypes will have a channel dimension
-    SESSION_HANDLER.get_session(bottle.request.session.id).current_transform = (naip_crs, naip_transform, naip_index)
+    loaded_query = DATASETS[dataset.metadata.id]["data_loader"].get_data_from_extent(extent)
+    SESSION_HANDLER.get_session(bottle.request.session.id).current_transform = (loaded_query["src_crs"], loaded_query["src_transform"])
 
     # ------------------------------------------------------
     # Step 3
@@ -267,7 +265,8 @@ def pred_patch():
     #   Apply reweighting
     #   Fix padding
     # ------------------------------------------------------
-    output = SESSION_HANDLER.get_session(bottle.request.session.id).model.run(naip_data, extent, False)
+    model = SESSION_HANDLER.get_session(bottle.request.session.id).model
+    output = model.run(loaded_query["src_img"], extent, False)
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
     assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
 
@@ -379,16 +378,15 @@ def pred_tile():
 def get_input():
     ''' Method called for POST `/getInput`
     '''
-    print("getting input")
     bottle.response.content_type = 'application/json'
-    data = bottle.request.json
+    data = Dict(bottle.request.json)
     data["remote_address"] = bottle.request.client_ip
 
     SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
 
     # Inputs
-    extent = data["extent"]
-    data_id = data["dataset"]["metadata"]["id"]
+    extent = data.extent
+    data_id = data.dataset.metadata.id
 
     if data_id not in DATASETS:
         raise ValueError("Dataset doesn't seem to be valid, please check Datasets.py")

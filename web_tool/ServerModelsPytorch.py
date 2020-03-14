@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
 from ServerModelsAbstract import BackendModel
+from Models import UNet
 import numpy as np
 import torch
 import pathlib
 
 
 class PytorchUNet(BackendModel):
-    def __init__(self, gpuid, verbose=False, model_path=None):
+    def __init__(self, gpuid, input_size=512, verbose=False, model_path=None):
+        self.input_size = input_size
+        self.downweight_padding = 0
+        self.stride_x, self.stride_y = (self.input_size, self.input_size)
+
         if model_path is None:
             model_path = pathlib.Path("web_tool", "data", "model_188.pt")
 
         if torch.cuda.is_available():
-            self.model = torch.load(model_path)
+            state_dict = torch.load(model_path)
         else:
-            self.model = torch.load(model_path, map_location=torch.device("cpu"))
+            state_dict = torch.load(model_path, map_location=torch.device("cpu"))
+
+        self.model = UNet(**state_dict)
         self.verbose = verbose
 
 
@@ -28,7 +35,6 @@ class PytorchUNet(BackendModel):
     def run_model_on_batch(self, batch_data, batch_size=32, predict_central_pixel_only=False):
         """ Expects batch_data to have shape (none, 240, 240, 4) and have values in the [0, 255] range.
         """
-        print("running batch")
         batch_data = batch_data / 255.0
         output = self.model.predict(batch_data, batch_size=batch_size, verbose=0)
         output, output_features = output
@@ -119,21 +125,20 @@ class PytorchUNet(BackendModel):
         if self.use_seed_data:
             self.retrain()
 
-    def run_model_on_tile(self, naip_tile, batch_size=32):
+    def run_model_on_tile(self, img, batch_size=32):
         """ Expects naip_tile to have shape (height, width, channels) and have values in the [0, 1] range.
         """
-        print("running on tile")
-        height = naip_tile.shape[0]
-        width = naip_tile.shape[1]
+        height = img.shape[0]
+        width = img.shape[1]
 
-        output = np.zeros((height, width, self.output_channels), dtype=np.float32)
-        output_features = np.zeros((height, width, self.output_features), dtype=np.float32)
+        # output = np.zeros((height, width, self.output_channels), dtype=np.float32)
+        # output_features = np.zeros((height, width, self.output_features), dtype=np.float32)
 
         counts = np.zeros((height, width), dtype=np.float32) + 0.000000001
         kernel = np.ones((self.input_size, self.input_size), dtype=np.float32) * 0.1
         kernel[10:-10, 10:-10] = 1
-        kernel[self.down_weight_padding:self.down_weight_padding+self.stride_y,
-               self.down_weight_padding:self.down_weight_padding+self.stride_x] = 5
+        kernel[self.downweight_padding:self.downweight_padding+self.stride_y,
+               self.downweight_padding:self.downweight_padding+self.stride_x] = 5
 
         batch = []
         batch_indices = []
@@ -141,14 +146,13 @@ class PytorchUNet(BackendModel):
 
         for y_index in (list(range(0, height - self.input_size, self.stride_y)) + [height - self.input_size,]):
             for x_index in (list(range(0, width - self.input_size, self.stride_x)) + [width - self.input_size,]):
-                naip_im = naip_tile[y_index:y_index+self.input_size, x_index:x_index+self.input_size, :]
+                window = img[y_index:y_index+self.input_size, x_index:x_index+self.input_size, :]
 
-                batch.append(naip_im)
+                batch.append(window)
                 batch_indices.append((y_index, x_index))
-                batch_count+=1
+                batch_count += 1
 
-
-        model_output = self.model.predict(np.array(batch), batch_size=batch_size, verbose=0)
+        y_hat = self.model.predict(np.array(batch), batch_size=batch_size, verbose=0)
 
         for i, (y, x) in enumerate(batch_indices):
             output[y:y+self.input_size, x:x+self.input_size] += model_output[0][i] * kernel[..., np.newaxis]

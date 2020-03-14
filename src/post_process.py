@@ -8,6 +8,19 @@ import pandas as pd
 import postprocess_funs as pf
 import yaml
 
+
+"""
+To Run:
+
+python3 src/post_process.py 
+    --slice_dir=/path_to_glacier_slices/ 
+    --slice_meta=/path_to_slice_metadata.csv
+
+example: 
+    python3 src/post_process.py --slice_dir=/scratch/akera/glaciers_slices/ --slice_meta=/scratch/akera/glacier_slices/slice_metadata.csv
+
+"""
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-d", "--slice_dir", type=str, help="path to directory with all the slices")

@@ -73,15 +73,6 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = "" if args.gpuid is None else str(args.gpuid)
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
-    if args.model == "keras_dense":
-        model = KerasDenseFineTune(args.model_fn, args.gpuid, args.fine_tune_layer, args.fine_tune_seed_data_fn)
-    if args.model == "pytorch":
-        model = PytorchUNet(args.gpuid)
-    else:
-        raise NotImplementedError("The given model type is not implemented yet.")
-
-    t = OneShotServer(MyService(model), port=args.port)
-    t.start()
 
 if __name__ == "__main__":
     main()

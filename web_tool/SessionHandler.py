@@ -123,7 +123,7 @@ class SessionHandler():
         if worker["type"] == "local":
             gpu_id = worker["gpu_id"]
             process = self._spawn_local_worker(**MODELS[model_key])
-            model = PytorchUNet(gpu_id)
+            model = PytorchUNet(MODELS[model_key]["fn"], gpu_id, MODELS[model_key]["inputShape"])
             session = Session(session_id, model)
             self._SESSION_MAP[session_id] = session
             self._SESSION_INFO[session_id] = {

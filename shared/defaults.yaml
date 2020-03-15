@@ -33,7 +33,17 @@ data:
     mask_used: "glacier" # The labels used to predict.
                          # Options are 'glaciers' [default] for all the labels or
                          # 'debris_glaciers' for psuedo debris glaciers labels 
-    channels_to_inc: [0, 1, 2, 3, 4] # list of all the channels to include (from 0 to 9)
+    channels_to_inc: [0,    # B1            0.45-0.52 μm    (blue) surface reflectance
+                    1,      # B2            0.52-0.60 μm    (green) surface reflectance
+                    2,      # B3            0.63-0.69 μm    (red) surface reflectance
+                    3,      # B4            0.77-0.90 μm    (near infrared) surface reflectance
+                    4,      # B5            1.55-1.75 μm    (shortwave infrared 1) surface reflectance
+                    5,      # B6_VCID_1     10.40-12.50 μm  brightness temperature
+                    6,      # B6_VCID_2     2.08-2.35 μm    (shortwave infrared 2) surface reflectance
+                    7,      # B7            	    Atmospheric opacity; < 0.1 = clear; 0.1 - 0.3 = average; > 0.3 = hazy
+                    8,      # B8                    Cloud quality attributes.
+                    9       # BQA                   Pixel quality attributes generated from the CFMASK algorithm.
+                    ] # list of all the channels to include (from 0 to 9)
     normalization_file: normalization_data.pkl # What normalization file to use
 
 

@@ -87,7 +87,7 @@ def crop_data_by_extent(src_img, src_bounds, extent):
     diff = np.round(original_bounds - new_bounds).astype(int)
     return src_img[diff[1]:diff[3], diff[0]:diff[2], :]
 
-def encode_rgb(test_img):
+def encode_rgb(x):
     x_im = cv2.imencode(".png", cv2.cvtColor(x, cv2.COLOR_RGB2BGR))[1]
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 
@@ -213,6 +213,7 @@ class DataLoaderGlacier(DataLoader):
             transform=source_img.transform
         )
         img_data = WarpedVRT(source_img).read(window=window)
+        img_data = np.nan_to_num(img_data)
 
         return {
             "src_img": np.rollaxis(img_data, 0, 3),

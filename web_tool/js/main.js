@@ -308,16 +308,13 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL) {
             ];
 
             var img = $("#exampleImage_"+currentImgIdx);
-            img.attr("src", srcs[soft0_hard1]);
+            img.attr("src", srcs[0]);
             img.attr("data-name", resp.model_name);
-            console.log(img)
 
-            if(currentImgIdx == gCurrentPatches[idx]["activeImgIdx"]){
+            if(currentImgIdx == gCurrentPatches[idx]["activeImgIdx"] ){
                 img.addClass("active");
             }
             gCurrentPatches[idx]["patches"][currentImgIdx]["srcs"] = srcs;
-            console.log(gCurrentPatches)
-            console.log("end predicting")
         },
         error: notifyFail,
         dataType: "json",

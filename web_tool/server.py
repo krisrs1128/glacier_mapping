@@ -267,7 +267,6 @@ def pred_patch():
     model = SESSION_HANDLER.get_session(bottle.request.session.id).model
     output = model.run(loaded_query["src_img"], extent, False)
     loaded_query["src_img"] = None # save memory
-    print(output.shape)
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
     assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
 
@@ -287,6 +286,9 @@ def pred_patch():
     #   Convert images to base64 and return
     # ------------------------------------------------------
     img_soft = np.round(utils.class_prediction_to_img(output * 255)).astype(np.uint8)
+    img_soft[:200, :200] = 254.0
+    print(np.mean(img_soft))
+    print(np.std(img_soft))
     del output
     print(img_soft.shape)
     data["output_soft"] = DL.encode_rgb(img_soft)
@@ -390,6 +392,8 @@ def get_input():
         raise ValueError("Dataset doesn't seem to be valid, please check Datasets.py")
 
     loaded_query = DATASETS[data_id]["data_loader"].get_data_from_extent(extent)
+    print(np.mean(loaded_query["src_img"]))
+    print(np.std(loaded_query["src_img"]))
     img_data, img_bounds = DL.warp_data_to_3857(**loaded_query)
     data["input_rgb"] = DL.encode_rgb(img_data[:, :, [2, 4, 5]])
     bottle.response.status = 200

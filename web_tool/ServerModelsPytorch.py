@@ -129,6 +129,9 @@ class PytorchUNet(BackendModel):
         """ Expects naip_tile to have shape (height, width, channels) and have values in the [0, 1] range.
         """
         height, width, _ = img.shape
+        img = np.nan_to_num(img)
+        img -= img.mean(axis=(0, 1))
+        img /= (img.std(axis=(0, 1)) + 0.0001)
 
         counts = np.zeros((height, width), dtype=np.float32) + 0.000000001
         kernel = np.ones((self.input_size[0], self.input_size[1]), dtype=np.float32) * 0.1
@@ -136,8 +139,7 @@ class PytorchUNet(BackendModel):
         kernel[self.downweight_padding:self.downweight_padding+self.stride_y,
                self.downweight_padding:self.downweight_padding+self.stride_x] = 5
 
-        batch = []
-        batch_indices = []
+        batch, batch_indices = [], []
         batch_count = 0
 
         for y_index in (list(range(0, height - self.input_size[0], self.stride_y)) + [height - self.input_size[0],]):
@@ -152,11 +154,15 @@ class PytorchUNet(BackendModel):
 
         with torch.no_grad():
             y_hat = self.model(torch.from_numpy(batch))
+            y_hat = torch.nn.Sigmoid()(y_hat)
             y_hat = y_hat.detach().numpy()
 
         output = np.zeros((height, width), dtype=np.float32)
         for i, (y, x) in enumerate(batch_indices):
             output[y:y+self.input_size[0], x:x+self.input_size[1]] += y_hat[i] * kernel
             counts[y:y+self.input_size[0], x:x+self.input_size[1]] += kernel
+
+        print(np.mean(output))
+        print(np.std(output))
 
         return (output / counts)[:, :, np.newaxis]

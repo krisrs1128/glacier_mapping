@@ -2,12 +2,11 @@
 """
 To Run:
 
-python3 src/post_process.py
+# run from glacier_mapping/ directory
+python3 -m src.post_process.py
     --slice_dir=/path_to_glacier_slices/
-    --slice_meta=/path_to_slice_metadata.csv
+    --slice_meta=/path_to_slice_metadata.geojson
 
-example:
-    python3 src/post_process.py --slice_dir=/scratch/akera/glaciers_slices/ --slice_meta=/scratch/akera/glacier_slices/slice_metadata.csv
 """
 from addict import Dict
 from argparse import ArgumentParser
@@ -15,20 +14,21 @@ from pathlib import Path
 import addict
 import numpy as np
 import pandas as pd
-import postprocess_funs as pf
+import geopandas as gpd
+import src.postprocess_funs as pf
 import yaml
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("-d", "--slice_dir", type=str, help="path to directory with all the slices")
-    parser.add_argument("-m", "--slice_meta", type=str, help="path to the slices metadata")
+    parser.add_argument("-d", "--slice_dir", type=str, default="/scratch/akera/glaciers_slices/", help="path to directory with all the slices")
+    parser.add_argument("-m", "--slice_meta", type=str, default="scratch/akera/glaciers_slices/slice.geojson", help="path to the slices metadata")
     parser.add_argument("-o", "--output_dir", type=str, default="./processed", help="path to output directory for postprocessed files")
     parser.add_argument("-c", "--conf", type=str, default="conf/postprocess.yaml", help="Path to the file specifying postprocessing options.")
     args = parser.parse_args()
 
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
-    slice_meta = pd.read_csv(Path(args.slice_meta))
+    slice_meta = gpd.read_file(Path(args.slice_meta))
 
     # filter all the slices to the ones that matter
     keep_ids = pf.filter_directory(

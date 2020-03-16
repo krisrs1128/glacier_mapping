@@ -11,7 +11,7 @@ import pandas as pd
 import random
 
 
-def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0, n_cpu=10):
+def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0):
     """
     Return Paths for Pairs passing Filter Criteria
 
@@ -19,23 +19,8 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0, n_cpu=10):
       to pass the filter.
     :param filter_channel: The channel to do the filtering on.
     """
-    img_paths, mask_paths = slice_meta["img_slice"].values, slice_meta["mask_slice"].values
-
-    def wrapper(i):
-        if i % 10 == 0:
-            print(f"{i}/{len(img_paths)}")
-
-        cur_ids = []
-        mask = np.load(mask_paths[i])
-        perc = mask[:, :, filter_channel].mean()
-        if perc >= filter_perc:
-            cur_ids.append({"img": img_paths[i], "mask": mask_paths[i]})
-
-        return cur_ids
-
-    para = Parallel(n_jobs=n_cpu)
-    keep_ids = para(delayed(wrapper)(i) for i in range(len(mask_paths)))
-    return sum(keep_ids, [])
+    slice_meta = slice_meta[slice_meta[f"mask_mean_{filter_channel}"] > filter_perc]
+    return [{"img": d["img_path"], "mask": d["mask_path"]} for _, d in slice_meta.iterrows()]
 
 
 def random_split(ids, split_ratio, **kwargs):

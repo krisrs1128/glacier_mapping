@@ -4,16 +4,18 @@ Convert Large Tiff and Mask files to Slices (512 x 512 subtiles)
 
 2020-02-26 10:36:48
 """
+from geopandas.geodataframe import GeoDataFrame
 from joblib import Parallel, delayed
+from pathlib import Path
 from skimage.util.shape import view_as_windows
 import argparse
 import numpy as np
 import os
 import pandas as pd
-import pathlib
 import rasterio
+import shapely.geometry
 
-def slice_tile(img, size=(512,512), overlap=6):
+def slice_tile(img, size=(512, 512), overlap=6):
     """Slice an image into overlapping patches
     Args:
         img (np.array): image to be sliced
@@ -29,6 +31,32 @@ def slice_tile(img, size=(512,512), overlap=6):
             result.append(patches[i,j,0])
     return result
 
+
+def slices_metadata(imgf, img_path, mask_path, size=(512, 512), overlap=6):
+    meta = slice_polys(imgf, size, overlap)
+    meta["img_source"] = img_path
+    meta["mask_source"] = mask_path
+    return meta
+
+
+def slice_polys(imgf, size=(512, 512), overlap=6):
+    """
+    Get Polygons Corresponding to Slices
+    """
+    ix_row = np.arange(0, imgf.meta["height"], size[0] - overlap)
+    ix_col = np.arange(0, imgf.meta["width"], size[1] - overlap)
+    lats = np.linspace(imgf.bounds.bottom, imgf.bounds.top, imgf.meta["height"])
+    longs = np.linspace(imgf.bounds.left, imgf.bounds.right, imgf.meta["width"])
+
+    polys = []
+    for i in range(len(ix_row) - 1):
+        for j in range(len(ix_col) - 1):
+            box = shapely.geometry.box(longs[ix_col[j]], lats[ix_row[i]], longs[ix_col[j + 1]], lats[ix_row[i + 1]])
+            polys.append(box)
+
+    return GeoDataFrame(geometry=polys, crs=imgf.meta["crs"].to_string())
+
+
 def slice_pair(img, mask, **kwargs):
     img_slices = slice_tile(img, **kwargs)
     mask_slices = slice_tile(mask, **kwargs)
@@ -36,50 +64,52 @@ def slice_pair(img, mask, **kwargs):
 
 
 def write_pair_slices(img_path, mask_path, out_dir=None, out_base="slice",
-                      metadata_path="slice_metadata.csv", **kwargs):
+                      n_cpu=30, **kwargs):
     if out_dir is None:
         out_dir = os.getcwd()
 
-    img = rasterio.open(img_path).read().transpose(1, 2, 0)
+    imgf = rasterio.open(img_path)
+    img = imgf.read().transpose(1, 2, 0)
     mask = np.load(mask_path)
     img_slices, mask_slices = slice_pair(img, mask, **kwargs)
-    metadata = []
+    metadata = slices_metadata(imgf, img_path, mask_path, **kwargs)
 
-    # loop over slices for this tile / mask pair
-    for k, img in enumerate(img_slices):
-        img_slice_path = pathlib.Path(out_dir, f"{out_base}_img_{k}.npy")
-        mask_slice_path = pathlib.Path(out_dir, f"{out_base}_mask_{k}.npy")
-
-        # save outputs
-        np.save(img_slice_path, img)
+    # loop over slices for individual tile / mask pairs
+    slice_stats = []
+    for k in range(len(img_slices)):
+        print(f"saving {k}/{len(img_slices)}")
+        img_slice_path = Path(out_dir, f"{out_base}_img_{k:03}.npy")
+        mask_slice_path = Path(out_dir, f"{out_base}_mask_{k:03}.npy")
+        np.save(img_slice_path, img_slices[k])
         np.save(mask_slice_path, mask_slices[k])
-        metadata.append({
-            "img_source": img_path,
-            "mask_source": mask_path,
-            "img_slice": img_slice_path,
-            "mask_slice": mask_slice_path,
-        })
 
-    metadata = pd.DataFrame(metadata)
-    metadata.to_csv(pathlib.Path(out_dir, metadata_path), mode="a", header=False, index=False)
-    return metadata
+        # update metadata
+        stats = {"img_slice": str(img_slice_path), "mask_slice": str(mask_slice_path)}
+        mask_mean = mask_slices[k].mean(axis=(0, 1))
+        stats.update({f"mask_mean_{i}": v for i, v in enumerate(mask_mean)})
+        slice_stats.append(stats)
+
+    slice_stats = pd.DataFrame(slice_stats)
+    return pd.concat([metadata, slice_stats], axis=1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
     parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default="/scratch/sankarak/data/glaciers_azure/masks/metadata.csv")
-    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default="/scratch/sankarak/data/glaciers_azure/slices/")
+    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default="/scratch/sankarak/data/glaciers_azure/slices_test/")
     parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="slice")
-    parser.add_argument("-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=5)
+    parser.add_argument("-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=10)
     args = parser.parse_args()
-
     paths = pd.read_csv(args.paths_csv)
 
     ## Slicing all the Tiffs in input csv file into specified output directory
     def wrapper(row):
         img_path=paths.iloc[row]["img"]
         mask_path=paths.iloc[row]["mask"]
-        print(f"##Slicing tiff {row +1}/{len(paths)} ...")
-        write_pair_slices(img_path, mask_path, args.output_dir, f"{args.out_base}_{row}")
+        print(f"## Slicing tiff {row +1}/{len(paths)} ...")
+        return write_pair_slices(img_path, mask_path, args.output_dir, f"{args.out_base}_{row}")
+
     para = Parallel(n_jobs=args.n_cpu)
-    para(delayed(wrapper)(k) for k in range(len(paths)))
+    metadata = para(delayed(wrapper)(k) for k in range(len(paths)))
+    metadata = pd.concat(metadata, axis=0)
+    metadata.to_file(Path(args.output_dir, "slices.geojson"), index=False, driver="GeoJSON")

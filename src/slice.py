@@ -64,7 +64,7 @@ def slice_pair(img, mask, **kwargs):
 
 
 def write_pair_slices(img_path, mask_path, out_dir=None, out_base="slice",
-                      n_cpu=30, **kwargs):
+                      n_cpu=5, **kwargs):
     if out_dir is None:
         out_dir = os.getcwd()
 
@@ -95,12 +95,15 @@ def write_pair_slices(img_path, mask_path, out_dir=None, out_base="slice",
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
-    parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default="/scratch/sankarak/data/glaciers_azure/masks/metadata.csv")
-    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default="/scratch/sankarak/data/glaciers_azure/slices_test/")
+    default_root = os.environ["SCRATCH"] + "/data/glaciers/"
+    parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default=default_root + "masks/metadata.csv")
+    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=default_root + "slices_test/")
+    parser.add_argument("-s", "--start_line", type=int, default=0, help="start line in the metadata, from which to start processing")
+    parser.add_argument("-e", "--end_line", type=int, default=np.inf, help="end line in the metadata, at which to stop processing")
     parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="slice")
-    parser.add_argument("-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=10)
+    parser.add_argument("-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=5)
     args = parser.parse_args()
-    paths = pd.read_csv(args.paths_csv)
+    paths = pd.read_csv(args.paths_csv)[args.start_line:args.end_line]
 
     ## Slicing all the Tiffs in input csv file into specified output directory
     def wrapper(row):

@@ -130,8 +130,6 @@ class PytorchUNet(BackendModel):
         """
         height, width, _ = img.shape
         img = np.nan_to_num(img)
-        img -= img.mean(axis=(0, 1))
-        img /= (img.std(axis=(0, 1)) + 0.0001)
 
         counts = np.zeros((height, width), dtype=np.float32) + 0.000000001
         kernel = np.ones((self.input_size[0], self.input_size[1]), dtype=np.float32) * 0.1
@@ -162,7 +160,5 @@ class PytorchUNet(BackendModel):
             output[y:y+self.input_size[0], x:x+self.input_size[1]] += y_hat[i] * kernel
             counts[y:y+self.input_size[0], x:x+self.input_size[1]] += kernel
 
-        print(np.mean(output))
-        print(np.std(output))
-
+        output[:400, :400] = 10 * np.random.uniform(size=(400, 400))
         return (output / counts)[:, :, np.newaxis]

@@ -43,7 +43,7 @@ def extent_to_transformed_geom(extent, dest_crs="EPSG:4269"):
     return fiona.transform.transform_geom(src_crs, dest_crs, geom)
 
 
-def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=1):
+def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=10):
     ''' Assume that src_img is (height, width, channels)
     '''
     assert len(src_img.shape) == 3
@@ -64,6 +64,7 @@ def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=1)
         resolution=resolution
     )
 
+    print(src_img_tmp[:100, :100, 0])
     dst_image = np.zeros((num_channels, height, width), np.float32)
     rasterio.warp.reproject(
         source=src_img_tmp,
@@ -75,6 +76,9 @@ def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=1)
         resampling=rasterio.warp.Resampling.nearest
     )
     dst_image = np.rollaxis(dst_image, 0, 3)
+    print("reprojecting")
+    print(src_img_tmp[:100, :100, 0])
+    print(dst_image[:100, :100, 0])
 
     return dst_image, dst_bounds
 

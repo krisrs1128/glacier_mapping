@@ -29,7 +29,6 @@ class PytorchUNet(BackendModel):
         """
         makes predictions given
         """
-        print("running")
         return self.run_model_on_tile(input_data)
 
     def run_model_on_batch(self, batch_data, batch_size=32, predict_central_pixel_only=False):
@@ -154,11 +153,11 @@ class PytorchUNet(BackendModel):
             y_hat = self.model(torch.from_numpy(batch))
             y_hat = torch.nn.Sigmoid()(y_hat)
             y_hat = y_hat.detach().numpy()
+            # y_hat = np.random.randint(2, size=y_hat.shape)
 
         output = np.zeros((height, width), dtype=np.float32)
         for i, (y, x) in enumerate(batch_indices):
             output[y:y+self.input_size[0], x:x+self.input_size[1]] += y_hat[i] * kernel
             counts[y:y+self.input_size[0], x:x+self.input_size[1]] += kernel
 
-        output[:400, :400] = 10 * np.random.uniform(size=(400, 400))
         return (output / counts)[:, :, np.newaxis]

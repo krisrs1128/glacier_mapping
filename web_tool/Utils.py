@@ -79,7 +79,7 @@ def class_prediction_to_img(y_pred, color_map=None):
         ], dtype=np.float32)
 
     img = np.zeros((height, width, 3), dtype=np.float32)
-    y_pred_temp = y_pred.copy()
+    y_pred_temp = y_pred.argmax(axis=2)
     for c in range(num_classes):
         for ch in range(3):
             img[:, :, ch] += y_pred_temp[:, :, c] * color_map[c, ch]

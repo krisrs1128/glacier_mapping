@@ -64,23 +64,22 @@ def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=10
         resolution=resolution
     )
 
-    print(src_img_tmp[:100, :100, 0])
-    dst_image = np.zeros((num_channels, height, width), np.float32)
-    rasterio.warp.reproject(
-        source=src_img_tmp,
-        destination=dst_image,
-        src_transform=src_transform,
-        src_crs=src_crs,
-        dst_transform=dst_transform,
-        dst_crs=dst_crs,
-        resampling=rasterio.warp.Resampling.nearest
-    )
-    dst_image = np.rollaxis(dst_image, 0, 3)
-    print("reprojecting")
-    print(src_img_tmp[:100, :100, 0])
-    print(dst_image[:100, :100, 0])
+    with rasterio.io.MemoryFile() as memfile:
+        dst_file = memfile.open(
+            driver='GTiff',
+            height=height,
+            width=width,
+            count=src_img_tmp.shape[0],
+            dtype=np.float32,
+            crs=dst_crs,
+            transform=dst_transform
+        )
+        for k in range(src_img_tmp.shape[0]):
+            dst_file.write(src_img_tmp[k], k + 1)
 
-    return dst_image, dst_bounds
+    dst_img = dst_file.read()
+    dst_img = np.transpose(dst_img, (1, 2, 0))
+    return dst_img, dst_bounds
 
 
 def crop_data_by_extent(src_img, src_bounds, extent):

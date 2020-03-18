@@ -70,24 +70,27 @@ if __name__ == "__main__":
 
     slice_path = "../data/slices/img_"+name_pattern
     mask_path = "../data/slices/cropped_label_"+name_pattern
+    real_debris_mask_path = "../data/slices/actual_debris_cropped_label_"+name_pattern
 
     img_slices = sorted(glob.glob(slice_path))
     mask_slices = sorted(glob.glob(mask_path))
-    real_debris_mask = get_mask(sat_image,real_debris)
-    real_debris_mask_slices = slice_image(real_debris_mask)
+    real_debris_mask_slices = sorted(glob.glob(real_debris_mask_path))
+    # real_debris_mask = get_mask(sat_image,real_debris)
+    # real_debris_mask_slices = slice_image(real_debris_mask)
 
     intersection, union = 1,1
 
-    for image_path, mask_path in zip(img_slices,mask_slices):
+    for image_path, mask_path, actual_debris_mask_path in zip(img_slices,mask_slices,real_debris_mask_slices):
         img = np.load(image_path)
         img = T.ToTensor()(img)
         mask = np.load(mask_path)
         snow_i_debris = get_debris_glaciers(img, mask, thresh=threshhold)
+        actual_debris_mask = np.load(actual_debris_mask_path)
         _filename = image_path.split("/")[-1].split(".")[0]
-        index = int(_filename.split("_")[-1])
+        # index = int(_filename.split("_")[-1])
 
-        if(np.any(snow_i_debris) or np.any(real_debris_mask_slices[index])):
-            _union, _intersection = get_iou(snow_i_debris,real_debris_mask_slices[index])
+        if(np.any(snow_i_debris) or np.any(actual_debris_mask)):
+            _union, _intersection = get_iou(snow_i_debris,actual_debris_mask)
             print("Filename: ",_filename,"\tIOU= ",_intersection/_union)
             intersection += _intersection
             union += _union
@@ -98,12 +101,12 @@ if __name__ == "__main__":
             if not os.path.exists('./temp_files/snow'):
                 os.makedirs('./temp_files/snow')
             matplotlib.image.imsave('./temp_files/snow/'+_filename+'.jpeg',snow_i_debris)
-        if np.any(real_debris_mask_slices[index]):
+        if np.any(actual_debris_mask):
             if not os.path.exists('./temp_files'):
                 os.makedirs('./temp_files')
             if not os.path.exists('./temp_files/real'):
                 os.makedirs('./temp_files/real')    
-            matplotlib.image.imsave('./temp_files/real/'+_filename+'.jpeg',real_debris_mask_slices[index])
+            matplotlib.image.imsave('./temp_files/real/'+_filename+'.jpeg',actual_debris_mask)
     
 
     print("Cumulative IOU \tIntersection: ",intersection,"\tUnion: ",union,"\tIOU= ",intersection/union)

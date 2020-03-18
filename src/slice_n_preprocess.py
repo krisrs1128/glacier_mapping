@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import pandas as pd
+import geopandas
 
 import src.preprocess as preprocess
 from src.utils import  load_conf
@@ -18,12 +19,19 @@ def preprocess_country(base_dir, test_basin_path, dev_basin_path,
     save_loc = Path(base_dir, f'sat_files/{year}/{country}')
     save_loc.mkdir(parents=True, exist_ok=True)
 
+    try:
+        labels = geopandas.read_file(labels_path)
+        debris = labels[labels["Glaciers"] == "Debris covered"]
+        actual_debris_flag = True
+    except Exception as e:
+        actual_debris_flag = False
+        print("Warning: The val and test set doesn't have debris glaciers information")
     # slice all images in that folder
     preprocess.chunck_sat_files(sat_dir, labels_path, base_dir, save_loc,
                                 borders_path=borders_path, test_basin_path=test_basin_path,
                                 dev_basin_path=dev_basin_path,
                                 size=(data_c["size"], data_c["size"]),
-                                year=year, country=country)
+                                year=year, country=country, debris_flag = actual_debris_flag)
 
     def valid_cond_f(sat_data): return ((sat_data.labels_perc > valid_c["labels_perc"]) &
                                         (sat_data.labels_in_border > valid_c["labels_in_border"]) &

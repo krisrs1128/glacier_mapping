@@ -13,6 +13,13 @@ def get_pseudo_debris_perc(row, base_folder):
     debris_mask = utils.get_debris_glaciers(img, mask)
     return debris_mask.sum() / mask.sum()
 
+def get_actual_debris_perc(row, base_folder):
+    mask = np.load(base_folder / row.cropped_label)
+    img = np.load(base_folder / row.cropped_path)
+    img = np.moveaxis(img, -1, 0) # channels first
+    debris_mask = np.load(base_folder / row.actual_debris_cropped_label)
+    return debris_mask.sum() / mask.sum()
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--data_path", default="./data/sat_data.csv", type=str,
@@ -23,8 +30,13 @@ if __name__ == '__main__':
     df = pd.read_csv(data_path)
     debris_perc = df.apply(lambda row: get_pseudo_debris_perc(row, base_folder=data_path.parent),
                            axis=1)
+    actual_debris_perc = df.apply(lambda row: get_actual_debris_perc(row, base_folder=data_path.parent),
+                           axis=1)
     df['pseudo_debris_perc'] = debris_perc
+    df['actual_debris_perc'] = actual_debris_perc
     df.to_csv(data_path)
 
     df_bebris = df[df.pseudo_debris_perc > 0]
     df_bebris.to_csv(data_path.parent / 'sat_data_p_deb.csv')
+    df_bebris = df[df.actual_debris_perc > 0]
+    df_bebris.to_csv(data_path.parent / 'sat_data_a_deb.csv')

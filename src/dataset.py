@@ -22,8 +22,16 @@ class GlacierDataset(Dataset):
         data_path = Path(base_dir, data_file)
         self.data = pd.read_csv(data_path)
         self.data = self.data[self.data.train == mode]
-        if mask_used == 'debris_glaciers':
+        if mask_used == 'actual_debris':
+            self.data = self.data[self.data.actual_debris_perc > 0]
+        elif mask_used == 'debris_glaciers':
             self.data = self.data[self.data.pseudo_debris_perc > 0]
+            if mode != 'train':
+            # We calculate the mask using snow index but only for tiles where 
+            # actual debris exist, (since we are using actual debris for dev and
+            # test set) otherwise, division by zero may be encountered
+            # when calculating recall. 
+                self.data = self.data[self.data.actual_debris_perc > 0]
         if country != 'all':
             self.data = self.data[(self.data.train.isin(['dev', 'test']))
                                   | (self.data["country"].isin(country))]
@@ -45,6 +53,8 @@ class GlacierDataset(Dataset):
 
     def __getitem__(self, i):
         pathes = ['img_path', 'mask_path', 'border_path']
+        if self.mask_used == 'actual_debris':
+            pathes = ['img_path', 'actual_debris_mask_path', 'border_path']
         image_path, mask_path, border_path = self.data.iloc[i][pathes]
 
         image_path = Path(self.base_dir, image_path)
@@ -52,6 +62,10 @@ class GlacierDataset(Dataset):
 
         if self.use_cropped:
             cropped_pathes = ['cropped_path', 'cropped_label']
+            if self.mask_used == 'actual_debris':  # Use actual labels for actual_debris
+                cropped_pathes = ['cropped_path', 'actual_debris_cropped_label']
+            elif self.mask_used == ('debris_glaciers' and self.mode != 'train'): # Use actual label for dev and test set on debris_glaciers
+                cropped_pathes = ['cropped_path', 'actual_debris_cropped_label']
             cropped_img_path, cropped_label_path = self.data.iloc[i][cropped_pathes]
             cropped_img_path = Path(self.base_dir, cropped_img_path)
             cropped_label_path = Path(self.base_dir, cropped_label_path)
@@ -63,7 +77,7 @@ class GlacierDataset(Dataset):
         img = np.load(image_path)
         img = T.ToTensor()(img)
 
-        # get snow index before filtering the data
+        # get snoBut w index before filtering the data
         snow_index = utils.get_snow_index(img)
         img = img[self.channels_to_inc]
 
@@ -84,7 +98,7 @@ class GlacierDataset(Dataset):
 
         # default is 'glaciers' for original labels 
         mask = np.load(mask_path)
-        if self.mask_used == 'debris_glaciers':
+        if (self.mask_used == 'debris_glaciers' and self.mode == "train"):
             mask = utils.get_debris_glaciers(img, mask)
         elif self.mask_used == 'multi_class_glaciers':
             mask = utils.merge_mask_snow_i(img, mask.astype(np.int64))

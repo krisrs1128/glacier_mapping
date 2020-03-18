@@ -27,7 +27,6 @@ class AtomicCounter:
             return self.value
 
 
-
 def to_categorical(y, num_classes=None):
     """Converts a class vector (integers) to binary class matrix.
     E.g. for use with categorical_crossentropy.
@@ -66,23 +65,11 @@ def to_one_hot_batch(batch, class_num):
         one_hot[:, class_id, :, :] = (batch == class_id).astype(np.float32)
     return one_hot
 
-def class_prediction_to_img(y_pred, color_map=None):
+def class_prediction_to_img(y_pred):
     assert len(y_pred.shape) == 3, "Input must have shape (height, width, num_classes)"
     height, width, num_classes = y_pred.shape
-
-    if color_map is None:
-        color_map = np.array([
-            [0,0,1],
-            [0,0.5,0],
-            [0.5,1,0.5],
-            [0.5,0.375,0.375],
-        ], dtype=np.float32)
-
     img = np.zeros((height, width, 3), dtype=np.float32)
-    y_pred_temp = y_pred.argmax(axis=2)
-    for c in range(num_classes):
-        for ch in range(3):
-            img[:, :, ch] += y_pred_temp[:, :, c] * color_map[c, ch]
+    img[:, :, 0] = 255 * y_pred[:, :, 0]
     return img
 
 def nlcd_to_img(img):

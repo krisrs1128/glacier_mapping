@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 # pylint: disable=E1137,E1136,E0110
-from ServerModelsKerasDense import KerasDenseFineTune
 from ServerModelsPytorch import PytorchUNet
 from rpyc.utils.server import OneShotServer, ThreadedServer
 import Utils as utils

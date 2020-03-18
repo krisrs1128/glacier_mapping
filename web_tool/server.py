@@ -2,17 +2,14 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 # pylint: disable=E1137,E1136,E0110,E1101
-import DataLoader as DL
 from Datasets import load_datasets, get_area_from_geometry
-from Heatmap import Heatmap
-import pdb
 from Session import Session, manage_session_folders, SESSION_FOLDER
 from SessionHandler import SessionHandler
-from log import setup_logging, LOGGER
-import Utils as utils
 from addict import Dict
+from log import setup_logging, LOGGER
+import DataLoader as DL
+import Utils as utils
 import argparse
-import base64
 import beaker.middleware
 import bottle
 import cheroot.wsgi
@@ -242,38 +239,21 @@ def pred_patch():
     dataset = data.dataset
     name_list = [item.name for item in dataset.class_list]
 
-    # ------------------------------------------------------
-    # Step 1
-    #   Transform the input extent into a shapely geometry
-    #   Find the tile assosciated with the geometry
-    # ------------------------------------------------------
-
-    # ------------------------------------------------------
-    # Step 2
-    #   Load the input data sources for the given tile
-    # ------------------------------------------------------
+    # Load the input data sources for the given tile
     if dataset.metadata.id not in DATASETS:
         raise ValueError("Dataset doesn't seem to be valid, do the datasets in js/tile_layers.js correspond to those in TileLayers.py")
 
     loaded_query = DATASETS[dataset.metadata.id]["data_loader"].get_data_from_extent(extent)
     SESSION_HANDLER.get_session(bottle.request.session.id).current_transform = (loaded_query["src_crs"], loaded_query["src_transform"])
 
-    # ------------------------------------------------------
-    # Step 3
     #   Run a model on the input data
-    #   Apply reweighting
-    #   Fix padding
-    # ------------------------------------------------------
     model = SESSION_HANDLER.get_session(bottle.request.session.id).model
     output = model.run(loaded_query["src_img"], extent, False)
     loaded_query["src_img"] = None # save memory
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
     assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
 
-    # ------------------------------------------------------
-    # Step 4
-    #   Warp output to EPSG:3857 and crop off the padded area
-    # ------------------------------------------------------
+    #   Warp output to EPSG:3857
     output, output_bounds = DL.warp_data_to_3857(
         output,
         loaded_query["src_crs"],
@@ -285,7 +265,7 @@ def pred_patch():
     # Step 5
     #   Convert images to base64 and return
     # ------------------------------------------------------
-    img_soft = np.round(utils.class_prediction_to_img(output * 255)).astype(np.uint8)
+    img_soft = np.round(utils.class_prediction_to_img(output)).astype(np.uint8)
     data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
     return json.dumps(data)
@@ -388,7 +368,7 @@ def get_input():
 
     loaded_query = DATASETS[data_id]["data_loader"].get_data_from_extent(extent)
     img_data, img_bounds = DL.warp_data_to_3857(**loaded_query)
-    data["input_rgb"] = DL.encode_rgb(img_data[:, :, [2, 4, 5]])
+    data["input_rgb"] = DL.encode_rgb(img_data[:, :, [6, 3, 1]])
     bottle.response.status = 200
     return json.dumps(data)
 

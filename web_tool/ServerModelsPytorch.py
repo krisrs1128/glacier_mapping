@@ -3,6 +3,7 @@ from ServerModelsAbstract import BackendModel
 from pathlib import Path
 import numpy as np
 import os
+import time
 import torch
 import sys
 sys.path.append(str(Path(os.environ["WEBTOOL_ROOT"], "..")))
@@ -129,6 +130,9 @@ class PytorchUNet(BackendModel):
         """
         height, width, _ = img.shape
         img = np.nan_to_num(img)
+        for k in range(img.shape[2]):
+            img[:, :, k] -= img[:, :, k].mean()
+            img[:, :, k] /= (0.001 + img[:, :, k].std())
 
         counts = np.zeros((height, width), dtype=np.float32) + 0.000000001
         kernel = np.ones((self.input_size[0], self.input_size[1]), dtype=np.float32) * 0.1
@@ -153,7 +157,6 @@ class PytorchUNet(BackendModel):
             y_hat = self.model(torch.from_numpy(batch))
             y_hat = torch.nn.Sigmoid()(y_hat)
             y_hat = y_hat.detach().numpy()
-            # y_hat = np.random.randint(2, size=y_hat.shape)
 
         output = np.zeros((height, width), dtype=np.float32)
         for i, (y, x) in enumerate(batch_indices):

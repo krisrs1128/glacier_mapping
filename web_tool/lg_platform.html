@@ -45,10 +45,9 @@
                     <img id="inputImage">
                 </div>
 
-                <div style="text-align: center; margin-bottom:10px; width:100%;" id="exampleImages">
+                <div style="text-align: center; margin-bottom:10px;" id="predictionDiv">
                     <h3>Glacier Mapping Predictions</h3>
-                    <div id="exampleImageList">
-                    </div>
+                    <img id="predImg" width="125px"/>
                 </div>
 
                 <div style="text-align: left; margin-bottom:10px; width:100%; padding-left:30px;">
@@ -145,7 +144,6 @@
         // Runtime entrance
         //----------------------------------------------------------------------
         $(document).ready(function(){
-
             //----------------------------------------------------------------------
             // Parse URL arguments
             //----------------------------------------------------------------------
@@ -167,11 +165,8 @@
                 args.dataset = "esri_world_imagery";
             }
             gCurrentDataset = args.dataset;
-
             if(args.cachedModel !== null){
                 doLoad(args.cachedModel); // load a cached version of the model
-            }else{
-                //doReset(false, true); // reset the backend server
             }
 
             //----------------------------------------------------------------------
@@ -199,7 +194,6 @@
             //----------------------------------------------------------------------
 
             // Create the basemap for the current dataset
-            console.log(DATASETS)
             var baseLayer = L.tileLayer(DATASETS[gCurrentDataset]["basemapLayer"]["url"], DATASETS[gCurrentDataset]["basemapLayer"]["args"]);
 
             // This is the list of basemaps that will be displayed on the control in bottom left of GUI
@@ -227,7 +221,6 @@
             });
             gMap.createPane('customPolygons');
             gMap.getPane('customPolygons').style.zIndex = 2001;
-            console.log(gMap)
 
             gMap.createPane('polygons');
             gMap.getPane('polygons').style.zIndex = 2000;
@@ -294,88 +287,6 @@
             $("#btnDownload").click(doDownloadTile);
 
             $("#btnKillSession").click(doKillSession)
-
-
-            $("#btnNewClass").click(function(){
-                var newClassIdx = CLASSES.length + 1;
-                var newColor = getRandomColor();
-
-                var newClassElement =  $("<div class='radio'>");
-                var newLabel = $("<label><input type='radio' name='radClasses' class='radNewClass' value='Class "+newClassIdx+"'><span class='className'>Class "+newClassIdx+"</span> (<span class='classCounts'>0</span> samples since last retrain)<i class='fa fa-edit ml-1 classNameEdit'></i></label>");
-
-                var newPicker = document.createElement('button');
-                newPicker.classList.add("circle");
-                newPicker.classList.add("jscolor");
-                newPicker.setAttribute("data-class-name", "Class "+newClassIdx);
-                var output = new jscolor(newPicker, {
-                    valueElement: null,
-                    value: newColor.substr(1),
-                    position:'left',
-                    zIndex:2001,
-                    closable:true,
-                    closeText:'Close',
-                    onFineChange:'updateClassColor(this)'
-                });
-
-                newClassElement.append(newPicker);
-                newClassElement.append(newLabel);
-
-                $("#classList").append(newClassElement);
-                CLASSES.push({
-                    "name": "Class " + newClassIdx,
-                    "color": newColor,
-                    "count": 0
-                });
-
-            });
-
-            //----------------------------------------------------------------------
-            // Setup radio button change detection
-            //----------------------------------------------------------------------
-            $(document).on('change', '.radNewClass', function(){
-
-                $('.radio label').removeClass("selected");
-                $(this).parent().addClass("selected");
-
-                gSelectedClassIdx = findClassByName(this.value);
-                console.debug(this.value + " " + gSelectedClassIdx);
-            });
-
-            $(document).on('click', '.classNameEdit', function(){
-                var oldName = $(this).siblings(".className").html();
-                var newName = prompt("New label name for '"+oldName+"'");
-                $(this).siblings(".className").html(newName);
-                $(this).siblings(".radNewClass").val(newName);
-
-                $(this).parent().siblings(".jscolor").attr("data-class-name", newName);
-
-                var classIdx = findClassByName(oldName)
-                CLASSES[classIdx]["name"] = newName;
-            });
-
-            //----------------------------------------------------------------------
-            // Setup the example images list
-            //----------------------------------------------------------------------
-            for(var i=0; i<1; i++){
-                var img = $("<img class='exampleImage'>");
-                img.attr("im-id", i);
-                img.attr("id", "exampleImage_"+i);
-                $("#exampleImageList").append(img);
-            }
-
-            $(".exampleImage").click(function(){
-                $(".exampleImage").removeClass("active");
-                $(this).addClass("active");
-
-                var idx = gCurrentPatches.length-1;
-                gActiveImgIdx = $(this).attr("im-id");
-
-                var srcs = gCurrentPatches[idx]["patches"][gActiveImgIdx]["srcs"];
-                let tSelection = gDisplayHard ? "hard" : "soft";
-                gCurrentPatches[idx]["imageLayer"].setUrl(srcs[tSelection]);
-                gCurrentPatches[idx]["activeImgIdx"] = gActiveImgIdx;
-                $(this).attr("src", srcs[tSelection]);
-            });
 
         });
 

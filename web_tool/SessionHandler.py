@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from Models import load_models
-from ServerModelsKerasDense import KerasDenseFineTune
 from ServerModelsPytorch import PytorchUNet
 from Session import Session
 from log import LOGGER

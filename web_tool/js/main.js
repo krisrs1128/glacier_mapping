@@ -248,7 +248,6 @@ var doUndo = function(){
 };
 
 
-
 //-----------------------------------------------------------------
 // Get predictions
 //-----------------------------------------------------------------
@@ -267,9 +266,6 @@ var requestPatches = function(polygon){
     idx = gCurrentPatches.length - 1;
     requestInputPatch(idx, polygon, gBackendURL);
     gCurrentPatches[idx]["patches"].push({"srcs": null});
-    console.log(idx)
-    console.log(polygon)
-    console.log(gBackendURL)
     requestPatch(idx, polygon, 0, gBackendURL);
 };
 
@@ -302,19 +298,14 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL) {
         success: function(data, textStatus, jqXHR){
             console.log("predicting")
             var resp = data;
-            var srcs = [
-                "data:image/png;base64," + resp.output_soft,
-                "data:image/png;base64," + resp.output_hard,
-            ];
-
-            var img = $("#exampleImage_"+currentImgIdx);
-            img.attr("src", srcs[0]);
+            var img = $("#predImg")
+            img.attr("src", "data:image/png;base64," + resp.output_soft)
             img.attr("data-name", resp.model_name);
 
             if(currentImgIdx == gCurrentPatches[idx]["activeImgIdx"] ){
                 img.addClass("active");
             }
-            gCurrentPatches[idx]["patches"][currentImgIdx]["srcs"] = srcs;
+            gCurrentPatches[idx]["patches"][currentImgIdx]["srcs"] = [resp.output_soft];
         },
         error: notifyFail,
         dataType: "json",

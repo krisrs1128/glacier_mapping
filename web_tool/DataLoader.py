@@ -1,29 +1,19 @@
 #!/usr/bin/env python3
 from DataLoaderAbstract import DataLoader
-from enum import Enum
-import matplotlib.pyplot as plt
-from addict import Dict
 from pathlib import Path
-import base64
 from rasterio.vrt import WarpedVRT
 from rasterio.windows import from_bounds
-from urllib.request import urlopen
+import base64
 import cv2
 import fiona
-import fiona.crs
 import fiona.transform
-import mercantile
 import numpy as np
 import os
 import rasterio
 import rasterio.crs
 import rasterio.io
 import rasterio.mask
-import rasterio.merge
-import rasterio.transform
 import rasterio.warp
-import rtree
-import shapely
 import shapely.geometry
 
 # ------------------------------------------------------
@@ -84,7 +74,6 @@ def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=10
 
 
 def encode_rgb(x):
-    plt.imsave("test_rgb.png", np.abs(x) / np.abs(x).max())
     x_im = cv2.imencode(".png", cv2.cvtColor(x, cv2.COLOR_RGB2BGR))[1]
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 
@@ -114,7 +103,7 @@ class DataLoaderCustom(DataLoader):
         self._padding = padding
 
     def get_data_from_extent(self, extent):
-        f = rasterio.open(os.path.join(ROOT_DIR, self.data_fn), "r")
+        f = rasterio.open(Path(ROOT_DIR, self.data_fn), "r")
         src_index = f.index
         src_crs = f.crs
         transformed_geom = extent_to_transformed_geom(extent, f.crs.to_dict())
@@ -137,7 +126,7 @@ class DataLoaderCustom(DataLoader):
         mask_geom = shapely.geometry.mapping(shape)
 
         # Second, crop out that area for running the entire model on
-        f = rasterio.open(os.path.join(ROOT_DIR, self.data_fn), "r")
+        f = rasterio.open(Path(ROOT_DIR, self.data_fn), "r")
         src_profile = f.profile
         src_crs = f.crs.to_string()
         src_bounds = f.bounds
@@ -157,11 +146,10 @@ class DataLoaderCustom(DataLoader):
         raise ValueError("No shape contains the centroid")
 
     def get_data_from_shape(self, shape):
-        #mask_geom = shapely.geometry.mapping(shape)
         mask_geom = shape
 
         # Second, crop out that area for running the entire model on
-        f = rasterio.open(os.path.join(ROOT_DIR, self.data_fn), "r")
+        f = rasterio.open(Path(ROOT_DIR, self.data_fn), "r")
         src_profile = f.profile
         src_crs = f.crs.to_string()
         src_bounds = f.bounds

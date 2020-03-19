@@ -69,38 +69,30 @@ class Session():
 
     def load(self, encoded_model_fn):
         model_fn = base64.b64decode(encoded_model_fn).decode('utf-8')
-
-        print(model_fn)
-
         del self.model
         self.model = joblib.load(model_fn)
 
     def save(self, model_name):
-
-        if self.storage_type is not None:
-            assert self.storage_path is not None # we check for this when starting the program
-
-            snapshot_id = "%s_%d" % (model_name, self.current_snapshot_idx)
-
-            print("Saving state for %s" % (snapshot_id))
-            base_dir = os.path.join(self.storage_path, self.current_snapshot_string)
-            if not os.path.exists(base_dir):
-                os.makedirs(base_dir, exist_ok=False)
-
-            model_fn = os.path.join(base_dir, "%s_model.p" % (snapshot_id))
-            #joblib.dump(self.model, model_fn, protocol=pickle.HIGHEST_PROTOCOL)
-
-            if self.storage_type == "file":
-                request_list_fn = os.path.join(base_dir, "%s_request_list.p" % (snapshot_id))
-                joblib.dump(self.request_list, request_list_fn, protocol=pickle.HIGHEST_PROTOCOL)
-            elif self.storage_type == "table":
-                # We don't serialize the request list when saving to table storage
-                pass
-
-            self.current_snapshot_idx += 1
-            return base64.b64encode(model_fn.encode('utf-8')).decode('utf-8') # this is super dumb
-        else:
+        if self.storage_type is None:
             return None
+
+        assert self.storage_path is not None # we check for this when starting the program
+        snapshot_id = "%s_%d" % (model_name, self.current_snapshot_idx)
+
+        print("Saving state for %s" % (snapshot_id))
+        base_dir = os.path.join(self.storage_path, self.current_snapshot_string)
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir, exist_ok=False)
+
+        model_fn = os.path.join(base_dir, "%s_model.p" % (snapshot_id))
+        if self.storage_type == "file":
+            request_list_fn = os.path.join(base_dir, "%s_request_list.p" % (snapshot_id))
+            joblib.dump(self.request_list, request_list_fn, protocol=pickle.HIGHEST_PROTOCOL)
+        elif self.storage_type == "table":
+            pass
+
+        self.current_snapshot_idx += 1
+        return model_fn
 
     def add_entry(self, data):
         data = data.copy()

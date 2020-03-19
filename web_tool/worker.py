@@ -25,9 +25,9 @@ class MyService(rpyc.Service):
     def on_disconnect(self, conn):
         pass
 
-    def exposed_run(self, naip_data, extent, on_tile=False):
-        naip_data = utils.deserialize(naip_data) # need to serialize/deserialize numpy arrays
-        output = self.model.run(naip_data, extent, on_tile)
+    def exposed_run(self, input_data, extent, on_tile=False):
+        input_data = utils.deserialize(input_data) # need to serialize/deserialize numpy arrays
+        output = self.model.run(input_data, extent, on_tile)
         return utils.serialize(output) # need to serialize/deserialize numpy arrays
 
     def exposed_retrain(self):

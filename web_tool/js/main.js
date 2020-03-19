@@ -296,7 +296,6 @@ var requestPatch = function(idx, polygon, currentImgIdx, serviceURL) {
         url: serviceURL + "/predPatch",
         data: JSON.stringify(request),
         success: function(data, textStatus, jqXHR){
-            console.log("predicting")
             var resp = data;
             var img = $("#predImg")
             img.attr("src", "data:image/png;base64," + resp.output_soft)

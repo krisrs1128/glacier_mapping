@@ -11,35 +11,6 @@ var findClassByIdx = function(idx){
     return CLASSES[idx]["name"];
 }
 
-var renderClassCount = function(name, count){
-    $(".radNewClass[value='"+name+"']").siblings(".classCounts").html(count);
-}
-
-var updateClassColor = function(obj){
-    var className = $(obj.targetElement).attr("data-class-name");
-    var classIdx = findClassByName(className);
-    CLASSES[classIdx]["color"] = '#' + obj;
-};
-
-var getRandomColor = function(){
-    // From https://stackoverflow.com/questions/1484506/random-color-generator
-    let letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-};
-
-var getRandomString = function(length=8){
-    let alphabet = "abcdefghijklmnopqrstuvwxyz1234567890";
-    let str = "";
-    for(let i=0; i<length; i++){
-        str += alphabet[Math.floor(Math.random() * alphabet.length)];
-    }
-    return str;
-}
-
 var animateSuccessfulCorrection = function(countdown, time){
     gAnimating = true;
     gSelectionBox.setStyle({weight:countdown})
@@ -67,18 +38,15 @@ var notifySuccess = function(data, textStatus, jqXHR, timeout=500){
 };
 
 var notifyFail = function(jqXHR, textStatus, errorThrown, timeout=2000){
-    console.log(jqXHR)
-    console.log(textStatus)
-    console.log(errorThrown)
-    // var response = $.parseJSON(jqXHR.responseText);
-    // console.log("Error in processing server: " + response.error);
-    // new Noty({
-    //     type: "error",
-    //     text: "Error in processing server: " + response.error,
-    //     layout: 'topCenter',
-    //     timeout: timeout,
-    //     theme: 'metroui'
-    // }).show();
+    var response = $.parseJSON(jqXHR.responseText);
+    console.log("Error in processing server: " + response.error);
+    new Noty({
+        type: "error",
+        text: "Error in processing server: " + response.error,
+        layout: 'topCenter',
+        timeout: timeout,
+        theme: 'metroui'
+    }).show();
 };
 
 var notifyFailMessage = function(message, timeout=2000){
@@ -148,45 +116,6 @@ var padNumberWithZeros = function(n, width, z) {
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
-var runUserStudyTimer = function(timeRemaining){
-    if(timeRemaining > 0){
-        var minutes = Math.floor(timeRemaining / 60)
-        var seconds = timeRemaining % 60;
-        $("#timer").html(padNumberWithZeros(minutes,2)+":"+padNumberWithZeros(seconds,2));
-        window.setTimeout(function(){runUserStudyTimer(timeRemaining-1)}, 1000);
-    } else{
-        $("#timer").html("00:00");
-        $("body").append("<div class='endOfTrial'> Thanks for labeling! Please move on to the next trial. </div>");
-        $("body").append("<div class='endOfTrialMask'></div>");
-    }
-}
-
-var setupTrainingSets = function(i){
-
-    var url = null;
-    if(i==0){
-        url = "data/demo_set_1_boundary.geojson"
-    }else{
-        url = "data/training_set_"+(i)+"_boundary.geojson"
-    }
-
-    trainingSetBoundaries[i].addTo(map);
-    $.ajax({
-        dataType: "json",
-        url: url,
-        success: function(data) {
-            $(data.features).each(function(key, data) {
-                trainingSetBoundaries[i].addData(data);
-            });
-            trainingSetBoundaries[i].setStyle({
-                "color": "#ff7800",
-                "weight": 4,
-                "fill": false
-            })
-        }
-    });
-};
-
 var getURLArguments = function(){
     var url = new URL(window.location.href);
     var trainingSetID = url.searchParams.get("trainingSetID");
@@ -233,10 +162,6 @@ var getURLArguments = function(){
         dataset: dataset
     }
 }
-
-var generateRandInt = function() {
-    return Math.floor( Math.random() * 200000 ) + 1;
-};
 
 var getZoneMap = function(zoneSetId, name, url){
     $.ajax({

@@ -21,7 +21,6 @@ def session_monitor(session_handler, session_timeout_seconds=900):
     while True:
         session_ids_to_kill = []
         for session_id, session in session_handler._SESSION_MAP.items():
-            #LOGGER.info("SESSION MONITOR - Checking session (%s) for activity" % (session_id))
             time_inactive = time.time() - session.last_interaction_time
             if time_inactive > session_timeout_seconds:
                 session_ids_to_kill.append(session_id)
@@ -51,8 +50,6 @@ class SessionHandler():
         self._WORKERS = [ # TODO: I hardcode that there are 4 GPUs available on the local machine
             {"type": "local", "gpu_id": 0},
             {"type": "local", "gpu_id": 1},
- #           {"type": "local", "gpu_id": 2},
-#            {"type": "local", "gpu_id": 3}
         ]
 
         self._WORKER_POOL = Queue()

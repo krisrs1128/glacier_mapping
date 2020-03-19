@@ -10,7 +10,7 @@ from src.dataset import GlacierDataset, loader
 from src.trainer import Trainer
 from src.unet import Unet
 from src.utils import  get_opts
-
+from src.cluster_utils import env_to_path
 
 def induce_config(data_config):
     inchannels = (len(data_config.channels_to_inc) +
@@ -45,7 +45,7 @@ if __name__ == "__main__":
             "-o",
             "--output_dir",
             type=str,
-            help="where the runs data should be stored"
+            help="where the runs data should be stored" 
     )
 
     # setup directories for output
@@ -60,13 +60,15 @@ if __name__ == "__main__":
     opts["model"]["inchannels"] = inchannels
     opts["model"]["outchannels"] = outchannels
     opts["train"]["multiclass"] = multiclass
+    opts["data"]["path"] = env_to_path(opts["data"]["path"])
 
     os.environ["WANDB_MODE"] = "dryrun"
-    wandb.init(dir=str(output_path))
+    wandb.init(project="glacier-mapping", dir=str(output_path))
     wandb.config.update(opts.to_dict())
     wandb.config.update({"__message": parsed_opts.message})
 
-    img_transform = get_normalization(opts["data"])
+    
+    img_transform, inverse_trans = get_normalization(opts["data"])
     model = Unet(**opts["model"])
     train_loader = loader(opts["data"], opts["train"], opts["augmentation"],
                           mode="train", img_transform=img_transform)
@@ -80,6 +82,7 @@ if __name__ == "__main__":
         opts["train"],
         train_loader,
         dev_loader,
-        test_loader
+        test_loader,
+        inverse_trans
     )
     trainer.train()

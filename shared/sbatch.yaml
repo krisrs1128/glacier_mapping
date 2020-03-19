@@ -1,8 +1,8 @@
 cpus: 8
 mem: 32
-runtime: "00:30:00"
+runtime: "12:00:00"
 slurm_out: "$HOME/logs/glaciers-%j.out"
 message: "glaciers mapping"
 conf_name: "explore"
-singularity_path: "/scratch/sankarak/images/glaciers.sif"
+singularity_path: "/scratch/shimaa/images/glaciers.sif"
 repo_path: "$HOME/glacier_mapping/"

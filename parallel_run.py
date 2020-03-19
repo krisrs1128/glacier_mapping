@@ -31,24 +31,26 @@ def zip_for_tmpdir(conf_path):
     """
     cmd = ""
     original_path = Path(conf_path).resolve()
-    zip_name = original_path.name + ".zip"
-    zip_path = str(original_path / zip_name)
+    zip_name = original_path.name + ".tar"
+    zip_path = str(original_path.parent / zip_name)
 
     no_zip = not Path(zip_path).exists()
     if no_zip:
         cmd = dedent(
             f"""\
             if [ -d "$SLURM_TMPDIR" ]; then
-                cd {str(original_path)}
-                zip -r {zip_name} patches masks > /dev/null
+                cd {str(original_path.parent)}
+                tar -cf {zip_name} {original_path.name} > /dev/null
             fi
             """
         )
 
-    cmd += dedent("""
+    cmd += dedent(f"""
+        echo "copying data"
         cp {zip_path} $SLURM_TMPDIR
         cd $SLURM_TMPDIR
-        unzip {zip_name} > /dev/null
+        echo "untarring data"
+        tar -xf {zip_name} > /dev/null
     """
     )
     return cmd
@@ -73,7 +75,12 @@ def template(param, conf_path, run_dir):
         {zip_command}
         cd {sbp["repo_path"]}
 
-        module load singularity/3.4
+        # singularity 3.5 path issue
+        REVERSED_PATH="$(tr ':' '\n'  <<< $PATH | tac | paste -s -d ':')"
+        export PATH="$REVERSED_PATH"
+
+        module load singularity/3.5
+        module load cuda/9.2
         echo "Starting job"
         singularity exec --nv --bind {param["config"]["data"]["path"]},{str(run_dir)}\\
                 {sbp["singularity_path"]}\\
@@ -112,10 +119,6 @@ if __name__ == '__main__':
         assert isinstance(exploration_params, dict)
 
     # setup the experiment directory
-    exp_dir = Path(
-        env_to_path(exploration_params["experiment"]["exp_dir"])
-    ).resolve()
-
     exp_name = exploration_params["experiment"].get("name", "exp")
     exp_dir = env_to_path(exploration_params["experiment"]["exp_dir"])
     exp_dir = Path(exp_dir).resolve()
@@ -130,7 +133,9 @@ if __name__ == '__main__':
     params = []
     exp_runs = exploration_params["runs"]
     if "repeat" in exploration_params["experiment"]:
-        exp_runs *= int(exploration_params["experiment"]["repeat"]) or 1
+        repeat_times = int(exploration_params["experiment"]["repeat"]) or 1
+        # repeat only the variable part
+        exp_runs = [exp_runs[0]] + (exp_runs[1:] * repeat_times)
     for p in exp_runs:
         params.append(
             {
@@ -148,6 +153,10 @@ if __name__ == '__main__':
                         **default_yaml["data"],
                         **(p["config"]["data"] if "data" in p["config"] else {}),
                     },
+                    "augmentation": {
+                        **default_yaml["augmentation"],
+                        **(p["config"]["augmentation"] if "augmentation" in p["config"] else {}),
+                    },
                 },
             }
         )
@@ -160,7 +169,7 @@ if __name__ == '__main__':
         sbp = param["sbatch"]
 
         original_data_path = param["config"]["data"]["path"]
-        param["config"]["data"]["path"] = "$SLURM_TMPDIR"
+        param["config"]["data"]["path"] = "$SLURM_TMPDIR/data"
         param["config"]["data"]["original_path"] = original_data_path
         conf_path = write_conf(run_dir, param)  # returns Path() from pathlib
         template_str = template(param, conf_path, run_dir)

@@ -1,0 +1,126 @@
+var MIN_SCALE = 1/3;
+var MAX_SCALE = 3;
+var MIN_NEIGHBORS = 64;
+
+/* Apply the USGS L7 Phase-2 Gap filling protocol, using a single kernel size. */
+var GapFill = function(src, fill, kernelSize, upscale) {
+  var kernel = ee.Kernel.square(kernelSize * 30, "meters", false)
+
+  // Find the pixels common to both scenes.
+  var common = src.mask().and(fill.mask())
+  var fc = fill.updateMask(common)
+  var sc = src.updateMask(common)
+
+  // Find the primary scaling factors with a regression.
+  // Interleave the bands for the regression.  This assumes the bands have the same names.
+  var regress = fc.addBands(sc)
+
+  regress = regress.select(regress.bandNames().sort())
+
+  var ratio = 5
+
+  if(upscale) {
+    var fit = regress
+      .reduceResolution(ee.Reducer.median(), false, 500)
+      .reproject(regress.select(0).projection().scale(ratio, ratio))
+      .reduceNeighborhood(ee.Reducer.linearFit().forEach(src.bandNames()), kernel, null, false)
+      .unmask()
+      .reproject(regress.select(0).projection().scale(ratio, ratio))
+  } else {
+    var fit = regress
+      .reduceNeighborhood(ee.Reducer.linearFit().forEach(src.bandNames()), kernel, null, false)
+  }
+
+  var offset = fit.select(".*_offset")
+  var scale = fit.select(".*_scale")
+
+  // Find the secondary scaling factors using just means and stddev
+  var reducer = ee.Reducer.mean().combine(ee.Reducer.stdDev(), null, true)
+
+  if(upscale) {
+    var src_stats = src
+      .reduceResolution(ee.Reducer.median(), false, 500)
+      .reproject(regress.select(0).projection().scale(ratio, ratio))
+      .reduceNeighborhood(reducer, kernel, null, false)
+      .reproject(regress.select(0).projection().scale(ratio, ratio))
+
+    var fill_stats = fill
+      .reduceResolution(ee.Reducer.median(), false, 500)
+      .reproject(regress.select(0).projection().scale(ratio, ratio))
+      .reduceNeighborhood(reducer, kernel, null, false)
+      .reproject(regress.select(0).projection().scale(ratio, ratio))
+  } else {
+    var src_stats = src
+      .reduceNeighborhood(reducer, kernel, null, false)
+
+    var fill_stats = fill
+      .reduceNeighborhood(reducer, kernel, null, false)
+  }
+
+  var scale2 = src_stats.select(".*stdDev").divide(fill_stats.select(".*stdDev"))
+  var offset2 = src_stats.select(".*mean").subtract(fill_stats.select(".*mean").multiply(scale2))
+
+  var invalid = scale.lt(MIN_SCALE).or(scale.gt(MAX_SCALE))
+  scale = scale.where(invalid, scale2)
+  offset = offset.where(invalid, offset2)
+
+  // When all else fails, just use the difference of means as an offset.
+  var invalid2 = scale.lt(MIN_SCALE).or(scale.gt(MAX_SCALE))
+  scale = scale.where(invalid2, 1)
+  offset = offset.where(invalid2, src_stats.select(".*mean").subtract(fill_stats.select(".*mean")))
+
+  // Apply the scaling and mask off pixels that didn't have enough neighbors.
+  var count = common.reduceNeighborhood(ee.Reducer.count(), kernel, null, true, "boxcar")
+  var scaled = fill.multiply(scale).add(offset)
+      .updateMask(count.gte(MIN_NEIGHBORS))
+
+  return src.unmask(scaled, true)
+}
+
+// Elevation data
+var dataset = ee.Image('CGIAR/SRTM90_V4');
+var elevation = dataset.select('elevation');
+var slope = ee.Terrain.slope(elevation);
+
+// to match image bands
+elevation = elevation.float();
+slope = slope.float();
+
+var wrs_path = [136, 136, 138, 140];
+var wrs_row = [40, 41, 41, 41];
+
+for (var index = 0; index < wrs_path.length; index++) { 
+  /* Load imagecollection for year 2000 between October and december
+   Select least cloud filter */
+  var raw_2000 = ee.ImageCollection('LANDSAT/LE07/C01/T1_RT')
+      .filterDate('2000-10-01', '2000-12-31')
+      .filter(ee.Filter.eq('WRS_ROW', wrs_row[index]))
+      .filter(ee.Filter.eq('WRS_PATH', wrs_path[index]));
+  var image_2000 = ee.Image(raw_2000.sort('CLOUD_COVER').first());
+  /* Load imagecollection for year 2005 between October and december
+  Select least cloud filter */
+  var raw_2005 = ee.ImageCollection('LANDSAT/LE07/C01/T1_RT')
+      .filterDate('2005-10-01', '2005-12-31')
+      .filter(ee.Filter.eq('WRS_PATH', wrs_path[index]))
+      .filter(ee.Filter.eq('WRS_ROW', wrs_row[index]));
+  var image_2005 = ee.Image(raw_2005.sort('CLOUD_COVER').first());
+  var image = image_2005;
+  var fill = image_2000;
+  var image = GapFill(image, fill, 10, true);
+  // print(image.select(['B3','B2','B1'],['B3','B2','B1']));
+  // Map.addLayer(image, {bands: ['B5', 'B4', 'B2'], min: 0, max: 255}, 'raw');
+  image = image.float();
+  var geometry = image.geometry();
+  Map.addLayer(geometry, {palette: '0000FF'}, 'Glaciers_HKH')
+  image = ee.Image.cat([image, elevation, slope]);
+  print(image);
+  var export_name = image_2005.id().getInfo();
+  // print(export_name);
+  Export.image.toDrive({
+    image: image,
+    folder: 'EEImages/imagesUsedForLabelling/HKH/2005',
+    description: export_name,
+    region: geometry,
+    scale: 30
+  });    
+}

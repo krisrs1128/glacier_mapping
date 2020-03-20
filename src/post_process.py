@@ -49,7 +49,7 @@ if __name__ == "__main__":
     print(conf.process_funs.normalize.stats_path)
     stats = pf.generate_stats(
         [p["img"] for p in target_locs["train"]],
-        conf.process_funs.normalize.sample_size,
+        conf.normalization_sample_size,
         Path(args.output_dir, conf.process_funs.normalize.stats_path)
     )
 

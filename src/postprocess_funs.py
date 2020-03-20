@@ -3,6 +3,7 @@ from addict import Dict
 from joblib import Parallel, delayed
 from pathlib import Path
 from shutil import copy
+import sys
 import addict
 import json
 import numpy as np
@@ -99,16 +100,33 @@ def normalize_(img, means, stds, **kwargs):
     return img
 
 
-def normalize(img, mask, stats, **kwargs):
+def normalize(img, mask, stats_path):
     """wrapper for postprocess"""
+    stats = json.load('... stats_path')
     img = normalize_(img, stats["means"], stats["stds"])
     return img, mask
 
 
-def postprocess(img_path, mask_path, funs_seq, **kwargs):
+def impute(img, mask, value=0):
+    img = np.nan_to_num(img, nan=value)
+    return img, mask
+
+
+def extract_channel(img, mask, mask_channels=None, img_channels=None):
+    if mask_channels is None:
+        mask_channels = np.arange(mask.shape[2])
+
+    if img_channels is None:
+        img_channels = np.arange(img.shape[2])
+
+    return img[:, :, img_channels], mask[:, :, mask_channels]
+
+
+def postprocess(img_path, mask_path, process_funs):
     """process a single image / mask pair"""
     img, mask = np.load(img_path), np.load(mask_path)
-    for f in funs_seq:
-        img, mask = f(img, mask, **kwargs)
+    for fun_name, fun_args in process_funs.items():
+        f = getattr(sys.modules[__name__], fun_name)
+        img, mask = f(img, mask, **fun_args)
 
     return img, mask

@@ -71,5 +71,5 @@ if __name__ == "__main__":
             np.save(target_locs[split_type][i]["img"], img)
             np.save(target_locs[split_type][i]["mask"], mask)
 
-        para = Parallel(n_jobs=n_cpu)
+        para = Parallel(n_jobs=args.n_cpu)
         para(delayed(wrapper)(i) for i in range(len(target_locs[split_type])))

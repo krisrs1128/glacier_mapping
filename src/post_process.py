@@ -22,7 +22,7 @@ import yaml
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-d", "--slice_dir", type=str, default="/scratch/akera/glaciers_slices/", help="path to directory with all the slices")
-    parser.add_argument("-m", "--slice_meta", type=str, default="/scratch/akera/glacier_slices/slice_metadata.csv", help="path to the slices metadata")
+    parser.add_argument("-m", "--slice_meta", type=str, default="/scratch/akera/glacier_slices/slices_subset.geojson", help="path to the slices metadata")
     parser.add_argument("-o", "--output_dir", type=str, default="./processed", help="path to output directory for postprocessed files")
     parser.add_argument("-c", "--conf", type=str, default="conf/postprocess.yaml", help="Path to the file specifying postprocessing options.")
     args = parser.parse_args()
@@ -46,10 +46,11 @@ if __name__ == "__main__":
 
     # global statistics: get the means and variances in the train split
     print("getting stats")
+    print(conf.process_funs.normalize.stats_path)
     stats = pf.generate_stats(
         [p["img"] for p in target_locs["train"]],
-        conf.normalization_sample_size,
-        Path(args.output_dir, conf.postprocess_funs.normalize.stats_path)
+        conf.process_funs.normalize.sample_size,
+        Path(args.output_dir, conf.process_funs.normalize.stats_path)
     )
 
     # postprocess individual images (all the splits)

@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import os
+import glob
 
 def slice_sbatch(metadata_path, job_dir=None, log_dir=None, n_jobs=10):
     """
@@ -59,8 +60,23 @@ def slice_sbatch(metadata_path, job_dir=None, log_dir=None, n_jobs=10):
 
         os.system(f"sbatch {str(job_file)}")
 
+def merge_geojson(source_paths, output_path):
+    sources = [gpd.read_file(s) for s in source_paths]
+    output = gpd.concatenate(sources)
+    output.to_file(output_path, driver="GeoJSON")
+
 
 if __name__ == "__main__":
     default_root = Path(os.environ["SCRATCH"], "data", "glaciers")
-    metadata_path = Path(default_root, "masks", "metadata.csv")
-    slice_sbatch(metadata_path, Path(os.environ["HOME"], "jobs"), Path(os.environ["HOME"], "logs"))
+    parser = ArgumentParser()
+    parser.add_argument("-t", "--type", type=str, default="slice")
+    args = parser.parse_args()
+
+
+    if args.type == "slice":
+        metadata_path = Path(default_root, "masks", "metadata.csv")
+        slice_sbatch(metadata_path, Path(os.environ["HOME"], "jobs"), Path(os.environ["HOME"], "logs"))
+    elif: args.type == "merge":
+        source_paths = glob.glob(Path(default_root, "slices", "*.geojson"))
+        output_path = glob.glob(Path(default_root, "slices", "slices_metadata.geojson"))
+        merge_geojson(source_paths, output_path)

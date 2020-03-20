@@ -12,7 +12,7 @@ import pandas as pd
 import random
 
 
-def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0):
+def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
     """
     Return Paths for Pairs passing Filter Criteria
 
@@ -21,7 +21,7 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=0):
     :param filter_channel: The channel to do the filtering on.
     """
     slice_meta = slice_meta[slice_meta[f"mask_mean_{filter_channel}"] > filter_perc]
-    return [{"img": d["img_path"], "mask": d["mask_path"]} for _, d in slice_meta.iterrows()]
+    return [{"img": d["img_slice"], "mask": d["mask_slice"]} for _, d in slice_meta.iterrows()]
 
 
 def random_split(ids, split_ratio, **kwargs):
@@ -102,7 +102,7 @@ def normalize_(img, means, stds, **kwargs):
 
 def normalize(img, mask, stats_path):
     """wrapper for postprocess"""
-    stats = json.load('... stats_path')
+    stats = json.load(open(stats_path, "r"))
     img = normalize_(img, stats["means"], stats["stds"])
     return img, mask
 

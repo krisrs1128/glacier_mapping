@@ -1,8 +1,8 @@
-filter_channel: 0
+filter_channel: 1
 filter_percentage: 0.5
 split_method: random_split
 split_ratio: [0.7,0.1,0.2]
-processs_funs:
+process_funs:
   normalize:
     sample_size: 100
     stats_path: "stats_train.json"

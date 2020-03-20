@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import torchvision
 import os
 
-class GlacierDataset(data.Dataset):
+class GlacierDataset(Dataset):
 
     def __init__(self, folder_path):
         """

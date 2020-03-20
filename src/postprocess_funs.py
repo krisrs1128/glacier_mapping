@@ -2,14 +2,14 @@
 from addict import Dict
 from joblib import Parallel, delayed
 from pathlib import Path
-from shutil import copy
-import sys
+from shutil import copyfile
 import addict
 import json
 import numpy as np
 import os
 import pandas as pd
 import random
+import sys
 
 
 def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
@@ -35,7 +35,7 @@ def random_split(ids, split_ratio, **kwargs):
     }
 
 
-def reshuffle(split_ids, output_dir="output/"):
+def reshuffle(split_ids, output_dir="output/", n_cpu=3):
     for split_type in split_ids:
         path = Path(output_dir, split_type)
         os.makedirs(path, exist_ok=True)
@@ -43,14 +43,21 @@ def reshuffle(split_ids, output_dir="output/"):
     target_locs = {}
     for split_type in split_ids:
         n_ids = len(split_ids[split_type])
-        target_locs[split_type] = n_ids * [{}]
 
-        for i in range(n_ids):
+        def wrapper(i):
+            cur_locs = {}
             for im_type in ["img", "mask"]:
+                print(f"shuffling image {i} - {im_type}")
                 source = split_ids[split_type][i][im_type]
-                target = Path(output_dir, split_type, os.path.basename(source))
-                copy(source, target)
-                target_locs[split_type][i][im_type] = target
+                target = Path(output_dir, split_type, os.path.basename(source)).resolve()
+                copyfile(source, target)
+                cur_locs[im_type] = target
+
+            return cur_locs
+
+        para = Parallel(n_jobs=n_cpu)
+        target_locs[split_type] = para(delayed(wrapper)(i) for i in range(n_ids))
+        target_locs[split_type] = sum([], target_locs[split_type])
 
     return target_locs
 

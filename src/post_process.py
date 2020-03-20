@@ -10,11 +10,12 @@ python3 -m src.post_process.py
 """
 from addict import Dict
 from argparse import ArgumentParser
+from joblib import Parallel, delayed
 from pathlib import Path
 import addict
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 import src.postprocess_funs as pf
 import yaml
 
@@ -25,6 +26,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--slice_meta", type=str, default="/scratch/akera/glacier_slices/slices_subset.geojson", help="path to the slices metadata")
     parser.add_argument("-o", "--output_dir", type=str, default="./processed", help="path to output directory for postprocessed files")
     parser.add_argument("-c", "--conf", type=str, default="conf/postprocess.yaml", help="Path to the file specifying postprocessing options.")
+    parser.add_argument("-n", "--n_cpu", type=int, default=4, help="Path to the file specifying postprocessing options.")
     args = parser.parse_args()
 
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
@@ -47,18 +49,27 @@ if __name__ == "__main__":
     # global statistics: get the means and variances in the train split
     print("getting stats")
     print(conf.process_funs.normalize.stats_path)
+    conf.process_funs.normalize.stats_path = Path(args.output_dir, conf.process_funs.normalize.stats_path)
+
     stats = pf.generate_stats(
         [p["img"] for p in target_locs["train"]],
         conf.normalization_sample_size,
-        Path(args.output_dir, conf.process_funs.normalize.stats_path)
+        conf.process_funs.normalize.stats_path
     )
 
     # postprocess individual images (all the splits)
     for split_type in target_locs:
-        for i in range(len(target_locs[split_type])):
-            print(f"{split_type} {i}")
-            pf.postprocess(
+        print(f"postprocessing {split_type}...")
+
+        def wrapper(i):
+            img, mask = pf.postprocess(
                 target_locs[split_type][i]["img"],
                 target_locs[split_type][i]["mask"],
                 conf.process_funs,
             )
+
+            np.save(target_locs[split_type][i]["img"], img)
+            np.save(target_locs[split_type][i]["mask"], mask)
+
+        para = Parallel(n_jobs=n_cpu)
+        para(delayed(wrapper)(i) for i in range(len(target_locs[split_type])))

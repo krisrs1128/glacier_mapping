@@ -63,11 +63,8 @@ def slice_pair(img, mask, **kwargs):
     return img_slices, mask_slices
 
 
-def write_pair_slices(img_path, mask_path, out_dir=None, out_base="slice",
+def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
                       n_cpu=5, **kwargs):
-    if out_dir is None:
-        out_dir = os.getcwd()
-
     imgf = rasterio.open(img_path)
     img = imgf.read().transpose(1, 2, 0)
     mask = np.load(mask_path)
@@ -97,7 +94,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
     default_root = os.environ["SCRATCH"] + "/data/glaciers/"
     parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default=default_root + "masks/metadata.csv")
-    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=default_root + "slices_test/")
+    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=default_root + "slices/")
     parser.add_argument("-s", "--start_line", type=int, default=0, help="start line in the metadata, from which to start processing")
     parser.add_argument("-e", "--end_line", type=int, default=np.inf, help="end line in the metadata, at which to stop processing")
     parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="slice")
@@ -110,9 +107,13 @@ if __name__ == "__main__":
         img_path=paths.iloc[row]["img"]
         mask_path=paths.iloc[row]["mask"]
         print(f"## Slicing tiff {row +1}/{len(paths)} ...")
-        return write_pair_slices(img_path, mask_path, args.output_dir, f"{args.out_base}_{row}")
+        return write_pair_slices(img_path, mask_path, args.output_dir, f"slice_{paths.index[row]}")
+
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
 
     para = Parallel(n_jobs=args.n_cpu)
     metadata = para(delayed(wrapper)(k) for k in range(len(paths)))
     metadata = pd.concat(metadata, axis=0)
-    metadata.to_file(Path(args.output_dir, "slices.geojson"), index=False, driver="GeoJSON")
+    out_path = Path(args.output_dir, f"slices_{args.start_line}-{args.end_line}.geojson")
+    metadata.to_file(out_path, index=False, driver="GeoJSON")

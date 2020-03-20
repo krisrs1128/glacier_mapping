@@ -13,6 +13,7 @@ Training/Eval Pipeline:
 import torch
 from torch.utils.data import DataLoader
 import data
+from frame import Framework
 from pathlib import Path
 
 path = "/scratch/akera/processed_glacier_dataset/"
@@ -33,10 +34,10 @@ for epoch in range(1, epochs):
         loss+=frame.optimize()
     print(train_epoch_loss/len(train_dataset))
     if epoch%5==0:
-        frame.save(out_path, epoch)
+        frame.save(out_dir, epoch)
 
     ## validation loop
     for x,y in val_loader:
         y_hat = frame.infer(x)
-        loss+=frame.loss(y_hat, y)
+        loss+=frame.loss(y, y_hat)
 

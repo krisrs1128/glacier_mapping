@@ -1,7 +1,7 @@
 # This code is used to plot the standarized band intensity for each of the classes
 # x-mean(x)/sd(x)
-# Usage: python3 test_get_clean_debris.py -f [shp_filename with debris information]
-# python3 test_plot_band_intensity.py -f ../data/vector_data/2005/nepal/data/Glacier_2005.shp
+# Usage: python3 test_get_clean_debris.py -f [shp_filename with debris information] -p [pattern for shp_filenames]
+# python3 test_plot_band_intensity.py -f ../data/vector_data/2005/nepal/data/Glacier_2005.shp -p LE07_140041_20051012*
 # Output:   The output is saved as test.png in the current directory
 import sys
 sys.path.append('../')
@@ -49,6 +49,13 @@ if __name__ == "__main__":
             help="pattern for tiff files (Default: LE07_140041_20051012*)",
     )
 
+    parser.add_argument(
+            "-o",
+            "--output_filename",
+            type=str,
+            help="name of output file (Default: test.png)",
+    )
+    
     parsed_opts = parser.parse_args()
     shp_file = parsed_opts.input_shp_file
     name_pattern = parsed_opts.name_pattern
@@ -62,6 +69,11 @@ if __name__ == "__main__":
     except Exception as e:
         name_pattern = "LE07_140041_20051012*"
         print(e," Using default pattern LE07_140041_20051012*")
+    try:
+        assert(output_filename)
+    except Exception as e:
+        output_filename = "test.png"
+        print(e," Using default filename test.png")
 
     labels = geopandas.read_file(shp_file)
     try:
@@ -160,7 +172,7 @@ if __name__ == "__main__":
         plt.title("Wavelength vs Normalized intensity")
         ax.legend(bbox_to_anchor=(0.65, 1), loc='upper left', borderaxespad=0.)
 
-plt.savefig('test.png')
+plt.savefig(output_filename)
 
 # print(clean_mean)
 # print(debris_mean)

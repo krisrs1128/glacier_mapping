@@ -77,7 +77,7 @@ class GlacierDataset(Dataset):
         img = np.load(image_path)
         img = T.ToTensor()(img)
 
-        # get snoBut w index before filtering the data
+        # get snow index before filtering the data
         snow_index = utils.get_snow_index(img)
         img = img[self.channels_to_inc]
 

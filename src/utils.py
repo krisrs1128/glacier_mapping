@@ -9,6 +9,7 @@ import torch
 import wandb
 import numpy as np
 import matplotlib.pyplot as plt
+import geopandas
 import rasterio
 from rasterio.mask import mask as rasterio_mask
 
@@ -50,7 +51,6 @@ def get_debris_glaciers(img, mask, thresh=0.6):
 
     return debris_mask
 
-
 def merge_mask_snow_i(img, mask, thresh=0.6):
     """Return multi-class of a binary class mask,
        using snow_index to construct pseudo labels."""
@@ -74,7 +74,7 @@ def get_bg(mask):
     return np.stack((fg, bg))
 
 
-def get_mask(raster_img, vector_data, nan_value=0):
+def get_mask(raster_img, vector_data, nan_value=0, debris_flag=False):
     """Get a mask from a raster for a given vector data.
     Args:
         raster_img (rasterio dataset object): the rater image to mask
@@ -89,14 +89,17 @@ def get_mask(raster_img, vector_data, nan_value=0):
     vector_crs = rasterio.crs.CRS(vector_data.crs)
     if vector_crs != raster_img.meta["crs"]:
         vector_data = vector_data.to_crs(raster_img.meta["crs"].data)
-
+    if debris_flag:
+        try:
+            vector_data = vector_data[vector_data["Glaciers"] == "Debris covered"]
+        except Exception as e:
+            print("The val and test set doesn't have debris glaciers information")       
     mask = rasterio_mask(raster_img, list(vector_data.geometry), crop=False)[0]
     binary_mask = mask[0, :, :]
     binary_mask[np.isnan(binary_mask)] = nan_value
     binary_mask[binary_mask > 0] = 1
 
     return binary_mask
-
 
 def slice_image(img, size=(512, 512), overlap=6):
     """Given an image slice according to size with no overlapping.

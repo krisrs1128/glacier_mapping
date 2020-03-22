@@ -15,19 +15,19 @@ import torchvision.transforms as T
 import src.utils as utils
 
 
-def get_sliced_mask(img, label, size=(512, 512), nan_value=0):
+def get_sliced_mask(img, label, size=(512, 512), nan_value=0, debris_flag=False):
     """Given an image and label, return the mask and the its slices.
     Args:
         raster_img (rasterio dataset object): the rater image to mask
         vector_data (iterable polygon data): the labels to mask according to
         size (int, int): size of the resulting slices
         nan_value (int): the value to fill nan areas with
+        debris_flag: Weather the label has actual debris or not
     Returns:
         mask (numpy.array): a binary mask of img according to labels
         slices [numpy.array]: list of numpy slices of the mask
     """
-
-    mask = utils.get_mask(img, label, nan_value=nan_value)
+    mask = utils.get_mask(img, label, nan_value=nan_value, debris_flag=debris_flag)
     slices = utils.slice_image(mask, size=size)
 
     return mask, slices
@@ -38,7 +38,7 @@ def save_slice(data, save_loc, slice_type, img_name, num):
     Args:
         data (numpy.array): the slice to save
         save_loc (str): the base folder to save all slices
-        slice_type (str): type of slice, like mask, img or cropped_img
+        slice_type (str): type of slice, like debris_mask, mask, img or cropped_img
         img_name (str): the id of the image the slice belongs to
         num (int): the number of the slice, relative to all the slices in the same image
     Returns:
@@ -55,7 +55,7 @@ def save_slice(data, save_loc, slice_type, img_name, num):
 
 def chunck_satelitte(img_path, labels, data_df, base_dir,
                      borders=None, test_basin=None, dev_basin=None,
-                     size=(512, 512), crop=True, country=None, year=None):
+                     size=(512, 512), crop=True, country=None, year=None, debris_flag=False):
     """Chunck a given satelitte image with the related labels and save metadata.
     Args:
         img_path (str): the path to the image to chunck
@@ -68,6 +68,7 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
         crop (bool): whether to crop areas outside of borders
         country (str): the name of the country the image belongs to, for metadata
         year (str): the year the image belongs to, for metadata
+        debris_flag: weather the label has actual debris or not
     Returns:
         pandas.Dataframe: a dataframe with all the realtive pathes and metadata"""
 
@@ -79,6 +80,8 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
     img_np = np.moveaxis(img.read(), 0, 2)
     img_slices = utils.slice_image(img_np, size=size)
     _, mask_slices = get_sliced_mask(img, labels, size=size)
+    if debris_flag:
+        _, actual_debris_mask_slices = get_sliced_mask(img, labels, size=size, debris_flag=debris_flag)
 
     # mask and slice borders if provided
     if borders is not None:
@@ -92,8 +95,12 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
     # mask and slice basin if provided
     if test_basin is not None:
         _, test_basin_slices = get_sliced_mask(img, test_basin, size=size)
+        if debris_flag:
+            _, actual_debris_test_basin_slices = get_sliced_mask(img, test_basin, size=size, debris_flag=debris_flag)
     if dev_basin is not None:
         _, dev_basin_slices = get_sliced_mask(img, dev_basin, size=size)
+        if debris_flag:
+            _, actual_debris_dev_basin_slices = get_sliced_mask(img, dev_basin, size=size, debris_flag=debris_flag)
 
     # save slices and fill metadata
     for i, img_slice in enumerate(img_slices):
@@ -110,6 +117,9 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
             filled_img_slice, save_loc, 'img', img_name, i)
         data_dict['mask_path'] = save_slice(
             mask_slices[i], save_loc, 'mask', img_name, i)
+        if debris_flag:
+            data_dict['actual_debris_mask_path'] = save_slice(
+                actual_debris_mask_slices[i], save_loc, 'actual_debris_mask', img_name, i)
 
         # metadata
         is_nan = np.isnan(img_slice[:, :, 0])
@@ -138,6 +148,11 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
                     mask_slices[i], borders_slices[i])
                 data_dict['cropped_label'] = save_slice(cropped_label, save_loc,
                                                         'cropped_label', img_name, i)
+                if debris_flag:
+                    actual_debris_cropped_label = np.logical_and(
+                        actual_debris_mask_slices[i], borders_slices[i])
+                    data_dict['actual_debris_cropped_label'] = save_slice(actual_debris_cropped_label, save_loc,
+                                                        'actual_debris_cropped_label', img_name, i)
 
         if test_basin is not None:
             is_basin = test_basin_slices[i] == 1
@@ -153,7 +168,7 @@ def chunck_satelitte(img_path, labels, data_df, base_dir,
 
 
 def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
-                     test_basin_path=None, dev_basin_path=None, size=(512, 512), year=None, country=None):
+                     test_basin_path=None, dev_basin_path=None, size=(512, 512), year=None, country=None, debris_flag=False):
     """Chunck all the images in a folder and construct their metadata.
     Args:
         sat_dir (str): the path of the directory
@@ -164,17 +179,17 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
         size (int, int): the size of resulting slices
         year (str): the year the images belong to
         country (str): the country the images belong to
+        debris_flag: weather the labels has actual debris labels or not
     Returns: None
     """
-
     labels = geopandas.read_file(labels_path)
     borders = geopandas.read_file(
         borders_path) if borders_path is not None else None
     test_basin = geopandas.read_file(test_basin_path) if test_basin_path is not None else None
     dev_basin = geopandas.read_file(dev_basin_path) if dev_basin_path is not None else None
 
-    columns = ['img_id', 'year', 'country', 'img_path', 'mask_path', 'border_path',
-               'is_nan_perc', 'labels_perc', 'labeled_nan', 'in_border_perc',
+    columns = ['img_id', 'year', 'country', 'img_path', 'mask_path', 'actual_debris_mask_path',
+               'border_path', 'is_nan_perc', 'labels_perc', 'labeled_nan', 'in_border_perc',
                'labels_in_border', 'basin_perc']
     sat_data = pd.DataFrame(columns=columns)
 
@@ -187,7 +202,7 @@ def chunck_sat_files(sat_dir, labels_path, save_loc, df_loc, borders_path=None,
         img_path = os.path.join(sat_dir, f)
         sat_data = chunck_satelitte(
             img_path, labels, sat_data, save_loc, borders=borders, test_basin=test_basin,
-            dev_basin=dev_basin, size=size, year=year, country=country)
+            dev_basin=dev_basin, size=size, year=year, country=country, debris_flag=debris_flag)
 
     sat_data.to_csv(os.path.join(df_loc, 'sat_data.csv'), index=False)
 

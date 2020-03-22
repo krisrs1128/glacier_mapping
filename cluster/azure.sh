@@ -10,7 +10,9 @@ sudo apt -y install unzip
 sudo apt -y install python3-pip
 sudo apt -y install build-essential libssl-dev libffi-dev python3-dev
 sudo apt -y install nano vim ipython3
+sudo apt -y install libspatialindex-dev
 
 pip3 install numpy==1.14.*
 pip3 install pandas geopandas wandb Pillow addict pyyaml rasterio
 pip3 install --no-cache-dir torch torchvision matplotlib seaborn
+sudo pip3 install scikit-learn rpyc tensorflow utm beaker cheroot

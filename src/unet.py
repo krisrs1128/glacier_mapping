@@ -25,11 +25,10 @@ class UpBlock(nn.Module):
                                          kernel_size=2, stride=2)
         self.conv = ConvBlock(inchannels, outchannels)
 
-    def forward(self, x, locality_info):
+    def forward(self, x, skips):
         x = self.upconv(x)
-        x = torch.cat([locality_info, x], 1)
-        x = self.conv(x)
-        return x
+        x = torch.cat([skips, x], 1)
+        return self.conv(x)
 
 
 class Unet(nn.Module):

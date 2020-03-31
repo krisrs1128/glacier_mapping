@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import torch
 import unet
+import pdb
 
 
 
@@ -17,10 +18,11 @@ class Framework():
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
 
     def set_input(self, x, y):
-        self.x = x
+        self.x = x.permute(0,3,1,2)
         self.y = y
 
     def optimize(self):
+        pdb.set_trace()
         y_hat = self.model(self.x)
         loss = self.loss(self.y, y_hat)
         loss.backward()

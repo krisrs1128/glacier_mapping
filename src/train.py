@@ -17,14 +17,14 @@ from frame import Framework
 from pathlib import Path
 import addict
 
-path = "/scratch/akera/processed_glacier_dataset/"
+path = "/scratch/sankarak/data/glaciers/processed/"
 train_dataset = data.GlacierDataset(Path(path, "train"))
 val_dataset = data.GlacierDataset(Path(path, "test"))
 
-train_loader = DataLoader(train_dataset,batch_size=8, shuffle=True, num_workers=4)
-val_loader = DataLoader(val_dataset,batch_size=8, shuffle=True, num_workers=4)
+train_loader = DataLoader(train_dataset,batch_size=2, shuffle=True, num_workers=1)
+val_loader = DataLoader(val_dataset,batch_size=2, shuffle=True, num_workers=1)
 
-model_opts = addict.Dict({'name' : 'Unet', 'args' : {'inchannels': 10, 'outchannels' : 1, 'net_depth':4}})
+model_opts = addict.Dict({'name' : 'Unet', 'args' : {'inchannels': 3, 'outchannels' : 1, 'net_depth':4}})
 optim_opts = addict.Dict({'name': 'Adam'})
 frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts)
 
@@ -36,12 +36,16 @@ for epoch in range(1, epochs):
     for x,y in train_loader:
         frame.set_input(x,y)
         loss+=frame.optimize()
-    print(train_epoch_loss/len(train_dataset))
+        print("Train Loss:", loss)
+    print(loss/len(train_dataset))
     if epoch%5==0:
         frame.save(out_dir, epoch)
 
     ## validation loop
+    loss = 0
     for x,y in val_loader:
         y_hat = frame.infer(x)
         loss+=frame.loss(y, y_hat)
+        print("val Loss: ", loss)
+    print(loss/len(val_dataset))
 

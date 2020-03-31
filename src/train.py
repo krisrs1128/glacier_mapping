@@ -18,7 +18,7 @@ from pathlib import Path
 
 path = "/scratch/akera/processed_glacier_dataset/"
 train_dataset = data.GlacierDataset(Path(path, "train"))
-val_dataset = data.GlacierDataset(Path(path, "val"))
+val_dataset = data.GlacierDataset(Path(path, "test"))
 
 train_loader = DataLoader(train_dataset,batch_size=8, shuffle=True, num_workers=4)
 val_loader = DataLoader(val_dataset,batch_size=8, shuffle=True, num_workers=4)

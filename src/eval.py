@@ -38,12 +38,12 @@ def infer_tile(img, model, process_conf):
       options. Used to convert the raw tile into the tensor used for inference.
     :return prediction: A segmentation mask of the same width and height as img.
     """
-
-    # To improve : overlap is hardcoded in src function rather than defining in configuration file.
     process_opts = Dict(yaml.load(open(process_conf, "r")))
     slice_opts = process_opts.slice
 
+    # reshape and slice hte input
     img_np = img.read()
+    img_np = np.transpose(img_np, (1, 2, 0))
     size_ = (slice_opts.size[0], slice_opts.size[1], img_np.shape[2])
     img_pad = np.zeros((img_np.shape[0] + size_[0], img_np.shape[1] + size_[1], img_np.shape[2]))
     slice_imgs = view_as_windows(img_pad, size_, step=size_[0] - slice_opts.overlap)
@@ -63,15 +63,15 @@ def infer_tile(img, model, process_conf):
                 y_hat = model(patch).numpy()
                 predictions[i, j, 0] = np.transpose(y_hat, (1, 2, 0))
 
-    return merge_patches(predictions, process_opts.slice.overlap, im_np.shape)
+    return merge_patches(predictions, process_opts.slice.overlap, img_np.shape)
 
 if __name__ == '__main__':
-    img = rasterio.open("/Users/krissankaran/Desktop/LE07_140041_20051012.tif")
-    process_conf = "/Users/krissankaran/Desktop/glacier_mapping/conf/postprocess.yaml"
-    model_path = "/Users/krissankaran/Downloads/model_188.pt"
+    img = rasterio.open("/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif")
+    process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"
+    model_path = "/scratch/sankarak/data/glaciers/model_188.pt"
 
     state_dict = torch.load(model_path, map_location="cpu")
     model = Unet(10, 1, 4)
     model.load_state_dict(state_dict)
     y_hat = infer_tile(img, model, process_conf)
-    plt.imsave("prediction_mask.png", y_hat)
+    plt.imsave("prediction_mask.png", y_hat[:, :, 0]) # it's a one channel mask

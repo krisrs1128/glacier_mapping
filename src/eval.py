@@ -9,7 +9,7 @@ from src.postprocess_funs import postprocess_tile
 import yaml
 from addict import Dict
 import matplotlib.pyplot as plt
-
+import cv2
 """
 infer_tile(tile) -> mask
 
@@ -33,16 +33,15 @@ def merge_patches(patches, overlap):
     How to solve this? more information might be needed regarding the size of the final segmentation patch.
     """
     I, J, _, height, width, channels = patches.shape
-
-    result = np.zeros((I * (height - overlap) + overlap, J * (width - overlap) + overlap, channels))
+    result = np.zeros((I * (height - overlap) +overlap, J * (width - overlap) + overlap, channels))
     # overlap_count = np.zeros((I * (height - ...)))
     for i in range(I):
         for j in range(J):
             ix_i = i * (height - overlap)
-            ix_j = j * (height - overlap)
-            result[ix_i:(ix_i + height), ix_j:(ix_j + width)] = patches[i, j]
+            ix_j = j * (width - overlap)
+            result[ix_i:(ix_i + height), ix_j:(ix_j + width)] = patches[i, j, 0]
             # overlap_count[ix_i:(... )] += 1
-
+    # result = result[:-]
     # pointwise divide patches / overlap_count
     return result
 
@@ -65,10 +64,14 @@ def infer_tile(img, model, postprocess_conf):
     return merge_patches(predictions, process_opts.data.overlap)
 
 if __name__ == '__main__':
-
     # img = rasterio.open("/Users/krissankaran/Desktop/LE07_140041_20051012.tif")
     img_np = data.retina()
-    slice_imgs = view_as_windows(img_np, (100, 100, 3), step=100 - 6)
+    size = 100
+    img_np = cv2.copyMakeBorder(img_np,0,size,0,size, cv2.BORDER_CONSTANT, value=[0,0,0])
+    slice_imgs = view_as_windows(img_np, (size, size, 3), step=size - 6)
     merged = merge_patches(slice_imgs, 6)
-    plt.imsave("original.png", img_np[:, :, :3] / 255)
-    plt.imsave("merged.png", merged[:, :, :3] / 255)
+    print(merged.shape)
+    plt.imshow(img_np)
+    plt.show()
+    plt.imshow(merged)
+    plt.show()

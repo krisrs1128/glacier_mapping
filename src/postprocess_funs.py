@@ -138,6 +138,8 @@ def postprocess_tile(img, process_funs):
 
 
 def postprocess_(img, mask, process_funs):
+    import pdb
+    pdb.set_trace()
     for fun_name, fun_args in process_funs.items():
         f = getattr(sys.modules[__name__], fun_name)
         img, mask = f(img, mask, **fun_args)

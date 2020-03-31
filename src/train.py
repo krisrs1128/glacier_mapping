@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 import data
 from frame import Framework
 from pathlib import Path
+import addict
 
 path = "/scratch/akera/processed_glacier_dataset/"
 train_dataset = data.GlacierDataset(Path(path, "train"))
@@ -23,7 +24,10 @@ val_dataset = data.GlacierDataset(Path(path, "test"))
 train_loader = DataLoader(train_dataset,batch_size=8, shuffle=True, num_workers=4)
 val_loader = DataLoader(val_dataset,batch_size=8, shuffle=True, num_workers=4)
 
-frame = Framework()
+model_opts = addict.Dict({'name' : 'Unet', 'args' : {'inchannels': 10, 'outchannels' : 1, 'net_depth':4}})
+optim_opts = addict.Dict({'name': 'Adam'})
+frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts)
+
 
 ## Train Loop
 epochs=10

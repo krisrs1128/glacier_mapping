@@ -7,10 +7,11 @@ import pdb
 
 class Framework():
 
-    def __init__(self, loss=None, model_opts=None, optimizer_opts=None):
-        if loss is None:
-            loss = torch.nn.BCELoss
-
+    def __init__(self,loss_fn=None, model_opts=None, optimizer_opts=None):
+        
+        if loss_fn is None:
+            loss_fn = torch.nn.BCEWithLogitsLoss()
+        self.loss_fn = loss_fn
         model_def = getattr(unet, model_opts.name)
         self.model = model_def(**model_opts.args)
 
@@ -18,13 +19,13 @@ class Framework():
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
 
     def set_input(self, x, y):
+        # import pdb; pdb.set_trace()
         self.x = x.permute(0,3,1,2)
-        self.y = y
+        self.y = y.permute(0,1,2)
 
     def optimize(self):
-        pdb.set_trace()
         y_hat = self.model(self.x)
-        loss = self.loss(self.y, y_hat)
+        loss = self.loss(y_hat, self.y)
         loss.backward()
         self.optimizer.step()
         return loss
@@ -35,9 +36,9 @@ class Framework():
         torch.save(self.model.state_dict, model_path)
         torch.save(self.optimizer.state_dict, optim_path)
 
-    def infer(x):
+    def infer(self, x):
         with torch.no_grad():
             return self.model(x)
 
-    def loss(y, y_hat):
-        return self.loss(y, y_hat)
+    def loss(self, y, y_hat):
+        return self.loss_fn(y, y_hat)

@@ -7,17 +7,23 @@ The goal of this project is to use computer vision to automatically segment debr
 Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hindu-Kush-Himalayan region. We consider the region of Bhutan and Nepal. Shapefile labels of the glaciers are provided by [ICIMOD](www.icimod.org) 
 
 
-## Usage
+## Pipeline
 ### Data Preprocessing:
 Usage: ```python3 -m src.post_process.py
     --slice_dir=/path_to_glacier_slices/
     --slice_meta=/path_to_slice_metadata.geojson ```
 
-1. **Tiling**: We slice the 7000x7000 input tiffs into 512x512 tiles. The resulting tiles along with corresponding shapefile labels are stored
+1. **Slicing**: We slice the 7000x7000 input tiffs into 512x512 tiles. The resulting tiles along with corresponding shapefile labels are stored. Metadata of the slices are stored in a geojson file" ```slicemetadata.geojson```
 2. **Transformation**: For easy processing, we convert the input image and labels into multi-dimensional numpy ``.npy`` files.
 3. **Masking**: The input shapefiles are transformed into masks. The masks are needed for use as labels. This involves transforming the label as multi-channel images with each channel representing a label class ie. 0 - Glacier, 1 debris etc
 4. **Normalization**: We normalize the final dataset and save all the normalization statistics to a stats.json file with means, standard deviations of the dataset.
-5. **Splits**: The final dataset is saved in three folders: ``train/ test/ dev/``
+5. **Train/Test/Dev Split**: The final dataset is saved in three folders: ``train/ test/ dev/``
+
+## Model Training
+Model: Unet
+To train:
+```python3 train.py```
+
 
 ### Setup
 

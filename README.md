@@ -1,4 +1,11 @@
-# Setup and training mapping models
+# Glacier Mapping From Satellite Imagery
+
+## Overview
+The goal of this project is to use computer vision to automatically segment debris and ice glaciers from satellite images
+
+## Data Description
+Raw training data are 12 channel sentinel-2 tiff images from the Hindu-Kush-Himalayan region. We consider the region of Bhutan and Nepal. Shapefile labels of the glaciers are provided by [ICIMOD](www.icimod.org) 
+
 
 ## Azure Cluster
 

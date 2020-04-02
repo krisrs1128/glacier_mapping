@@ -3,11 +3,16 @@
 ## Overview
 The goal of this project is to use computer vision to automatically segment debris and ice glaciers from satellite images
 
-## Data Description
-Raw training data are 12 channel sentinel-2 tiff images from the Hindu-Kush-Himalayan region. We consider the region of Bhutan and Nepal. Shapefile labels of the glaciers are provided by [ICIMOD](www.icimod.org) 
+### Data Description
+Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hindu-Kush-Himalayan region. We consider the region of Bhutan and Nepal. Shapefile labels of the glaciers are provided by [ICIMOD](www.icimod.org) 
 
 
-## Azure Cluster
+## Usage
+### Data Preprocessing:
+1. Tiling: We slice the 7000x7000 input tiffs into 512x512 tiles. The resulting tiles along with corresponding shapefile labels are stored
+2. Transformation: For easy processing, we convert the input image and labels into multi-dimensional numpy ``.npy`` files.
+3. Masking: The input shapefiles are transformed into masks. The masks are needed for use as labels. This involves transforming the label as multi-channel images with each channel representing a label class ie. 0 - Glacier, 1 debris etc
+4. 
 
 ### Setup
 

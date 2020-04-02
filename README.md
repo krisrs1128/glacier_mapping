@@ -36,6 +36,8 @@ Usage: ```python3 -m src.post_process.py
 4. **Normalization**: We normalize the final dataset and save all the normalization statistics to a stats.json file with means, standard deviations of the dataset.
 5. **Train/Test/Dev Split**: The final dataset is saved in three folders: ``train/ test/ dev/``
 
+![Image-Mask Pair](image_mask.png)
+
 ## Model Training
 Model: Unet
 To train:

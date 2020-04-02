@@ -8,6 +8,7 @@ Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hin
 
 
 ## Pipeline
+![pipeline](pipeline.jpeg)
 ### Data Preprocessing:
 Usage: ```python3 -m src.post_process.py
     --slice_dir=/path_to_glacier_slices/

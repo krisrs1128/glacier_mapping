@@ -3,6 +3,22 @@
 ## Overview
 The goal of this project is to use computer vision to automatically segment debris and ice glaciers from satellite images
 
+#### Requirements
+🐍 Python3.6
+* addict==2.2.1
+* Cython==0.29.15
+* GDAL==2.1.3
+* joblib==0.14.1
+* numpy==1.18.1
+* pandas==0.25.3
+* Pillow-SIMD==7.0.0.post3
+* python-dateutil==2.8.1
+* pytz==2019.3
+* PyYAML==5.3
+* six==1.14.0
+* torch==1.4.0
+* torchvision==0.5.0
+
 ### Data Description
 Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hindu-Kush-Himalayan region. We consider the region of Bhutan and Nepal. Shapefile labels of the glaciers are provided by [ICIMOD](www.icimod.org) 
 

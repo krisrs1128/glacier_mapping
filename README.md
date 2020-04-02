@@ -9,10 +9,11 @@ Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hin
 
 ## Usage
 ### Data Preprocessing:
-1. Tiling: We slice the 7000x7000 input tiffs into 512x512 tiles. The resulting tiles along with corresponding shapefile labels are stored
-2. Transformation: For easy processing, we convert the input image and labels into multi-dimensional numpy ``.npy`` files.
-3. Masking: The input shapefiles are transformed into masks. The masks are needed for use as labels. This involves transforming the label as multi-channel images with each channel representing a label class ie. 0 - Glacier, 1 debris etc
-4. 
+1. **Tiling**: We slice the 7000x7000 input tiffs into 512x512 tiles. The resulting tiles along with corresponding shapefile labels are stored
+2. **Transformation**: For easy processing, we convert the input image and labels into multi-dimensional numpy ``.npy`` files.
+3. **Masking**: The input shapefiles are transformed into masks. The masks are needed for use as labels. This involves transforming the label as multi-channel images with each channel representing a label class ie. 0 - Glacier, 1 debris etc
+4. Normalization: We normalize the final dataset and save all the normalization statistics to a stats.json file with means, standard deviations of the dataset.
+5. **Splits**: The final dataset is saved in three folders: ``train/ test/ dev/``
 
 ### Setup
 

@@ -42,9 +42,12 @@ Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hin
 6. **Imputation**: Given and input, we check for missing values (NaNs) and replace with 0
 
     To Run all PostProcessing: 
-    ```python3 -m src.post_process.py
+    ```
+    python3 -m src.post_process.py
     --slice_dir=/path_to_glacier_slices/
-    --slice_meta=/path_to_slice_metadata.geojsonn ```
+    --slice_meta=/path_to_slice_metadata.geojson
+    
+    ```
  
 ![Image-Mask Pair](image_mask.png)
 

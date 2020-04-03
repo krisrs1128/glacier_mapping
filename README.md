@@ -26,169 +26,32 @@ Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hin
 ## Pipeline
 ![pipeline](pipeline.jpeg)
 ### Data Preprocessing:
-Usage: ```python3 -m src.post_process.py
-    --slice_dir=/path_to_glacier_slices/
-    --slice_meta=/path_to_slice_metadata.geojson ```
 
 1. **Slicing**: We slice the 7000x7000 input tiffs into 512x512 tiles. The resulting tiles along with corresponding shapefile labels are stored. Metadata of the slices are stored in a geojson file" ```slicemetadata.geojson```
+    To slice, ```run: python3 src/slice.py```
 2. **Transformation**: For easy processing, we convert the input image and labels into multi-dimensional numpy ``.npy`` files.
 3. **Masking**: The input shapefiles are transformed into masks. The masks are needed for use as labels. This involves transforming the label as multi-channel images with each channel representing a label class ie. 0 - Glacier, 1 debris etc
-4. **Normalization**: We normalize the final dataset and save all the normalization statistics to a stats.json file with means, standard deviations of the dataset.
-5. **Train/Test/Dev Split**: The final dataset is saved in three folders: ``train/ test/ dev/``
+    To run transformation and masking: ```python3 src/mask.py```
 
+### Data PostProcessing
+1. Filtering: Returns the paths for pairs passing the filter criteria for a specific channel. Here we filter by the percentage of 1's in the filter channel.
+2. **Random Split**: The final dataset is saved in three folders: ``train/ test/ dev/``
+3. **Reshuffle**: Shuffle the images and masks in the output directory
+4. **Generate stats**: Generate statistics of the input image channels: returns a dictionary with keys for means and standard deviations accross the channels in input images.
+5. **Normalization**: We normalize the final dataset based on the means and standard deviations calclualted.
+6. **Imputation**: Given and input, we check for missing values (NaNs) and replace with 0
+
+    To Run all PostProcessing: 
+    ```python3 -m src.post_process.py
+    --slice_dir=/path_to_glacier_slices/
+    --slice_meta=/path_to_slice_metadata.geojsonn ```
+ 
 ![Image-Mask Pair](image_mask.png)
 
 ## Model Training
 Model: Unet
 To train:
 ```python3 train.py```
-
-
-### Setup
-
-These steps are to setup a new Ubuntu machine from scratch. You can skip this
-section if you're logging into our existing machine -- it already has all the
-necessary packages and data.
-
-To install all packages, run the `cluster/azure.sh` script.
-
-For data, we've transferred all the processed numpy arrays into an `file
-store`. The fastest way to do this ended up being 
-
-1. Create a file share, using `portal.azure.com`. You need to first create a
-   storage account,
-   ![storage](https://drive.google.com/uc?id=1wo7F_1mD4ueLbxOt_s5_Mc0s-YhCyBmD)
-   and then add a `file share`,
-   ![share](https://drive.google.com/uc?id=1bJ95Lg13FjXLvGWrwZm-0xbdNJQVfbb1)
-2. `tar -zcvf` all the processed data on the compute canada cluster.
-3. Log into the VM on which you want to work with the data.
-4. On that VM, mount the file share, by executing the script provided in the
-   connect button,
-![connect](https://drive.google.com/uc?id=1tcOZFKqeW6UIOA2HHa1xbampIlx9s7Da)
-5. `rsync` the zipped data onto the VM that you're on.`
-6. `tar -zxvf` the data under the `/mnt/storagename` directory created by the
-   script in step 4.
-
-### Running  
-Note: This project requires python 3.6 or higher.
-
-Once you've executed the setup above, you can start a training run by navigating
-to the `/home/kris/` directory and running,
-
-```
-sh azure.sh
-cd glacier_mapping
-python3 -m src.exper -c=shared/azure.yaml -o /directory/to/save/outputs
-```
-
-The `mount.sh` script is exactly the script from step 4 in the setup above. It's
-needed because when you shutdown the machine, the mounting information gets
-lost.
-
-### Running on Azure using conda environment
-```
-conda create -n glacier_mapping python=3.6
-conda activate glacier_mapping
-cd glacier_mapping
-pip install -r requirements.txt
-python -m src.exper -c=shared/azure.yaml -o /directory/to/save/outputs
-```
-
-
-## Compute Canada
-
-### Environment
-
-To load all the necessary software, you can load the [singularity
-image](https://drive.google.com/open?id=1Dbd1Wae_Jf6BdhV2LkMaGjO8MwK5Lw4r) like
-so,
-
-```
-module load singularity/3.4; singularity shell --nv --bind /scratch/sankarak/data/glaciers,/scratch/sankarak/glaciers /scratch/sankarak/images/glaciers.sif
-```
-
-## parallel training runs
-
-To run many experiments in parallel, you can use the parallel run command. 
-
-```
-python3 parallel_run.py -e conf/explore-lr.yaml
-```
-
-The different jobs are specified by the different headings in the exploration
-file (`-e`). You can see the example
-[here](https://github.com/Sh-imaa/glacier_mapping/blob/master/conf/explore-lr.yaml).
-Anything not specified will go to the
-[defaults](https://github.com/Sh-imaa/glacier_mapping/blob/master/shared/defaults.yaml).
-
-## single training run
-
-You can point the `exper` script to a single training configuration file,
-
-```
-python3 -m src.exper -c /scratch/sankarak/glaciers/explore-lr-experiment--16/run_1/random-rates.yaml -o .
-```
-
-for example. The `-c` tells you the path to the config, and `-o` says where to write the output (checkpoints, logged metrics).
-
-## looking at results
-
-The results get saved to the output directory. You can use `wandb sync` to upload the results to some [pretty viewers](https://app.wandb.ai/krisrs1128/glacier_mapping/runs/rsii7qj6?workspace=default).
-
-## pre-processing and slicing
-To the run the preprocessing you need two folders, `img_data` and `vector_data`, which contains the tiffs and the labels respectively. The folders should be organized as illustrated bellow. 
-```
-data/
-  img_data/ # tiff files
-    2010/
-      nepal/
-      bhutan/
-      ...
-    2000/
-      nepal/
-      ...
-  vector_data/ # labels, borders, and test labels
-    2010/
-      nepal/ # nepal labels
-      ....
-    2000/
-      ....
-    basin/
-      data/ #.shp files for test labels
-    borders/
-      nepal/
-        data/ #.shp files to nepal borders
-      bhutan/
-      ....
-```
-To run the pre-processing script
-`python -m src.slice_n_preprocess -c conf/preprocessing_conf.yaml`
-where `preprocessing_conf.yaml` is the configuration file for which years/countries to process and how to split and filter train/test. You can either choose a subset of years/countries or process all available data.
-
-Example:
-
-`year: ['2010'] country:[]`
-will process all countries in 2010.
-
-You should end up with `slices` directory for all the sliced data and `sat_data.csv` for the metadata needed for training. The folder `sat_files` will be created for all intermediate results, for each set of year/country,  to help with future debugging and ease of incremental adding of data. This folder is of no importance for training.
-
-The filtering of data depends, for now, on the amount of labels existing inside the countries border, amount of values out of the satellite image (nan), and amount of labels in general in the slice. Any slice that returns `False` for any of the conditions in the config file, will be marked as invalid. Development split is generated at random, while test split can be random or according to the intersection with the test vector data (check config file for more details)  
-
-## filtering pseudo labels
-In order to fill debris_perc column in the metadata, you should run the following command with the metadata file 
-`python -m src.filter_debris_by_perc --data_path /data/sat_data.csv` 
-
-The command expects `slices` and `sat_data.csv` to be previously generated.
-
-This is a necessary step to train on pseudo labels, and can be skipped with regular glaciers.
-
-## normalization
-To generate `normalization_data.pkl`, you should run the following command
-`python -m src.normalize --base_dir ./data`
-
-The command expects `slices` and `sat_data.csv` to be previously generated.
-
-The normalization operates on all channels/snow_index/borders/elevation/slope, and the right normalization factors will be picked up correctly relative to your training configuration.
 
 
 ## vector data sources
@@ -207,6 +70,3 @@ Borders:
 
 Test Data: 
 * Dudh Koshi sub basin (provided directly from ICIMOD)
-
-
-~

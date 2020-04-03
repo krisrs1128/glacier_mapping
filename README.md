@@ -34,7 +34,7 @@ Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hin
     To run transformation and masking: ```python3 src/mask.py```
 
 ### Data PostProcessing
-1. Filtering: Returns the paths for pairs passing the filter criteria for a specific channel. Here we filter by the percentage of 1's in the filter channel.
+1. **Filtering**: Returns the paths for pairs passing the filter criteria for a specific channel. Here we filter by the percentage of 1's in the filter channel.
 2. **Random Split**: The final dataset is saved in three folders: ``train/ test/ dev/``
 3. **Reshuffle**: Shuffle the images and masks in the output directory
 4. **Generate stats**: Generate statistics of the input image channels: returns a dictionary with keys for means and standard deviations accross the channels in input images.

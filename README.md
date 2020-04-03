@@ -51,11 +51,12 @@ Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hin
  
 ![Image-Mask Pair](image_mask.png)
 
-## Model Training
+### Model Training
 Model: Unet
 To train:
 ```python3 train.py```
 
+---
 
 ## vector data sources
 Labels : [ICIMOD](http://www.icimod.org/)

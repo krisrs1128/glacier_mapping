@@ -24,6 +24,7 @@ class Framework():
         self.y = y.permute(0,1,2)
 
     def optimize(self):
+        self.optimizer.zerograd()
         y_hat = self.model(self.x)
         loss = self.loss(y_hat, self.y)
         loss.backward()

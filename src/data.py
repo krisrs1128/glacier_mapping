@@ -1,12 +1,9 @@
-import torch
-from torch.utils.data import Dataset, DataLoader
+#!/usr/bin/env python
+from torch.utils.data import Dataset
 import glob
-import torchvision.transforms as transforms
-import torch.utils.data
 import numpy as np
-import matplotlib.pyplot as plt
-import torchvision
 import os
+import torch
 
 class GlacierDataset(Dataset):
 

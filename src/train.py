@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Training/Eval Pipeline:
     1- Initialize loaders (train & validation)
@@ -10,22 +11,22 @@ Training/Eval Pipeline:
     5- Save checkpoints after 5 epochs
 
 """
-import torch
-from torch.utils.data import DataLoader
-import data
-from frame import Framework
 from pathlib import Path
+from src.data import GlacierDataset
+from src.frame import Framework
+from torch.utils.data import DataLoader
 import addict
+import torch
 
 path = "/scratch/sankarak/data/glaciers/processed/"
-train_dataset = data.GlacierDataset(Path(path, "train"))
-val_dataset = data.GlacierDataset(Path(path, "test"))
+train_dataset = GlacierDataset(Path(path, "train"))
+val_dataset = GlacierDataset(Path(path, "test"))
 
-train_loader = DataLoader(train_dataset,batch_size=2, shuffle=True, num_workers=1)
-val_loader = DataLoader(val_dataset,batch_size=2, shuffle=True, num_workers=1)
+train_loader = DataLoader(train_dataset,batch_size=5, shuffle=True, num_workers=8)
+val_loader = DataLoader(val_dataset, batch_size=15, shuffle=True, num_workers=3)
 
-model_opts = addict.Dict({'name' : 'Unet', 'args' : {'inchannels': 3, 'outchannels' : 1, 'net_depth':4}})
-optim_opts = addict.Dict({'name': 'Adam'})
+model_opts = addict.Dict({"name" : "Unet", "args" : {"inchannels": 3, "outchannels": 1, "net_depth": 2}})
+optim_opts = addict.Dict({"name": "Adam", "args": {"lr": 1e-4}})
 frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts)
 
 
@@ -33,11 +34,10 @@ frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts)
 epochs=10
 for epoch in range(1, epochs):
     loss = 0
-    for x,y in train_loader:
+    for i, (x,y) in enumerate(train_loader):
         frame.set_input(x,y)
-        loss+=frame.optimize()
-        print("Train Loss:", loss)
-    print(loss/len(train_dataset))
+        loss += frame.optimize()
+    print("epoch Loss:", loss / len(train_dataset))
     if epoch%5==0:
         frame.save(out_dir, epoch)
 
@@ -45,7 +45,5 @@ for epoch in range(1, epochs):
     loss = 0
     for x,y in val_loader:
         y_hat = frame.infer(x)
-        loss+=frame.loss(y, y_hat)
-        print("val Loss: ", loss)
-    print(loss/len(val_dataset))
-
+        loss += frame.loss(y, y_hat).item()
+    print("val Loss: ", loss / len(val_loader))

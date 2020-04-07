@@ -16,6 +16,7 @@ from src.data import GlacierDataset
 from src.frame import Framework
 from torch.utils.data import DataLoader
 import addict
+from torch.utils.tensorboard import SummaryWriter
 import torch
 
 path = "/scratch/sankarak/data/glaciers/processed/"
@@ -29,6 +30,7 @@ model_opts = addict.Dict({"name" : "Unet", "args" : {"inchannels": 3, "outchanne
 optim_opts = addict.Dict({"name": "Adam", "args": {"lr": 1e-4}})
 frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts)
 
+writer = SummaryWriter()
 
 ## Train Loop
 epochs=10
@@ -38,6 +40,8 @@ for epoch in range(1, epochs):
         frame.set_input(x,y)
         loss += frame.optimize()
     print("epoch Loss:", loss / len(train_dataset))
+    writer.add_scalar('Epoch Loss', loss/len(train_dataset), epoch)
+
     if epoch%5==0:
         frame.save(out_dir, epoch)
 
@@ -46,4 +50,5 @@ for epoch in range(1, epochs):
     for x,y in val_loader:
         y_hat = frame.infer(x)
         loss += frame.loss(y, y_hat).item()
+        writer.add_scalar('Batch Val Loss', loss)
     print("val Loss: ", loss / len(val_loader))

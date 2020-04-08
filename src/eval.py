@@ -8,8 +8,11 @@ import numpy as np
 import rasterio
 import torch
 import yaml
+import src.metrics
+import src.mask
+import geopandas as gpd
 
-import matplotlib 
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -73,7 +76,7 @@ def get_hist(img, mask):
     """
     Defined:
         max number of points in csv for each label(n_points)
-    Input: 
+    Input:
         raster image, (expected raster image)
         mask (expected numpy array)
     Output:
@@ -145,7 +148,7 @@ def get_hist(img, mask):
     background_mean = background_value.mean(axis=0)
     background_std = background_value.std(axis=0)
     background_mean = np.append(background_mean[0:5],background_mean[5])
-            
+
     for (x,y) in zip(x_values,clean_mean):
         ax.plot(x, y, 'bo')
 
@@ -161,21 +164,50 @@ def get_hist(img, mask):
     plt.title("Wavelength vs Normalized intensity")
     ax.legend(bbox_to_anchor=(0.65, 1), loc='upper left', borderaxespad=0.)
 
-    # plt.savefig("./test.png")
-    # df.to_csv("./test.csv", index=False)
     return df, plt
 
 
 if __name__ == '__main__':
+    print("loading raster")
     img = rasterio.open("/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif")
-    # img = np.load("./shared/true_image.npy")
-    # mask = np.load("./shared/true_label.npy")
+
+    print("getting mask")
     process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"
     model_path = "/scratch/sankarak/data/glaciers/model_188.pt"
-
-    df, plt = get_hist(img, mask)
     state_dict = torch.load(model_path, map_location="cpu")
     model = Unet(10, 1, 4)
     model.load_state_dict(state_dict)
     y_hat = infer_tile(img, model, process_conf)
+    y_hat = np.random.uniform(0, 1, (img.shape[0], img.shape[1], 2)) > 0.4
+
+    print("getting mask")
     plt.imsave("prediction_mask.png", y_hat[:, :, 0]) # it's a one channel mask
+    y_hat = torch.from_numpy(y_hat)
+
+    # get true mask
+    print("generating mask")
+    mask = src.mask.generate_mask(img.meta, mask_shps)
+    np.save("mask.npy", mask)
+
+    mask_shps = [
+        gpd.read_file("/scratch/sankarak/data/glaciers/vector_data/2005/hkh/data/Glacier_2005.shp"),
+        gpd.read_file("/scratch/sankarak/data/glaciers/vector_data/2000/nepal/data/Glacier_2000.shp")
+    ]
+    mask_shps = [s.to_crs(img.meta["crs"].data) for s in mask_shps]
+
+    print("loading mask")
+    mask = np.load("mask.npy")
+    # df, plt = get_hist(img, mask)
+
+    # run metrics on mask, for each channel
+    print("getting metrics")
+    mask = torch.from_numpy(mask)
+    metric_results = {}
+    for k in range(mask.shape[2]):
+        metric_results[k] = {}
+        for metric in ["precision", "tp_fp_fn", "pixel_acc", "dice"]:
+            l = getattr(src.metrics, metric)
+            metric_results[k][metric] = l(mask[:, :, k], y_hat[:, :, k])
+
+    # print / plot the result
+    print(metric_results)

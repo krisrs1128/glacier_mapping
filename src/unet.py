@@ -67,9 +67,4 @@ class Unet(nn.Module):
 
         for op in self.upblocks:
             x = op(x, decoder_outputs.pop())
-
-        x = self.seg_layer(x)
-        # in case it's one output class, squeeze the channels out
-        x = x.squeeze(dim=1)
-
-        return x
+        return self.seg_layer(x)

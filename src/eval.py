@@ -2,7 +2,7 @@
 from addict import Dict
 from skimage.util.shape import view_as_windows
 from src.postprocess_funs import postprocess_tile
-from src.unet import Unet
+from src.models.unet import Unet
 import matplotlib.pyplot as plt
 import numpy as np
 import rasterio

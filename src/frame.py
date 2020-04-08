@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import torch
-import src.unet
+import src.models.unet
 
 
 class Framework():

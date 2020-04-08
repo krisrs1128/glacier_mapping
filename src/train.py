@@ -51,7 +51,8 @@ for epoch in range(1, epochs):
     print("Epoch metrics:", metrics/len(train_dataset))
     print("epoch Loss:", loss / len(train_dataset))
     writer.add_scalar('Epoch Loss', loss/len(train_dataset), epoch)
-    writer.add_scalar('Epoch Metrics', metrics/len(train_dataset), epoch)
+    for k, item in emumerate(metrics):
+        writer.add_scalar('Epoch Metrics '+str(k), item/len(train_dataset), epoch)
 
 
 

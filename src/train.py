@@ -14,14 +14,19 @@ Training/Eval Pipeline:
 from pathlib import Path
 from src.data import GlacierDataset
 from src.frame import Framework
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 import addict
 from torch.utils.tensorboard import SummaryWriter
 import torch
 
 path = "/scratch/sankarak/data/glaciers/processed/"
+
 train_dataset = GlacierDataset(Path(path, "train"))
+train_dataset = Subset(train_dataset, range(10))
+
 val_dataset = GlacierDataset(Path(path, "test"))
+val_dataset = Subset(val_dataset, range(10))
+
 
 train_loader = DataLoader(train_dataset,batch_size=5, shuffle=True, num_workers=8)
 val_loader = DataLoader(val_dataset, batch_size=15, shuffle=True, num_workers=3)

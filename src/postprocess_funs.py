@@ -129,11 +129,23 @@ def extract_channel(img, mask, mask_channels=None, img_channels=None):
     return img[:, :, img_channels], mask[:, :, mask_channels]
 
 
-def postprocess(img_path, mask_path, process_funs):
-    """process a single image / mask pair"""
-    img, mask = np.load(img_path), np.load(mask_path)
+def postprocess_tile(img, process_funs):
+    # create fake mask input
+    process_funs.extract_channel.mask_channels = 0
+    mask = np.zeros((img.shape[0], img.shape[1], 1))
+
+    return postprocess_(img, mask, process_funs)
+
+
+def postprocess_(img, mask, process_funs):
     for fun_name, fun_args in process_funs.items():
         f = getattr(sys.modules[__name__], fun_name)
         img, mask = f(img, mask, **fun_args)
 
     return img, mask
+
+
+def postprocess(img_path, mask_path, process_funs):
+    """process a single image / mask pair"""
+    img, mask = np.load(img_path), np.load(mask_path)
+    return postprocess_(img, mask, process_funs)

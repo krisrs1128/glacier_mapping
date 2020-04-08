@@ -28,7 +28,10 @@ val_loader = DataLoader(val_dataset, batch_size=15, shuffle=True, num_workers=3)
 
 model_opts = addict.Dict({"name" : "Unet", "args" : {"inchannels": 3, "outchannels": 1, "net_depth": 2}})
 optim_opts = addict.Dict({"name": "Adam", "args": {"lr": 1e-4}})
-frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts)
+metrics_opts = addict.Dict({"precision": {"threshold": 0.2}, "IoU": {"threshold": 0.4}})
+frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts, metrics_opts=metrics_opts)
+
+
 
 writer = SummaryWriter()
 
@@ -36,11 +39,21 @@ writer = SummaryWriter()
 epochs=10
 for epoch in range(1, epochs):
     loss = 0
+    metrics = []
     for i, (x,y) in enumerate(train_loader):
         frame.set_input(x,y)
         loss += frame.optimize()
+        if i == 0:
+            metrics=frame.calculate_metrics()
+        else:
+            metrics+=frame.calculate_metrics()
+
+    print("Epoch metrics:", metrics/len(train_dataset))
     print("epoch Loss:", loss / len(train_dataset))
     writer.add_scalar('Epoch Loss', loss/len(train_dataset), epoch)
+    writer.add_scalar('Epoch Metrics', metrics/len(train_dataset), epoch)
+
+
 
     if epoch%5==0:
         frame.save(out_dir, epoch)

@@ -170,7 +170,6 @@ def get_hist(img, mask):
 if __name__ == '__main__':
     print("loading raster")
     img = rasterio.open("/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif")
-
     print("getting mask")
     process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"
     model_path = "/scratch/sankarak/data/glaciers/model_188.pt"
@@ -179,29 +178,17 @@ if __name__ == '__main__':
     model.load_state_dict(state_dict)
     y_hat = infer_tile(img, model, process_conf)
     y_hat = np.random.uniform(0, 1, (img.shape[0], img.shape[1], 2)) > 0.4
-
-    print("getting mask")
-    plt.imsave("prediction_mask.png", y_hat[:, :, 0]) # it's a one channel mask
     y_hat = torch.from_numpy(y_hat)
 
     # get true mask
-    print("generating mask")
-    mask = src.mask.generate_mask(img.meta, mask_shps)
-    np.save("mask.npy", mask)
-
     mask_shps = [
         gpd.read_file("/scratch/sankarak/data/glaciers/vector_data/2005/hkh/data/Glacier_2005.shp"),
         gpd.read_file("/scratch/sankarak/data/glaciers/vector_data/2000/nepal/data/Glacier_2000.shp")
     ]
     mask_shps = [s.to_crs(img.meta["crs"].data) for s in mask_shps]
-
-    print("loading mask")
-    mask = np.load("mask.npy")
-    # df, plt = get_hist(img, mask)
-
-    # run metrics on mask, for each channel
-    print("getting metrics")
+    mask = src.mask.generate_mask(img.meta, mask_shps)
     mask = torch.from_numpy(mask)
+ 
     metric_results = {}
     for k in range(mask.shape[2]):
         metric_results[k] = {}

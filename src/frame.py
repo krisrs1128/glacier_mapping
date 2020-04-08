@@ -2,6 +2,7 @@
 import torch
 import src.unet
 import src.metrics
+import numpy as np
 
 class Framework():
 
@@ -63,7 +64,7 @@ class Framework():
                 if "threshold" in v.keys():
                    yhat_temp = self.y_hat > v["threshold"]
                 metric_fun = getattr(src.metrics,k)
-                metric_value = metric_fun(self.y, yhat_temp)
+                metric_value = metric_fun(yhat_temp,self.y)
                 results.append(metric_value)
 
         return np.array(results)

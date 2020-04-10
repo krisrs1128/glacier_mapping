@@ -66,7 +66,7 @@ class Framework():
                 if "threshold" in v.keys():
                    yhat_temp = self.y_hat > v["threshold"]
                 metric_fun = getattr(src.metrics,k)
-                metric_value = metric_fun(yhat_temp,self.y)
+                metric_value = metric_fun(yhat_temp,self.y.to(self.device))
                 results.append(metric_value)
 
         return np.array(results)

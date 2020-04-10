@@ -7,11 +7,12 @@ import numpy as np
 class Framework():
 
     def __init__(self,loss_fn=None, model_opts=None, optimizer_opts=None, metrics_opts=None):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
         if loss_fn is None:
             loss_fn = torch.nn.BCEWithLogitsLoss()
-        self.loss_fn = loss_fn
+        self.loss_fn = loss_fn.to(self.device)
         
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model_def = getattr(src.unet, model_opts.name)
         self.model = model_def(**model_opts.args).to(self.device)
         
@@ -27,7 +28,7 @@ class Framework():
     def optimize(self):
         self.optimizer.zero_grad()
         self.y_hat = self.model(self.x)
-        loss = self.loss(self.y_hat, self.y)
+        loss = self.loss(self.y,self.y_hat)
         loss.backward()
         self.optimizer.step()
         return loss.item()

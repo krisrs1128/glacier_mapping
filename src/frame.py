@@ -10,8 +10,10 @@ class Framework():
         if loss_fn is None:
             loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn
+        
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model_def = getattr(src.unet, model_opts.name)
-        self.model = model_def(**model_opts.args)
+        self.model = model_def(**model_opts.args).to(self.device)
         
 
         optimizer_def = getattr(torch.optim, optimizer_opts.name)
@@ -19,8 +21,8 @@ class Framework():
         self.metrics_opts = metrics_opts
 
     def set_input(self, x, y):
-        self.x = x.permute(0, 3, 1, 2)
-        self.y = y.permute(0, 1, 2)
+        self.x = x.permute(0, 3, 1, 2).to(self.device)
+        self.y = y.permute(0, 1, 2).to(self.device)
 
     def optimize(self):
         self.optimizer.zero_grad()
@@ -37,7 +39,7 @@ class Framework():
         torch.save(self.optimizer.state_dict, optim_path)
 
     def infer(self, x):
-        x = x.permute(0, 3, 1, 2)
+        x = x.permute(0, 3, 1, 2).to(self.device)
         with torch.no_grad():
             return self.model(x)
 

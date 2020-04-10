@@ -6,9 +6,10 @@ import numpy as np
 
 class Framework():
 
-    def __init__(self,loss_fn=None, model_opts=None, optimizer_opts=None, metrics_opts=None):
+    def __init__(self,loss_fn=None, model_opts=None, optimizer_opts=None, metrics_opts=None, out_dir=None):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        
+        self.out_dir = "outputs"
+
         if loss_fn is None:
             loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
@@ -34,8 +35,8 @@ class Framework():
         return loss.item()
 
     def save(self, out_dir, epoch):
-        model_path = Path(out_dir, f"model_{epoch}.pt")
-        optim_path = Path(out_dir, f"optim_{epoch}.pt")
+        model_path = Path(self.out_dir, f"model_{epoch}.pt")
+        optim_path = Path(self.out_dir, f"optim_{epoch}.pt")
         torch.save(self.model.state_dict, model_path)
         torch.save(self.optimizer.state_dict, optim_path)
 

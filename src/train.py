@@ -67,7 +67,7 @@ for epoch in range(1, epochs):
     ## validation loop
     loss = 0
     for x,y in val_loader:
-        y_hat = frame.infer(x)
-        loss += frame.loss(y, y_hat).item()
+        y_hat = frame.infer(x.to(frame.device))
+        loss += frame.loss(y.to(frame.device), y_hat).item()
         writer.add_scalar('Batch Val Loss', loss)
     print("val Loss: ", loss / len(val_loader))

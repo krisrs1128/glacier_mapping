@@ -62,7 +62,7 @@ for epoch in range(1, epochs):
 
 
     if epoch%5==0:
-        frame.save(out_dir, epoch)
+        frame.save(frame.out_dir, epoch)
 
     ## validation loop
     loss = 0

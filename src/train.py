@@ -69,6 +69,6 @@ for epoch in range(1, epochs):
     loss = 0
     for x,y in val_loader:
         y_hat = frame.infer(x.to(frame.device))
-        loss += frame.loss(y.to(frame.device), y_hat).item()
+        loss += frame.loss(y_hat,y.to(frame.device)).item()
         writer.add_scalar('Batch Val Loss', loss)
     print("val Loss: ", loss / len(val_loader))

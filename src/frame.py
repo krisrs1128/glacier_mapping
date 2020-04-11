@@ -30,7 +30,7 @@ class Framework():
     def optimize(self):
         self.optimizer.zero_grad()
         self.y_hat = self.model(self.x)
-        loss = self.loss(self.y,self.y_hat)
+        loss = self.loss(self.y_hat,self.y)
         loss.backward()
         self.optimizer.step()
         return loss.item()

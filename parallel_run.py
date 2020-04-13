@@ -1,4 +1,24 @@
 #!/usr/bin/env python
+"""
+Setup and Launch Multiple Model Runs
+
+This is a wrapper of src/train.py that launches several models in parallel. It
+reads an "experiments" yaml file, which includes some metadata and an entry for
+each run-to-be-sbatched. For each of those runs,
+
+* a new configuration yaml file is written, in a directory specified by the
+  master experiments yaml file. Those yaml files are used as the argument for
+  train.py
+* an sbatch script is written, which tells what shell commands to run and how
+  many resources to command, in the associated cluster job
+
+After having written both the config and the launch script, we then call
+'sbatch' on each of the launch scripts.
+
+example use:
+# note that singularity should not be loaded (since we need to call sbatch)
+python3 parallel_run.py -e shared/experiment.yaml
+"""
 from pathlib import Path
 from textwrap import dedent
 import argparse

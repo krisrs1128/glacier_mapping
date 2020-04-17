@@ -1,0 +1,11 @@
+metadata:
+  directory: $HOME/experiment
+  name: "sweep1"
+runs:
+  run_0:
+    sbatch: {}
+    data: {}
+    train:
+      optim:
+        args:
+          lr: 1e-6

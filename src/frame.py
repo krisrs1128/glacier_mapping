@@ -25,7 +25,8 @@ class Framework():
 
     def set_input(self, x, y):
         self.x = x.permute(0, 3, 1, 2).to(self.device)
-        self.y = y.permute(0, 1, 2).to(self.device)
+        y = y.permute(0, 1, 2).to(self.device)
+        self.y =  y[:, None, :, :]
 
     def optimize(self):
         self.optimizer.zero_grad()

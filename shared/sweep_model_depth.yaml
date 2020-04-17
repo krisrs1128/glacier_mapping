@@ -1,6 +1,6 @@
 metadata:
   directory: $HOME/experiment
-  name: "sweep2"
+  name: "model_depth_exp"
 runs:
   run_0:
     sbatch: {}
@@ -8,33 +8,27 @@ runs:
       path: $SCRATCH/data/glaciers/processed/
       subset: 10
     train:
-      optim:
-        args:
-          lr: 1e-6
-  run_2:
+      model:
+        name: Unet
+        args: 
+          net_depth: 1
+  run_1:
     sbatch: {}
     data:
       path: $SCRATCH/data/glaciers/processed/
       subset: 10
     train:
-      optim:
-        args:
-          lr: 1e-3
+      model:
+        name: Unet
+        args: 
+          net_depth: 4
   run_3:
     sbatch: {}
     data:
       path: $SCRATCH/data/glaciers/processed/
       subset: 10
     train:
-      optim:
-        args:
-          lr: 1e-9
-  run_4:
-    sbatch: {}
-    data:
-      path: $SCRATCH/data/glaciers/processed/
-      subset: 10
-    train:
-      optim:
-        args:
-          lr: 1e-2
+      model:
+        name: Unet
+        args: 
+          net_depth: 8

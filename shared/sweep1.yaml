@@ -11,3 +11,30 @@ runs:
       optim:
         args:
           lr: 1e-6
+  run_2:
+    sbatch: {}
+    data:
+      path: $SCRATCH/data/glaciers/processed/
+      subset: 10
+    train:
+      optim:
+        args:
+          lr: 1e-3
+  run_3:
+    sbatch: {}
+    data:
+      path: $SCRATCH/data/glaciers/processed/
+      subset: 10
+    train:
+      optim:
+        args:
+          lr: 1e-9
+  run_0:
+    sbatch: {}
+    data:
+      path: $SCRATCH/data/glaciers/processed/
+      subset: 10
+    train:
+      optim:
+        args:
+          lr: 1e-2

@@ -4,7 +4,9 @@ metadata:
 runs:
   run_0:
     sbatch: {}
-    data: {}
+    data:
+      path: $SCRATCH/data/glaciers/processed/
+      subset: 10
     train:
       optim:
         args:

@@ -129,7 +129,7 @@ if __name__ == '__main__':
         "-e",
         "--exploration_file",
         type=str,
-        default="conf/explore-lr.yaml",
+        default="shared/experiment.yaml",
         help="Where to find the exploration file",
     )
     opts = parser.parse_args()

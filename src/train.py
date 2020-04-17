@@ -45,7 +45,6 @@ writer = SummaryWriter()
 epochs=10
 for epoch in range(1, epochs):
     loss = 0
-    metrics = []
     for i, (x,y) in enumerate(train_loader):
         frame.set_input(x,y)
         loss += frame.optimize()
@@ -67,8 +66,18 @@ for epoch in range(1, epochs):
 
     ## validation loop
     loss = 0
-    for x,y in val_loader:
+    for i, (x,y) in enumerate(val_loader):
         y_hat = frame.infer(x.to(frame.device))
         loss += frame.loss(y_hat,y.to(frame.device)).item()
-        writer.add_scalar('Batch Val Loss', loss)
+        
+        if i == 0:
+            metrics=frame.calculate_metrics()
+        else:
+            metrics+=frame.calculate_metrics()
+
+
+    writer.add_scalar('Batch Val Loss', loss/len(val_dataset), epoch)
     print("val Loss: ", loss / len(val_loader))
+
+    for k, item in enumerate(metrics):
+        writer.add_scalar('Val Epoch Metrics '+str(k), item/len(val_dataset), epoch)

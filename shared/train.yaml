@@ -1,0 +1,19 @@
+model:
+  name: Unet
+  args:
+    inchannels: 3
+    outchannels: 1
+    net_depth: 2
+optim:
+  name: Adam
+  args:
+    lr: 1e-4
+metrics:
+  precision:
+    threshold: 0.2
+  IoU:
+    threshold: 0.4
+loop:
+  train_batch_size: 5
+  val_batch_size: 15
+  epochs: 20

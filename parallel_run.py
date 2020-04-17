@@ -1,24 +1,61 @@
 #!/usr/bin/env python
+"""
+Setup and Launch Multiple Model Runs
+
+This is a wrapper of src/train.py that launches several models in parallel. It
+reads an "experiments" yaml file, which includes some metadata and an entry for
+each run-to-be-sbatched. For each of those runs,
+
+* a new configuration yaml file is written, in a directory specified by the
+  master experiments yaml file. Those yaml files are used as the argument for
+  train.py
+* an sbatch script is written, which tells what shell commands to run and how
+  many resources to command, in the associated cluster job
+
+After having written both the config and the launch script, we then call
+'sbatch' on each of the launch scripts.
+
+example use:
+# note that singularity should not be loaded (since we need to call sbatch)
+python3 parallel_run.py -e shared/experiment.yaml
+"""
 from pathlib import Path
-from src.cluster_utils import env_to_path, increasable_name
 from textwrap import dedent
 import argparse
+import os
 import subprocess
 import yaml
 
 
-def write_conf(run_dir, param):
+def env_to_path(path):
+    """Transorms an environment variable mention in a conf file
+    into its actual value. E.g. $HOME/clouds -> /home/vsch/clouds
+    Args:
+        path (str): path potentially containing the env variable
+    """
+    if not isinstance(path, str):
+        return path
+
+    path_elements = path.split("/")
+    for i, d in enumerate(path_elements):
+        if "$" in d:
+            path_elements[i] = os.environ.get(d.replace("$", ""))
+    if any(d is None for d in path_elements):
+        return ""
+    return "/".join(path_elements)
+
+
+def write_conf(run_dir, cname, param):
     """Write config file from params
 
     If conf_name exists, increments a counter in the name:
     explore.yaml -> explore (1).yaml -> explore (2).yaml ...
     """
-    cname = param["sbatch"].get("conf_name", "overwritable_conf")
     if not cname.endswith(".yaml"):
         cname += ".yaml"
 
     with open(run_dir / cname, "w") as f:
-        yaml.dump(param["config"], f, default_flow_style=False)
+        yaml.dump(param, f, default_flow_style=False)
     return run_dir / cname
 
 
@@ -57,7 +94,7 @@ def zip_for_tmpdir(conf_path):
 
 
 def template(param, conf_path, run_dir):
-    zip_command = zip_for_tmpdir(param["config"]["data"]["original_path"])
+    zip_command = zip_for_tmpdir(env_to_path(param["data"]["path"]))
     sbp = param["sbatch"]
     indented = "\n            "
     base = "\n"
@@ -65,29 +102,23 @@ def template(param, conf_path, run_dir):
     return dedent(
         f"""\
         #!/bin/bash
-        #SBATCH --account=rpp-bengioy               # Yoshua pays for your job
-        #SBATCH --cpus-per-task={sbp["cpus"]}       # Ask for 6 CPUs
-        #SBATCH --gres=gpu:1                        # Ask for 1 GPU
-        #SBATCH --mem={sbp["mem"]}G                 # Ask for 32 GB of RAM
-        #SBATCH --time={sbp.get("runtime")}
+        #SBATCH --account=def-bengioy               # Yoshua pays for your job
+        #SBATCH --cpus-per-task={sbp["cpus"]}
+        #SBATCH --gres=gpu:1
+        #SBATCH --mem={sbp["mem"]}
+        #SBATCH --time={sbp["runtime"]}
         #SBATCH -o {env_to_path(sbp["slurm_out"])}  # Write the log in $SCRATCH
 
         {zip_command}
         cd {sbp["repo_path"]}
 
-        # singularity 3.5 path issue
-        REVERSED_PATH="$(tr ':' '\n'  <<< $PATH | tac | paste -s -d ':')"
-        export PATH="$REVERSED_PATH"
-
-        module load singularity/3.5
-        module load cuda/9.2
+        module load singularity
         echo "Starting job"
-        singularity exec --nv --bind {param["config"]["data"]["path"]},{str(run_dir)}\\
+        singularity exec --nv --bind {env_to_path(param["data"]["path"])},{str(run_dir)}\\
                 {sbp["singularity_path"]}\\
-                python3 -m src.exper \\
-                -m "{sbp["message"]}" \\
+                python3 -m src.train \\
                 -c "{str(conf_path)}"\\
-                -o "{str(run_dir)}"
+                -s 10
         """
     )
 
@@ -101,80 +132,38 @@ if __name__ == '__main__':
         default="conf/explore-lr.yaml",
         help="Where to find the exploration file",
     )
-    parser.add_argument(
-        "-t",
-        "--template_name",
-        type=str,
-        default="default",
-        help="what template to use to write the sbatch files",
-    )
     opts = parser.parse_args()
 
     # get configuration parameters for this collection of experiments
-    default_yaml = yaml.safe_load(open("shared/defaults.yaml"))
-    sbatch_yaml = yaml.safe_load(open("shared/sbatch.yaml"))
+    default_train = yaml.safe_load(open("shared/train.yaml"))
+    default_sbatch = yaml.safe_load(open("shared/sbatch.yaml"))
 
     with open(opts.exploration_file, "r") as f:
         exploration_params = yaml.safe_load(f)
-        assert isinstance(exploration_params, dict)
 
     # setup the experiment directory
-    exp_name = exploration_params["experiment"].get("name", "exp")
-    exp_dir = env_to_path(exploration_params["experiment"]["exp_dir"])
+    exp_name = exploration_params["metadata"]["name"]
+    exp_dir = env_to_path(exploration_params["metadata"]["directory"])
     exp_dir = Path(exp_dir).resolve()
     exp_dir = exp_dir / exp_name
-    exp_dir = increasable_name(exp_dir)
-    exp_dir.mkdir()
-
-    # -----------------------------------------
-    # Get parameters corresponding to each experiment
-    #
-    # params: List[Dict[tr, Any]] = []
-    params = []
-    exp_runs = exploration_params["runs"]
-    if "repeat" in exploration_params["experiment"]:
-        repeat_times = int(exploration_params["experiment"]["repeat"]) or 1
-        # repeat only the variable part
-        exp_runs = [exp_runs[0]] + (exp_runs[1:] * repeat_times)
-    for p in exp_runs:
-        params.append(
-            {
-                "sbatch": {**sbatch_yaml, **p["sbatch"]},
-                "config": {
-                    "model": {
-                        **default_yaml["model"],
-                        **(p["config"]["model"] if "model" in p["config"] else {}),
-                    },
-                    "train": {
-                        **default_yaml["train"],
-                        **(p["config"]["train"] if "train" in p["config"] else {}),
-                    },
-                    "data": {
-                        **default_yaml["data"],
-                        **(p["config"]["data"] if "data" in p["config"] else {}),
-                    },
-                    "augmentation": {
-                        **default_yaml["augmentation"],
-                        **(p["config"]["augmentation"] if "augmentation" in p["config"] else {}),
-                    },
-                },
-            }
-        )
+    os.makedirs(exp_dir, exist_ok=True)
 
     # -----------------------------------------
     # Launch a collection of jobs, indexed by params
-    for i, param in enumerate(params):
-        run_dir = exp_dir / f"run_{i}"
-        run_dir.mkdir()
-        sbp = param["sbatch"]
+    for run_name, run_value in exploration_params["runs"].items():
+        run_dir = exp_dir / f"{run_name}"
+        os.makedirs(run_dir, exist_ok=True)
 
-        original_data_path = param["config"]["data"]["path"]
-        param["config"]["data"]["path"] = "$SLURM_TMPDIR/data"
-        param["config"]["data"]["original_path"] = original_data_path
-        conf_path = write_conf(run_dir, param)  # returns Path() from pathlib
-        template_str = template(param, conf_path, run_dir)
+        default_sbatch.update(run_value["sbatch"])
+        run_value["sbatch"] = default_sbatch
 
-        file = run_dir / f"run-{sbp['conf_name']}.sh"
+        default_train.update(run_value["train"])
+        run_value["train"] = default_train
+
+        conf_path = write_conf(run_dir, run_name, run_value["train"])
+        template_str = template(run_value, conf_path, run_dir)
+
+        file = run_dir / f"{run_name}.sh"
         with file.open("w") as f:
             f.write(template_str)
 

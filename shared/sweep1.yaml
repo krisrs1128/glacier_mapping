@@ -1,6 +1,6 @@
 metadata:
   directory: $HOME/experiment
-  name: "sweep1"
+  name: "sweep2"
 runs:
   run_0:
     sbatch: {}

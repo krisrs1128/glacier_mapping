@@ -67,8 +67,9 @@ for epoch in range(1, epochs):
     ## validation loop
     loss = 0
     for i, (x,y) in enumerate(val_loader):
-        y_hat = frame.infer(x.to(frame.device))
-        loss += frame.loss(y_hat,y.to(frame.device)).item()
+        frame.set_input(x,y)
+        y_hat = frame.infer(frame.x)
+        loss += frame.loss(y_hat,frame.y).item()
         
         if i == 0:
             metrics=frame.calculate_metrics()

@@ -42,7 +42,6 @@ class Framework():
         torch.save(self.optimizer.state_dict, optim_path)
 
     def infer(self, x):
-        x = x.permute(0, 3, 1, 2).to(self.device)
         with torch.no_grad():
             return self.model(x)
 

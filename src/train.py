@@ -23,10 +23,10 @@ from pathlib import Path
 path = "/scratch/sankarak/data/glaciers/processed/"
 
 train_dataset = GlacierDataset(Path(path, "train"))
-train_dataset = Subset(train_dataset, range(10))
+#train_dataset = Subset(train_dataset, range(10))
 
 val_dataset = GlacierDataset(Path(path, "test"))
-val_dataset = Subset(val_dataset, range(10))
+#val_dataset = Subset(val_dataset, range(10))
 
 
 train_loader = DataLoader(train_dataset,batch_size=5, shuffle=True, num_workers=8)
@@ -42,7 +42,7 @@ frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts, metrics_opts
 writer = SummaryWriter()
 
 ## Train Loop
-epochs=10
+epochs=250
 for epoch in range(1, epochs):
     loss = 0
     for i, (x,y) in enumerate(train_loader):

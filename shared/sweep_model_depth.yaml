@@ -5,7 +5,7 @@ runs:
   run_0:
     sbatch: {}
     data:
-      path: $SCRATCH/data/glaciers/processed/
+      path: /scratch/sankarak/data/glaciers/processed/
       subset: 10
     train:
       model:
@@ -15,7 +15,7 @@ runs:
   run_1:
     sbatch: {}
     data:
-      path: $SCRATCH/data/glaciers/processed/
+      path: /scratch/sankarak/data/glaciers/processed/
       subset: 10
     train:
       model:
@@ -25,7 +25,7 @@ runs:
   run_3:
     sbatch: {}
     data:
-      path: $SCRATCH/data/glaciers/processed/
+      path: /scratch/sankarak/data/glaciers/processed/
       subset: 10
     train:
       model:

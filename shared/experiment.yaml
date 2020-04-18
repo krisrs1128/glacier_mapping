@@ -7,7 +7,7 @@ runs:
       mem: 16G
       runtime: "1:00:00"
     data:
-      path: $SCRATCH/data/glaciers/processed/
+      path: /scratch/sankarak/data/glaciers/processed/
       subset: 10
     train:
       model:
@@ -34,7 +34,7 @@ runs:
       mem: 16G
       runtime: "1:00:00"
     data:
-      path: $SCRATCH/data/glaciers/processed/
+      path: /scratch/sankarak/data/glaciers/processed/
       subset: 10
     train:
       model:

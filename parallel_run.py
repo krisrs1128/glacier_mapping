@@ -108,6 +108,7 @@ def template(param, conf_path, run_dir):
         #SBATCH --mem={sbp["mem"]}
         #SBATCH --time={sbp["runtime"]}
         #SBATCH -o {env_to_path(sbp["slurm_out"])}  # Write the log in $SCRATCH
+        #SBATCH -e {env_to_path(sbp["slurm_err"])}  # write error log
 
         {zip_command}
         cd {sbp["repo_path"]}

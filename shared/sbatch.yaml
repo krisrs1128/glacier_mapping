@@ -1,7 +1,8 @@
-cpus: 8
-mem: 32
-runtime: "1:00:00"
+cpus: 4
+mem: 16
+runtime: "4:00:00"
 slurm_out: "$HOME/logs/glaciers-%j.out"
+slurm_err: "$HOME/logs/glaciers-%j.err"
 message: "glaciers mapping"
 conf_name: "explore"
 singularity_path: "/scratch/sankarak/images/glaciers.sif"

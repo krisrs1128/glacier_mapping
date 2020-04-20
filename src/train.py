@@ -93,8 +93,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    train_dataset = GlacierDataset(Path(path, "train"))
-    val_dataset = GlacierDataset(Path(path, "test"))
+    train_dataset = GlacierDataset(Path(args.path, "train"))
+    val_dataset = GlacierDataset(Path(args.path, "test"))
 
     if args.subset != -1:
         train_dataset = Subset(train_dataset, range(args.subset))

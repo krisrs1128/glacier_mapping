@@ -100,9 +100,9 @@ if __name__ == '__main__':
         train_dataset = Subset(train_dataset, range(args.subset))
         val_dataset = Subset(val_dataset, range(args.subset))
 
-    import pdb
-    pdb.set_trace()
-    train_opts = addict.Dict(yaml.load(args.conf))
+    # import pdb
+    # pdb.set_trace()
+    train_opts = addict.Dict(yaml.load(open(args.conf)))
 
     train_loader = DataLoader(train_dataset,batch_size=train_opts.train_batch_size, shuffle=True, num_workers=args.num_workers)
     val_loader = DataLoader(val_dataset, batch_size=train_opts.val_batch_size, shuffle=True, num_workers=args.num_workers)

@@ -104,10 +104,10 @@ if __name__ == '__main__':
     # pdb.set_trace()
     train_opts = addict.Dict(yaml.load(open(args.conf)))
 
-    train_loader = DataLoader(train_dataset,batch_size=train_opts.train_batch_size, shuffle=True, num_workers=args.num_workers)
-    val_loader = DataLoader(val_dataset, batch_size=train_opts.val_batch_size, shuffle=True, num_workers=args.num_workers)
+    train_loader = DataLoader(train_dataset,batch_size=train_opts.loop.train_batch_size, shuffle=True, num_workers=args.num_workers)
+    val_loader = DataLoader(val_dataset, batch_size=train_opts.loop.val_batch_size, shuffle=True, num_workers=args.num_workers)
 
     
     frame = Framework(model_opts=train_opts.model, optimizer_opts=optim_opts.optim, metrics_opts=metrics_opts.metrics)
     writer = SummaryWriter()
-    train(train_loader, val_loader, frame, writer, epochs=train_opts.train.epochs)
+    train(train_loader, val_loader, frame, writer, epochs=train_opts.loop.epochs)

@@ -20,6 +20,7 @@ import addict
 from torch.utils.tensorboard import SummaryWriter
 import torch
 from pathlib import Path
+import argparse
 
 ## Train Loop
 def train(train_loader, val_loader, frame, writer, epochs=20):
@@ -106,5 +107,4 @@ if __name__ == '__main__':
     train_opts = addict.Dict(yaml.load(args.conf))
     frame = Framework(model_opts=train_opts.model, optimizer_opts=optim_opts.optim, metrics_opts=metrics_opts.metrics)
     writer = SummaryWriter()
-    train(train_loader, val_loader, frame, writer, epochs=train_opts.train.epochs):
->>>>>>> parallel-run-revise
+    train(train_loader, val_loader, frame, writer, epochs=train_opts.train.epochs)

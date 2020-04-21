@@ -34,7 +34,7 @@ runs:
       mem: 16G
       runtime: "1:00:00"
     data:
-      path: /scratch/sankarak/data/glaciers/processed/
+      path: $HOME/scratch/glaciers/
       subset: 10
     train:
       model:

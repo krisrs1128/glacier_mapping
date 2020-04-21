@@ -7,7 +7,7 @@ model:
 optim:
   name: Adam
   args:
-    lr: 1e-4
+    lr: 0.0001
 metrics:
   precision:
     threshold: 0.2

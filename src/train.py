@@ -73,7 +73,7 @@ if __name__ == '__main__':
         "-p",
         "--path",
         type=str,
-        default="/scratch/sankarak/data/glaciers/processed/",
+        default="/scratch/akera/data/glaciers/processed/",
         help="path to the data on which to train"
     )
     parser.add_argument(

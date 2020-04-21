@@ -5,7 +5,7 @@ runs:
   run_0:
     sbatch: {}
     data:
-      path: /scratch/sankarak/data/glaciers/processed/
+      path: /scratch/akera/data/glaciers/processed/
       subset: 10
     train:
       optim:
@@ -14,7 +14,7 @@ runs:
   run_2:
     sbatch: {}
     data:
-      path: /scratch/sankarak/data/glaciers/processed/
+      path: /scratch/akera/data/glaciers/processed/
       subset: 10
     train:
       optim:
@@ -23,7 +23,7 @@ runs:
   run_3:
     sbatch: {}
     data:
-      path: /scratch/sankarak/data/glaciers/processed/
+      path: /scratch/akera/data/glaciers/processed/
       subset: 10
     train:
       optim:
@@ -32,7 +32,7 @@ runs:
   run_4:
     sbatch: {}
     data:
-      path: /scratch/sankarak/data/glaciers/processed/
+      path: /scratch/akera/data/glaciers/processed/
       subset: 10
     train:
       optim:

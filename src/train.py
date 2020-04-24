@@ -60,6 +60,15 @@ def train(train_loader, val_loader, frame, writer, epochs=20):
         for k, item in enumerate(metrics):
            writer.add_scalar('Val Epoch Metrics '+str(k), item/len(val_dataset), epoch)
 
+
+def update_metrics(d1, d2):
+    d3 = {}
+    for k in d1.keys():
+        d3[k] = d1[k]+d2[k]
+    return d3
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(

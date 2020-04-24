@@ -46,7 +46,7 @@ def train(train_loader, val_loader, frame, writer, epochs=20):
 
         ## validation loop
         loss = 0
-        metrics = {k : 0 for k in frame.metric_opts.keys()}
+        metrics = {k : 0 for k in frame.metrics_opts.keys()}
         for i, (x,y) in enumerate(val_loader):
             frame.set_input(x,y)
             y_hat = frame.infer(frame.x)

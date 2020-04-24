@@ -39,8 +39,8 @@ def train(train_loader, val_loader, frame, writer, epochs=20):
         print("Epoch metrics:", metrics)
         print("epoch Loss:", loss / len(train_dataset))
         writer.add_scalar('Epoch Loss', loss/len(train_dataset), epoch)
-        for k, item in enumerate(metrics):
-            writer.add_scalar('Epoch Metrics '+str(k), item/len(train_dataset), epoch)
+        for k,v in metrics.items():
+            writer.add_scalar('Train Epoch Metrics ' + k, v/len(train_dataset), epoch)
         if epoch%5==0:
             frame.save(frame.out_dir, epoch)
 

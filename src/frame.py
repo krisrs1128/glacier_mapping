@@ -65,7 +65,8 @@ class Framework():
         frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts, metrics_opts=metrics_opts)
         
         """
-        results = []
+        results = {}
+
         for metrics in self.metrics_opts:
             for k,v in self.metrics_opts.items():
                 yhat_temp = self.y_hat.squeeze()
@@ -73,10 +74,9 @@ class Framework():
                 if "threshold" in v.keys():
                    yhat_temp = self.y_hat > v["threshold"]
                 metric_fun = getattr(src.metrics,k)
-                metric_value = metric_fun(yhat_temp,self.y.to(self.device).squeeze())
-                results.append(metric_value)
+                results[k] = metric_fun(yhat_temp,self.y.to(self.device).squeeze()
 
-        return np.array(results)
+        return results
 
 
     

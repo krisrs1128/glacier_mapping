@@ -24,7 +24,7 @@ class Framework():
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
         self.metrics_opts = metrics_opts
 
-       self.stamp = int(time.time())
+        self.stamp = int(time.time())
 
     def set_input(self, x, y):
         self.x = x.permute(0, 3, 1, 2).to(self.device)

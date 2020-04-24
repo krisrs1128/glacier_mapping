@@ -79,5 +79,3 @@ class Framework():
         return results
 
 
-    
-

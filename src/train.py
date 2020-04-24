@@ -24,17 +24,19 @@ import argparse
 
 ## Train Loop
 def train(train_loader, val_loader, frame, writer, epochs=20):
+   
     for epoch in range(1, epochs):
         loss = 0
+        metrics = {k : 0 for k in frame.metric_opts.keys()}
         for i, (x,y) in enumerate(train_loader):
             frame.set_input(x,y)
             loss += frame.optimize()
-            if i == 0:
-                metrics=frame.calculate_metrics()
-            else:
-                metrics+=frame.calculate_metrics()
 
-        print("Epoch metrics:", metrics/len(train_dataset))
+            # metrics added to values of current iteration
+            current_metrics = frame.calculate_metrics()
+            metrics = update_metrics(metrics, current_metrics)
+
+        print("Epoch metrics:", metrics)
         print("epoch Loss:", loss / len(train_dataset))
         writer.add_scalar('Epoch Loss', loss/len(train_dataset), epoch)
         for k, item in enumerate(metrics):
@@ -44,23 +46,22 @@ def train(train_loader, val_loader, frame, writer, epochs=20):
 
         ## validation loop
         loss = 0
+        metrics = {k : 0 for k in frame.metric_opts.keys()}
         for i, (x,y) in enumerate(val_loader):
             frame.set_input(x,y)
             y_hat = frame.infer(frame.x)
             loss += frame.loss(y_hat,frame.y).item()
         
-            if i == 0:
-                metrics=frame.calculate_metrics()
-            else:
-                metrics+=frame.calculate_metrics()
+            current_metrics = frame.calculate_metrics()
+            metrics = update_metrics(metrics, current_metrics)
 
         writer.add_scalar('Batch Val Loss', loss/len(val_dataset), epoch)
         print("val Loss: ", loss / len(val_loader))
+        
+        for k,v in metrics.items():
+            writer.add_scalar('Val Epoch Metrics ' + k, v/len(val_dataset), epoch)
 
-        for k, item in enumerate(metrics):
-           writer.add_scalar('Val Epoch Metrics '+str(k), item/len(val_dataset), epoch)
-
-
+        
 def update_metrics(d1, d2):
     d3 = {}
     for k in d1.keys():

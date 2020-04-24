@@ -74,7 +74,7 @@ class Framework():
                 if "threshold" in v.keys():
                    yhat_temp = self.y_hat > v["threshold"]
                 metric_fun = getattr(src.metrics,k)
-                results[k] = metric_fun(yhat_temp,self.y.to(self.device).squeeze()
+                results[k] = metric_fun(yhat_temp,self.y.to(self.device).squeeze())
 
         return results
 

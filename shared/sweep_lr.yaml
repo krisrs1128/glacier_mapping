@@ -9,6 +9,7 @@ runs:
       subset: 10
     train:
       optim:
+        name: Adam
         args:
           lr: 1e-6
   run_2:
@@ -18,6 +19,7 @@ runs:
       subset: 10
     train:
       optim:
+        name: Adam
         args:
           lr: 1e-3
   run_3:
@@ -27,6 +29,7 @@ runs:
       subset: 10
     train:
       optim:
+        name: Adam
         args:
           lr: 1e-9
   run_4:
@@ -36,5 +39,6 @@ runs:
       subset: 10
     train:
       optim:
+        name: Adam
         args:
           lr: 1e-2

@@ -11,7 +11,7 @@ runs:
       optim:
         name: Adam
         args:
-          lr: 1e-6
+          lr: 0.000001
   run_2:
     sbatch: {}
     data:
@@ -21,7 +21,7 @@ runs:
       optim:
         name: Adam
         args:
-          lr: 1e-3
+          lr: 0.001
   run_3:
     sbatch: {}
     data:
@@ -31,7 +31,7 @@ runs:
       optim:
         name: Adam
         args:
-          lr: 1e-9
+          lr: 0.00000001
   run_4:
     sbatch: {}
     data:
@@ -41,4 +41,4 @@ runs:
       optim:
         name: Adam
         args:
-          lr: 1e-2
+          lr: 0.01

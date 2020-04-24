@@ -4,6 +4,7 @@ import src.unet
 import src.metrics
 import numpy as np
 from pathlib import Path
+import time
 
 class Framework():
 
@@ -23,6 +24,8 @@ class Framework():
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
         self.metrics_opts = metrics_opts
 
+       self.stamp = int(time.time())
+
     def set_input(self, x, y):
         self.x = x.permute(0, 3, 1, 2).to(self.device)
         y = y.permute(0, 1, 2).to(self.device)
@@ -37,8 +40,8 @@ class Framework():
         return loss.item()
 
     def save(self, out_dir, epoch):
-        model_path = Path(self.out_dir, f"model_{epoch}.pt")
-        optim_path = Path(self.out_dir, f"optim_{epoch}.pt")
+        model_path = Path(self.out_dir, f"model_{epoch}_{self.stamp}.pt")
+        optim_path = Path(self.out_dir, f"optim_{epoch}_{self.stamp}.pt")
         torch.save(self.model.state_dict, model_path)
         torch.save(self.optimizer.state_dict, optim_path)
 

@@ -18,14 +18,15 @@ def tp_fp_fn(pred, true, label=1):
 
     return tp, fp, fn
 
-
 def recall(pred, true, label=1):
     tp = ((pred == label) & (true == label)).sum().item()
     fp = ((pred == label) & (true != label)).sum().item()
     fn = ((pred != label) & (true == label)).sum().item()
 
-    return tp / (tp + fn)
-
+    try:
+        return tp / (tp + fn)
+    except:
+        return 0
 
 def pixel_acc(pred, true):
     return (pred == true).sum().item() / true.numel()

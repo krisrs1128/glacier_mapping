@@ -30,7 +30,7 @@ class Dataset():
         self.trainY = None
         self.testX = None
         self.testY = None
-        self.classes = ["Clean Ice","Debris Glaciers","Background"]
+        self.classes = ["clean","debris","background"]
 
         self.read(filename=filename)
 
@@ -99,7 +99,7 @@ class GlacierClassifier():
         print(estimator.score(testX, testY))
         outputs = estimator.predict(testX)
         print("Classification Report: ")
-        print(metrics.classification_report(testY, outputs))
+        print(metrics.precision_recall_fscore_support(testY, outputs, average='weighted'))
         print("Confusion Matrix: ")
         print(metrics.confusion_matrix(testY, outputs))
         with open(self.output_folder+"/"+self.estimator_name+'.pkl', 'wb') as fid:
@@ -108,7 +108,7 @@ class GlacierClassifier():
     def svm_linear(self, trainX, trainY, testX, testY, grid_search=False, train=True):
         print('\nSVM with Linear Kernel')
         c = 0.01
-        gamma = 0.001
+        gamma = 0.0001
         if grid_search:
             estimator = SVC(kernel='linear', random_state=42, verbose=False, C=c, gamma=gamma)
             C_range = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
@@ -119,8 +119,6 @@ class GlacierClassifier():
             c = grid.best_params_['C']
             gamma = grid.best_params_['gamma']
 
-            # The best parameters are  for linear svm are {'C': 0.01, 'gamma': 0.001} with a score of 0.92
-
         if train:
             estimator = SVC(kernel='linear', random_state=42, verbose=False, C=c, gamma=gamma)
             clf = Pipeline([
@@ -128,9 +126,11 @@ class GlacierClassifier():
             ])
             self.train_and_evaluate(clf, trainX, trainY, testX, testY)
 
+            # The best parameters are {'C': 0.01, 'gamma': 0.0001} with a score of 0.88
+
     def svm_rbf(self, trainX, trainY, testX, testY, grid_search=False, train=True):
         print('\nSVM with RBF Kernel')
-        c = 1
+        c = 100
         gamma = 0.0001
         if grid_search:
             estimator = SVC(kernel='rbf', random_state=42, verbose=False, C=c, gamma=gamma)
@@ -142,14 +142,14 @@ class GlacierClassifier():
             c = grid.best_params_['C']
             gamma = grid.best_params_['gamma']
 
-            # The best parameters are for rbf svm {'C': 1, 'gamma': 0.0001} with a score of 0.93
-
         if train:
             estimator = SVC(kernel='rbf', random_state=42, verbose=False, C=c, gamma=gamma)
             clf = Pipeline([
                 ('clf', estimator)
             ])
             self.train_and_evaluate(clf, trainX, trainY, testX, testY)
+
+            # The best parameters for rbf svm are {'C': 100, 'gamma': 0.0001} with a score of 0.92
 
     def mlp(self, trainX, trainY, testX, testY, grid_search=False, train=True):
         print('\nMLP Neural Network')
@@ -194,9 +194,6 @@ class GlacierClassifier():
             hidden_layer_sizes = grid.best_params_['hidden_layer_sizes']
             max_iter = grid.best_params_['max_iter']
             early_stopping = grid.best_params_[early_stopping]
-
-            # hidden_layer_sizes=(100,), learning_rate_init=0.001, learning_rate=constant, max_iter=100,
-            #  early_stopping=False, alpha=1e-06, momentum=0.7,0.9, score=0.737506, total= 5.2min
 
         if train:
             estimator = MLPClassifier(solver=solver, alpha=alpha, learning_rate=learning_rate,
@@ -258,6 +255,7 @@ if __name__ == '__main__':
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)  
     estimators = ['svm_linear', 'svm_rbf', 'mlp', 'decision_tree']  # ['decision_tree', 'svm_linear', 'svm_rbf', 'mlp']
+    estimators = ['svm_rbf']
     dataset = Dataset(filename=filename)
     dataset.info()
     assert train or grid_search, "Enable the training or grid_search."

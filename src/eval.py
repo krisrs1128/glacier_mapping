@@ -18,11 +18,6 @@ import pandas as pd
 
 
 def merge_patches(patches, overlap, output_size):
-    """
-    This function is to merge the patches in files with overlap = overlap
-    2*3 != 3*2
-    How to solve this? more information might be needed regarding the size of the final segmentation patch.
-    """
     I, J, _, height, width, channels = patches.shape
     result = np.zeros((I * height, J * width, channels))
     for i in range(I):
@@ -106,8 +101,6 @@ def get_hist(img, mask):
     img_np = img.read()
     img_np = np.transpose(img_np, (1, 2, 0))
 
-    # img_np = img
-
     clean_index = np.argwhere(mask == 0)
     debris_index = np.argwhere(mask == 1)
     background_index = np.argwhere(mask == 2)
@@ -168,11 +161,16 @@ def get_hist(img, mask):
 
 
 if __name__ == '__main__':
-    print("loading raster")
-    img = rasterio.open("/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif")
-    print("getting mask")
-    process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"
+    img_path = "/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif"
     model_path = "/scratch/sankarak/data/glaciers/model_188.pt"
+    process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"
+    mask_paths = ["/scratch/sankarak/data/glaciers/vector_data/2005/hkh/data/Glacier_2005.shp",
+                  "/scratch/sankarak/data/glaciers/vector_data/2000/nepal/data/Glacier_2000.shp"]
+
+
+    print("loading raster")
+    img = rasterio.open(img_path)
+    print("getting mask")
     state_dict = torch.load(model_path, map_location="cpu")
     model = Unet(10, 1, 4)
     model.load_state_dict(state_dict)
@@ -181,14 +179,12 @@ if __name__ == '__main__':
     y_hat = torch.from_numpy(y_hat)
 
     # get true mask
-    mask_shps = [
-        gpd.read_file("/scratch/sankarak/data/glaciers/vector_data/2005/hkh/data/Glacier_2005.shp"),
-        gpd.read_file("/scratch/sankarak/data/glaciers/vector_data/2000/nepal/data/Glacier_2000.shp")
-    ]
+    mask_shps = [gpd.read_file(f) for f in mask_paths]
     mask_shps = [s.to_crs(img.meta["crs"].data) for s in mask_shps]
     mask = src.mask.generate_mask(img.meta, mask_shps)
     mask = torch.from_numpy(mask)
 
+    print("getting metrics")
     metric_results = {}
     for k in range(mask.shape[2]):
         metric_results[k] = {}
@@ -197,4 +193,4 @@ if __name__ == '__main__':
             metric_results[k][metric] = l(mask[:, :, k], y_hat[:, :, k])
 
     # print / plot the result
-    print(metric_results
+    print(metric_results)

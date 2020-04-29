@@ -167,7 +167,6 @@ if __name__ == '__main__':
     mask_paths = ["/scratch/sankarak/data/glaciers/vector_data/2005/hkh/data/Glacier_2005.shp",
                   "/scratch/sankarak/data/glaciers/vector_data/2000/nepal/data/Glacier_2000.shp"]
 
-
     print("loading raster")
     img = rasterio.open(img_path)
     print("getting mask")
@@ -175,8 +174,6 @@ if __name__ == '__main__':
     model = Unet(10, 1, 4)
     model.load_state_dict(state_dict)
     y_hat = infer_tile(img, model, process_conf)
-    y_hat = np.random.uniform(0, 1, (img.shape[0], img.shape[1], 2)) > 0.4
-    y_hat = torch.from_numpy(y_hat)
 
     # get true mask
     mask_shps = [gpd.read_file(f) for f in mask_paths]

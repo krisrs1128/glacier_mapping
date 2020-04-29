@@ -77,7 +77,8 @@ function nodeReposition(event) {
 
 function redraw() {
   let curPoly = state.polygons[state.focus];
-  let pointPoly = curPoly.map((d) => L.CRS.EPSG3857.latLngToPoint(new L.LatLng(d[1], d[0])));
+  let pointPoly = curPoly.map((d) => map.latLngToLayerPoint(new L.LatLng(d[0], d[1])));
+
   d3s.select("#mapOverlay")
     .select("#polygon-" + state.focus)
     .selectAll("circle")
@@ -89,6 +90,15 @@ function redraw() {
       cy: (d) => d[1],
       r: 100,
       fill: 'red'
+    });
+
+  d3s.select("#mapOverlay")
+    .select("#polygon-" + state.focus)
+    .selectAll(".polyNode")
+    .data(pointPoly)
+    .attrs({
+      cx: (d) => d.x,
+      cy: (d) => d.y
     });
 }
 

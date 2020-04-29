@@ -1,0 +1,25 @@
+{
+  "ESRI": {
+    "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    "args": {
+      "maxZoom": 14,
+      "minZoom": 8
+    }
+  },
+  "OTM": {
+    "url": "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    "args": {
+      "maxZoom": 14,
+      "minZoom": 8
+    }
+  },
+  "OSM": {
+    "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "args": {
+      "attribution": "&amp;copy <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors",
+      "maxZoom": 14,
+      "minZoom": 8
+    }
+  },
+  "Custom": {}
+}

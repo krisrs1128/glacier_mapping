@@ -188,7 +188,7 @@ if __name__ == '__main__':
     mask_shps = [s.to_crs(img.meta["crs"].data) for s in mask_shps]
     mask = src.mask.generate_mask(img.meta, mask_shps)
     mask = torch.from_numpy(mask)
- 
+
     metric_results = {}
     for k in range(mask.shape[2]):
         metric_results[k] = {}
@@ -197,4 +197,4 @@ if __name__ == '__main__':
             metric_results[k][metric] = l(mask[:, :, k], y_hat[:, :, k])
 
     # print / plot the result
-    print(metric_results)
+    print(metric_results

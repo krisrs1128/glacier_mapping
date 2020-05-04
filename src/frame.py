@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-import torch
-import src.unet
-import src.metrics
-import numpy as np
 from pathlib import Path
+import numpy as np
+import src.metrics
+import src.models.unet
+import torch
 
 class Framework():
 
@@ -14,10 +14,10 @@ class Framework():
         if loss_fn is None:
             loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
-        
+
         model_def = getattr(src.unet, model_opts.name)
         self.model = model_def(**model_opts.args).to(self.device)
-        
+
 
         optimizer_def = getattr(torch.optim, optimizer_opts.name)
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
@@ -51,17 +51,6 @@ class Framework():
 
 
     def calculate_metrics(self):
-
-        """
-        y = np.random.uniform(0,1,(512,512,3))>0.5
-        yhat = np.random.unform(0,1,(512,512,3))
-        model_opts = addict.Dict({"name" : "Unet", "args" : {"inchannels": 3, "outchannels": 1, "net_depth": 2}})
-        optim_opts = addict.Dict({"name": "Adam", "args": {"lr": 1e-4}})
-
-        metrics_opts = addict.Dict({"precision": {"threshold": 0.2}, "IoU": {"threshold": 0.4}})
-        frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts, metrics_opts=metrics_opts)
-        
-        """
         results = []
         for metrics in self.metrics_opts:
             for k,v in self.metrics_opts.items():
@@ -73,7 +62,3 @@ class Framework():
                 results.append(metric_value)
 
         return np.array(results)
-
-
-    
-

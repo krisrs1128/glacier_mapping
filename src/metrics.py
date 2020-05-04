@@ -18,14 +18,15 @@ def tp_fp_fn(pred, true, label=1):
 
     return tp, fp, fn
 
-
 def recall(pred, true, label=1):
     tp = ((pred == label) & (true == label)).sum().item()
     fp = ((pred == label) & (true != label)).sum().item()
     fn = ((pred != label) & (true == label)).sum().item()
 
-    return tp / (tp + fn)
-
+    try:
+        return tp / (tp + fn)
+    except:
+        return 0
 
 def pixel_acc(pred, true):
     return (pred == true).sum().item() / true.numel()
@@ -35,7 +36,7 @@ def dice(pred, true, label=1):
     tp = ((pred == label) & (true == label)).sum().item()
     fp = ((pred == label) & (true != label)).sum().item()
     fn = ((pred != label) & (true == label)).sum().item()
-    
+
     return (2 * tp) / (2 * tp + fp + fn)
 
 
@@ -61,6 +62,6 @@ class diceloss(torch.nn.Module):
         intersection = (iflat * tflat).sum()
         A_sum = torch.sum(iflat * iflat)
         B_sum = torch.sum(tflat * tflat)
-        union = A_sum + B_sum 
+        union = A_sum + B_sum
 
         return 1 - ((2. * intersection + self.smooth) / (union + self.smooth))

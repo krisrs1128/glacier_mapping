@@ -2,24 +2,22 @@
 from addict import Dict
 from skimage.util.shape import view_as_windows
 from src.postprocess_funs import postprocess_tile
-from src.unet import Unet
+from src.models.unet import Unet
 import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 import torch
 import yaml
+import src.metrics
+import src.mask
+import geopandas as gpd
 
-import matplotlib 
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 
 
 def merge_patches(patches, overlap, output_size):
-    """
-    This function is to merge the patches in files with overlap = overlap
-    2*3 != 3*2
-    How to solve this? more information might be needed regarding the size of the final segmentation patch.
-    """
     I, J, _, height, width, channels = patches.shape
     result = np.zeros((I * height, J * width, channels))
     for i in range(I):
@@ -73,7 +71,7 @@ def get_hist(img, mask):
     """
     Defined:
         max number of points in csv for each label(n_points)
-    Input: 
+    Input:
         raster image, (expected raster image)
         mask (expected numpy array)
     Output:
@@ -102,8 +100,6 @@ def get_hist(img, mask):
     # read image
     img_np = img.read()
     img_np = np.transpose(img_np, (1, 2, 0))
-
-    # img_np = img
 
     clean_index = np.argwhere(mask == 0)
     debris_index = np.argwhere(mask == 1)
@@ -145,7 +141,7 @@ def get_hist(img, mask):
     background_mean = background_value.mean(axis=0)
     background_std = background_value.std(axis=0)
     background_mean = np.append(background_mean[0:5],background_mean[5])
-            
+
     for (x,y) in zip(x_values,clean_mean):
         ax.plot(x, y, 'bo')
 
@@ -161,21 +157,37 @@ def get_hist(img, mask):
     plt.title("Wavelength vs Normalized intensity")
     ax.legend(bbox_to_anchor=(0.65, 1), loc='upper left', borderaxespad=0.)
 
-    # plt.savefig("./test.png")
-    # df.to_csv("./test.csv", index=False)
     return df, plt
 
 
 if __name__ == '__main__':
-    img = rasterio.open("/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif")
-    # img = np.load("./shared/true_image.npy")
-    # mask = np.load("./shared/true_label.npy")
-    process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"
+    img_path = "/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif"
     model_path = "/scratch/sankarak/data/glaciers/model_188.pt"
+    process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"
+    mask_paths = ["/scratch/sankarak/data/glaciers/vector_data/2005/hkh/data/Glacier_2005.shp",
+                  "/scratch/sankarak/data/glaciers/vector_data/2000/nepal/data/Glacier_2000.shp"]
 
-    df, plt = get_hist(img, mask)
+    print("loading raster")
+    img = rasterio.open(img_path)
+    print("getting mask")
     state_dict = torch.load(model_path, map_location="cpu")
     model = Unet(10, 1, 4)
     model.load_state_dict(state_dict)
     y_hat = infer_tile(img, model, process_conf)
-    plt.imsave("prediction_mask.png", y_hat[:, :, 0]) # it's a one channel mask
+
+    # get true mask
+    mask_shps = [gpd.read_file(f) for f in mask_paths]
+    mask_shps = [s.to_crs(img.meta["crs"].data) for s in mask_shps]
+    mask = src.mask.generate_mask(img.meta, mask_shps)
+    mask = torch.from_numpy(mask)
+
+    print("getting metrics")
+    metric_results = {}
+    for k in range(mask.shape[2]):
+        metric_results[k] = {}
+        for metric in ["precision", "tp_fp_fn", "pixel_acc", "dice"]:
+            l = getattr(src.metrics, metric)
+            metric_results[k][metric] = l(mask[:, :, k], y_hat[:, :, k])
+
+    # print / plot the result
+    print(metric_results)

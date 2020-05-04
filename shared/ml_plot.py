@@ -32,11 +32,6 @@ if __name__=="__main__":
     output_decision_tree = "./inference_data/decision_tree_output.npy"
     output_mlp = "./inference_data/mlp_output.npy"
 
-    # alpha_svm_linear = "./inference_data/svm_linear_alpha.npy"
-    # alpha_svm_rbf = "./inference_data/svm_rbf_alpha.npy"
-    # output_decision_tree = "./inference_data/decision_tree_output.npy"
-    # alpha_mlp = "./inference_data/mlp_alpha.npy"
-
     image = np.load(image_name)
     image_rgb = image[:,:,[0,2,1]].astype(int)
     image_542 = image[:,:,[4,3,1]].astype(int)
@@ -45,10 +40,6 @@ if __name__=="__main__":
     image_mlp = np.load(output_mlp).astype(int)
     image_svm_rbf = np.load(output_svm_rbf).astype(int)
     image_svm_linear = np.load(output_svm_linear).astype(int)
-
-    # alpha_mlp = np.load(alpha_mlp).astype(int)
-    # alpha_svm_rbf = np.load(alpha_svm_rbf).astype(int)
-    # alpha_svm_linear = np.load(alpha_svm_linear).astype(int)
 
     true_label = get_merged_mask(label,debris_label)
     plt.title(tile_name)
@@ -86,13 +77,6 @@ if __name__=="__main__":
 
     plt.subplot(338)
     plt.title("MLP after CRF")
-    # _temp = np.ones((512,512))
-    # _temp[0][0] = 0
-    # _temp[511][511] = 1
-    # _temp = _temp*2
-    # pixel_acc(true_label,_temp)
-    # plt.imsave("./pixel_acc_predicted.png", _temp)
-    # plt.imshow(image_mlp)
     
     plt.subplot(339)
     plt.title("Legend")

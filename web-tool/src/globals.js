@@ -26,5 +26,3 @@ export let map = L.map("map", {
   center: dataset.basemapLayer.initialLocation,
   zoom: dataset.basemapLayer.initialZoom,
 });
-
-// map.cursor.enable()

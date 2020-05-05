@@ -9,6 +9,10 @@ import * as d3g from 'd3-geo';
 import layerInfo from '../conf/layerInfo';
 import './map.css';
 
+// some global operations
+map.on("zoom", redraw)
+
+
 export function initializeMap() {
   // leaflet setup
   let tiles = L.tileLayer(
@@ -197,25 +201,4 @@ function closestNode(poly, pos) {
     }
   }
   return ix;
-}
-
-
-
-function allScales(projector) {
-  let transform = d3g.geoTransform({point: projector});
-  let p = d3g.geoPath(transform);
-
-
-  return {
-    "p": p
-  };
-}
-
-export function projectionFactory(map) {
-  function projectPoint(x, y) {
-    var point = map.latLngToLayerPoint(new L.LatLng(y, x));
-    this.stream.point(point.x, point.y);
-  }
-
-  return projectPoint;
 }

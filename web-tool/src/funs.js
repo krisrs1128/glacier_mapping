@@ -6,11 +6,8 @@ import 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { state, map } from './globals';
 import * as d3g from 'd3-geo';
-import layerInfo from '../conf/layerInfo';
+import layerInfo from '../../conf/layerInfo';
 import './map.css';
-
-// some global operations
-map.on("zoom", redraw)
 
 
 export function initializeMap() {
@@ -120,7 +117,7 @@ function nodeUp(event) {
   }
 }
 
-function redraw() {
+export function redraw() {
   let curPoly = state.polygons[state.focus];
   let pointPoly = curPoly.map((d) => map.latLngToLayerPoint(new L.LatLng(d[0], d[1])));
   pointPoly = pointPoly.map((d) => [d.x, d.y]);

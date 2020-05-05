@@ -22,10 +22,11 @@ import yaml
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("-d", "--slice_dir", type=str, default="/scratch/akera/glaciers_slices/", help="path to directory with all the slices")
-    parser.add_argument("-m", "--slice_meta", type=str, default="/scratch/akera/glacier_slices/slices_subset.geojson", help="path to the slices metadata")
-    parser.add_argument("-o", "--output_dir", type=str, default="./processed", help="path to output directory for postprocessed files")
-    parser.add_argument("-c", "--conf", type=str, default="conf/postprocess.yaml", help="Path to the file specifying postprocessing options.")
+    default_root = "./data/glaciers/"
+    parser.add_argument("-d", "--slice_dir", type=str, default=default_root + "/slices/", help="path to directory with all the slices")
+    parser.add_argument("-m", "--slice_meta", type=str, default=default_root + "/slices/slices_subset.geojson", help="path to the slices metadata")
+    parser.add_argument("-o", "--output_dir", type=str, default=default_root + "/processed", help="path to output directory for postprocessed files")
+    parser.add_argument("-c", "--conf", type=str, default="./conf/postprocess.yaml", help="Path to the file specifying postprocessing options.")
     parser.add_argument("-n", "--n_cpu", type=int, default=4, help="Path to the file specifying postprocessing options.")
     args = parser.parse_args()
 
@@ -39,7 +40,7 @@ if __name__ == "__main__":
         filter_perc=conf.filter_percentage,
         filter_channel=conf.filter_channel
     )
-
+    
     # validation: get ids for the ones that will be training vs. testing.
     print("reshuffling")
     split_fun = getattr(pf, conf.split_method)

@@ -39,7 +39,7 @@ class Unet(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
 
         in_channels = inchannels
-        out_channels = 64
+        out_channels = 16
         for _ in range(net_depth):
             conv = ConvBlock(in_channels, out_channels)
             self.downblocks.append(conv)

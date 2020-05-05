@@ -82,8 +82,10 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
         # update metadata
         stats = {"img_slice": str(img_slice_path), "mask_slice": str(mask_slice_path)}
+        img_slice_mean = np.nan_to_num(img_slices[k].mean())
         mask_mean = mask_slices[k].mean(axis=(0, 1))
         stats.update({f"mask_mean_{i}": v for i, v in enumerate(mask_mean)})
+        stats.update({f"img_mean": img_slice_mean})
         slice_stats.append(stats)
 
     slice_stats = pd.DataFrame(slice_stats)
@@ -115,5 +117,5 @@ if __name__ == "__main__":
     para = Parallel(n_jobs=args.n_cpu)
     metadata = para(delayed(wrapper)(k) for k in range(len(paths)))
     metadata = pd.concat(metadata, axis=0)
-    out_path = Path(args.output_dir, f"slices_{args.start_line}-{args.end_line}.geojson")
+    out_path = Path(args.output_dir, f"slices_subset.geojson")
     metadata.to_file(out_path, index=False, driver="GeoJSON")

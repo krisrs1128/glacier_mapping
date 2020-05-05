@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { state, map } from './globals';
 import * as d3g from 'd3-geo';
 import layerInfo from '../conf/layerInfo';
+import './map.css';
 
 export function initializeMap() {
   // leaflet setup
@@ -38,8 +39,8 @@ export function addButtons(parent_id) {
 }
 
 function newPoly() {
-  document.addEventListener("mousemove", nodeReposition);
-  document.addEventListener("click", addNode);
+  map.addEventListener("mousemove", nodeReposition);
+  map.addEventListener("click", addNode);
 
   // update the polygon's state
   let poly = state.polygons;
@@ -49,19 +50,32 @@ function newPoly() {
   state.mode = "create";
 }
 
-function addNode() {
+function addNode(event) {
+  let mousePos = [event.latlng.lat, event.latlng.lng],
+      poly = state.polygons;
+  poly[state.focus].push(mousePos);
+  state.polygons = poly;
+
+  let curPoly = poly[state.focus];
+  if (curPoly.length > 2 & dist2(curPoly[0], curPoly[curPoly.length - 1]) < 0.001) {
+    curPoly.splice(-2, 2);
+    poly[state.focus] = curPoly;
+    map.removeEventListener("mousemove", nodeReposition);
+    map.removeEventListener("click", addNode);
+    state.polygons = poly;
+    state.mode = "edit";
+  }
 
 }
 
 function nodeReposition(event) {
-  const coord = map.layerPointToLatLng(event);
-  let mousePos = [coord.lat, coord.lng],
+  let mousePos = [event.latlng.lat, event.latlng.lng],
       poly = state.polygons,
       cur_poly = poly[state.focus];
 
   if (cur_poly.length == 0) {
     cur_poly.push(mousePos);
-  } else if (cur_poly.length > 2 && dist2(mousePos, cur_poly[0]) < 60) {
+  } else if (cur_poly.length > 2 & dist2(mousePos, cur_poly[0]) < 0.001) {
     cur_poly[cur_poly.length - 1][0] = cur_poly[0][0];
     cur_poly[cur_poly.length - 1][1] = cur_poly[0][1];
   } else {
@@ -88,8 +102,6 @@ function redraw() {
       class: "polyNode",
       cx: (d) => d[0],
       cy: (d) => d[1],
-      r: 100,
-      fill: 'red'
     });
 
   d3s.select("#mapOverlay")

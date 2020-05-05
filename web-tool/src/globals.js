@@ -3,7 +3,7 @@ import * as d3s from 'd3-selection';
 import dataset from '../conf/dataset.json';
 
 export const state = {
-  polygons: [[[0, 1], [0, 3]]],
+  polygons: [],
   focus: null,
   mode: "create"
 }
@@ -27,3 +27,4 @@ export let map = L.map("map", {
   zoom: dataset.basemapLayer.initialZoom,
 });
 
+// map.cursor.enable()

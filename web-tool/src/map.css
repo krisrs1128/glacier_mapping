@@ -1,5 +1,6 @@
 
 .polyNode {
-    fill: "black";
-    r: 10
+    fill: "red";
+    r: 10;
+    fill-opacity: 0.6;
 }

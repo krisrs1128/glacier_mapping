@@ -1,6 +1,7 @@
 import * as d3s from 'd3-selection';
 import * as d3a from 'd3-array';
 import * as d3sm from 'd3-selection-multi';
+import * as d3sh from 'd3-shape';
 import 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { state, map } from './globals';
@@ -118,7 +119,9 @@ function nodeUp(event) {
 function redraw() {
   let curPoly = state.polygons[state.focus];
   let pointPoly = curPoly.map((d) => map.latLngToLayerPoint(new L.LatLng(d[0], d[1])));
+  pointPoly = pointPoly.map((d) => [d.x, d.y]);
 
+  // drawing the polygon nodes
   d3s.select("#mapOverlay")
     .select("#polygon-" + state.focus)
     .selectAll("circle")
@@ -137,8 +140,8 @@ function redraw() {
     .selectAll(".polyNode")
     .data(pointPoly)
     .attrs({
-      cx: (d) => d.x,
-      cy: (d) => d.y
+      cx: (d) => d[0],
+      cy: (d) => d[1]
     });
 
   d3s.select("#mapOverlay")
@@ -147,6 +150,34 @@ function redraw() {
     .data(pointPoly).exit()
     .remove();
 
+  // draw the polygon edges
+  let line = d3sh.line()
+      .x((d) => d[0])
+      .y((d) => d[1]);
+
+  d3s.select("#mapOverlay")
+    .select("#polygon-" + state.focus)
+    .selectAll(".polyEdge")
+    .data([pointPoly]).enter()
+    .append("path")
+    .attrs({
+      "d": line,
+      "class": "polyEdge"
+    });
+
+  d3s.select("#mapOverlay")
+    .select("#polygon-" + state.focus)
+    .selectAll(".polyEdge")
+    .data([pointPoly])
+    .attrs({
+      "d": line
+    });
+
+  d3s.select("#mapOverlay")
+    .select("#polygon-" + state.focus)
+    .selectAll(".polyEdge")
+    .data([pointPoly]).exit()
+    .remove();
 }
 
 

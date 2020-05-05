@@ -7,7 +7,7 @@
   },
   "dataLayer": {
     "type": "GLACIER",
-    "path": "tiles/hkh_10_channel.vrt",
+    "path": "data/tiles/hkh_10_channel.vrt",
     "padding": 1100
   },
   "basemapLayer": {
@@ -27,7 +27,7 @@
   },
   "shapeLayers": [
     {
-      "shapesFn": "shapes/hkh.geojson",
+      "shapesFn": "data/shapes/hkh.geojson",
       "zoneNameId": "HKH",
       "name": "Area Boundaries"
     }

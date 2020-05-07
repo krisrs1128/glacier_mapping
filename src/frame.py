@@ -67,7 +67,7 @@ class Framework():
                 for channel_wise_y, channel_wise_y_hat in zip(batch_y, batch_y_hat):
                     y = channel_wise_y.bool().to(self.device)
                     if "threshold" in v.keys():
-                        y_hat = channel_wise_y_hat > v["threshold"]
+                        y_hat = torch.sigmoid(channel_wise_y_hat) > v["threshold"]
                     else:
                         y_hat = channel_wise_y_hat.bool()
                     y_hat = y_hat.to(self.device)

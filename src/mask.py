@@ -54,7 +54,9 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
                 gdf = gdf.to_crs(img.meta["crs"].data)
             shps.append(gdf)
 
-        if rasterio.crs.CRS(img.meta["crs"].data) != (rasterio.crs.CRS(shps[0].crs) == rasterio.crs.CRS(shps[1].crs)):
+        if rasterio.crs.CRS(img.meta["crs"].data) == rasterio.crs.CRS(shps[0].crs) == rasterio.crs.CRS(shps[1].crs):
+            pass 
+        else:
             print("\nImageCRS: ",rasterio.crs.CRS(img.meta["crs"].data)) 
             print("\nGlaciersCRS: ",rasterio.crs.CRS(shps[0].crs))
             print("\nBordersCRS: ",rasterio.crs.CRS(shps[1].crs))
@@ -199,6 +201,6 @@ if __name__ == "__main__":
     paths_df = path_pairs_landsat(img_dir)
     img_paths = paths_df["img"].values
     shps_paths = [[p["label"], p["border"]] for _, p in paths_df.iterrows()]
-    out_dir = "/scratch/sankarak/data/glaciers_azure/masks"
+    out_dir = img_dir+"masks"
     generate_masks(img_paths, shps_paths, out_dir=out_dir, n_jobs=1)
     paths_df.to_csv(out_dir + "/paths.csv", index=False)

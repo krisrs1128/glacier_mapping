@@ -55,7 +55,7 @@ def get_args():
     parser.add_argument('-e', '--epochs', type=int, default=250, help='Number of epochs (Default 250)', dest='epochs')
     parser.add_argument('-b', '--batch_size', type=int, default=9, help='Batch size (Default 9)', dest='batch_size')
     parser.add_argument('-s', '--save_every', type=int, default=5, help='Save every n epoch (Default 5)', dest='save_every')
-    parser.add_argument('-p', '--path', type=str, default='./data/glaciers/', help='Root path', dest='path')
+    parser.add_argument('-p', '--path', type=str, default='./data/glaciers_hkh/', help='Root path', dest='path')
     parser.add_argument('-c', '--conf', type=str, default='./conf/train_conf.yaml', help='Configuration File for training', dest='conf')
 
     return parser.parse_args()
@@ -81,22 +81,23 @@ if __name__ == "__main__":
     # Prepare image grid train/val, x,y to write in tensorboard
     _sample_train_images, _sample_train_labels = iter(train_loader).next()
     _sample_val_images, _sample_val_labels = iter(val_loader).next()
+
+    # Write image to tensorboard
     _view_x_train = _sample_train_images[:,:,:,[2,1,0]]
-    _view_x_val = _sample_val_images[:,:,:,[2,1,0]]
     _view_x_train = unnormalize(_view_x_train, f"{args.path}/processed/stats.json",channels=(2,1,0))
-    _view_x_val = unnormalize(_view_x_val, f"{args.path}/processed/stats.json",channels=(2,1,0))
     _view_x_train = _view_x_train.permute(0,3,1,2)
-    _view_x_val = _view_x_val.permute(0,3,1,2)
     train_img_grid = torchvision.utils.make_grid(_view_x_train, nrow=3)
-    val_img_grid = torchvision.utils.make_grid(_view_x_val, nrow=3)
     _labels = _sample_train_labels.permute(0,3,1,2)
     train_label_grid = torchvision.utils.make_grid(_labels, nrow=3)
-    _labels = _sample_val_labels.permute(0,3,1,2)
-    val_label_grid = torchvision.utils.make_grid(_labels, nrow=3)
-
-    # Write images to tensorboard
     writer.add_image("Train/image", train_img_grid)
     writer.add_image("Train/labels", train_label_grid)
+
+    _view_x_val = _sample_val_images[:,:,:,[2,1,0]]
+    _view_x_val = unnormalize(_view_x_val, f"{args.path}/processed/stats.json",channels=(2,1,0))
+    _view_x_val = _view_x_val.permute(0,3,1,2)
+    val_img_grid = torchvision.utils.make_grid(_view_x_val, nrow=3)
+    _labels = _sample_val_labels.permute(0,3,1,2)
+    val_label_grid = torchvision.utils.make_grid(_labels, nrow=3)
     writer.add_image("Validation/image", val_img_grid)
     writer.add_image("Validation/labels", val_label_grid)
 
@@ -126,7 +127,8 @@ if __name__ == "__main__":
         # Write Images to tensorboard
         if epoch % args.save_every == 0:
             y_hat = frame.infer(_sample_train_images.to(frame.device))
-            _preds = y_hat.permute(0,3,1,2)
+            y_hat = torch.sigmoid(y_hat) > 0.5
+            _preds = y_hat.permute(0,3,2,1)
             pred_grid = torchvision.utils.make_grid(_preds, nrow=3)
             writer.add_image("Train/predictions", pred_grid, epoch)
 
@@ -151,9 +153,10 @@ if __name__ == "__main__":
         # Write images to tensorboard
         if epoch % args.save_every == 0:
             y_hat = frame.infer(_sample_val_images.to(frame.device))
-            _preds = y_hat.permute(0,3,1,2)
-            img_grid = torchvision.utils.make_grid(_preds, nrow=3)
-            writer.add_image("Validation/predictions", img_grid, epoch)
+            y_hat = torch.sigmoid(y_hat) > 0.5
+            _preds = y_hat.permute(0,3,2,1)
+            val_pred_grid = torchvision.utils.make_grid(_preds, nrow=3)
+            writer.add_image("Validation/predictions", val_pred_grid, epoch)
         print("\n")
         
         # Save model

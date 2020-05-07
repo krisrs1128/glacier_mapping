@@ -3,24 +3,29 @@ from pathlib import Path
 import numpy as np
 import src.metrics
 import src.models.unet
+import src.models.unet_dropout
 import torch
+import os
 # from torch import optim
 
 class Framework():
 
     def __init__(self,loss_fn=None, model_opts=None, optimizer_opts=None, metrics_opts=None, out_dir="outputs"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         self.out_dir = out_dir
         self.loss = None
-
         if loss_fn is None:
             loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
-
-        model_def = getattr(src.models.unet, model_opts.name)
+        if model_opts.name == "Unet":
+            model_def = getattr(src.models.unet, model_opts.name)
+        elif model_opts.name == "UnetDropout":
+            model_def = getattr(src.models.unet_dropout, model_opts.name)
+        else:
+            raise ValueError("Unknown model name")
         self.model = model_def(**model_opts.args).to(self.device)
-
-
         optimizer_def = getattr(torch.optim, optimizer_opts.name)
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
         # self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'max', patience=25)
@@ -55,12 +60,20 @@ class Framework():
 
     def calculate_metrics(self):
         results = []
-        for k,v in self.metrics_opts.items():
-            yhat_temp = self.y_hat
-            if "threshold" in v.keys():
-                yhat_temp = self.y_hat > v["threshold"]
-            metric_fun = getattr(src.metrics,k)
-            metric_value = metric_fun(yhat_temp,self.y.to(self.device))
-            results.append(metric_value)
-
+        for k, v in self.metrics_opts.items():
+            b_metric = []
+            for batch_y, batch_y_hat in zip(self.y, self.y_hat):
+                c_metric = []
+                for channel_wise_y, channel_wise_y_hat in zip(batch_y, batch_y_hat):
+                    y = channel_wise_y.bool().to(self.device)
+                    if "threshold" in v.keys():
+                        y_hat = channel_wise_y_hat > v["threshold"]
+                    else:
+                        y_hat = channel_wise_y_hat.bool()
+                    y_hat = y_hat.to(self.device)
+                    metric_fun = getattr(src.metrics, k)
+                    metric_value = metric_fun(y_hat, y)
+                    c_metric.append(metric_value)
+                b_metric.append(np.mean(np.asarray(c_metric)))
+            results.append(np.sum(np.asarray(b_metric)))
         return np.array(results)

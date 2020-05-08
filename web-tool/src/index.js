@@ -6,7 +6,7 @@ import * as d3s from 'd3-selection';
 import * as d3sm from 'd3-selection-multi';
 import * as f from './funs';
 import dataset from '../../conf/dataset.json';
-import { state, map } from './globals';
+import { state, map, backendUrl } from './globals';
 
 // Setup the map
 f.initializeMap("#root");
@@ -22,7 +22,7 @@ d3s.select("#root")
   .on("click", predFun);
 
 function predFun() {
-  d3f.json("http://localhost:4446/predPatch", {
+  d3f.json(backendUrl + "/predPatch", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

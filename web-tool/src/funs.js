@@ -2,9 +2,10 @@ import * as d3s from 'd3-selection';
 import * as d3a from 'd3-array';
 import * as d3sm from 'd3-selection-multi';
 import * as d3sh from 'd3-shape';
+import * as d3f from 'd3-fetch';
 import 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { state, map } from './globals';
+import { state, map, backendUrl } from './globals';
 import * as d3g from 'd3-geo';
 import layerInfo from '../../conf/layerInfo';
 import './map.css';
@@ -38,6 +39,30 @@ export function addButtons(parent_id) {
     .append("button")
     .text("New Polygon")
     .on("click", newPoly);
+
+  d3s.select(parent_id)
+    .append("input")
+    .text("Upload Tiff")
+    .attrs({"type": "file",})
+    .on("click", uploadTiff)
+}
+
+function uploadTiff(data) {
+  d3f.json(backendUrl + "uploadTiff", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      "extent": [[0, 1], [2, 3]],
+    })
+  }).then((data) => console.log(data));
+
+  d3f.json(backendUrl + "test", {
+    method: "ROUTE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      "extent": [[0, 1], [2, 3]],
+    })
+  }).then((data) => console.log(data));
 }
 
 function newPoly() {

@@ -23,6 +23,8 @@ import os
 import rasterio
 import rasterio.warp
 import sys
+import funs
+app = bottle.Bottle()
 
 DATASET = load_dataset()
 REPO_DIR = os.environ["REPO_DIR"]
@@ -53,11 +55,24 @@ def manage_sessions():
     else:
         SESSION_HANDLER.touch_session(bottle.request.session.id) # let the SESSION_HANDLER know that this session has activity
 
+@app.route('/', method = 'OPTIONS')
+@app.route('/<path:path>', method = 'OPTIONS')
+def options_handler(path = None):
+    return
+
+@app.post("/uploadTiff")
+def upload_tiff():
+    upload = bottle.request.files.get("upload")
+    output_path = Path("tiffs", upload.filename)
+    if not Path(output_path).exists():
+        upload.save(output_path)
+        funs.save_image(output_path)
+
 
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 
-
+@app.hook("after_request")
 def enable_cors():
     '''From https://gist.github.com/richard-flosi/3789163
 
@@ -66,20 +81,12 @@ def enable_cors():
     bottle.response.headers['Access-Control-Allow-Origin'] = '*'
     bottle.response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
     bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
-
-
-def do_options():
-    '''This method is necessary for CORS to work (I think --Caleb)
-    '''
-    bottle.response.status = 204
-    return
-
-
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 
 
 def create_session():
+    print("test")
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
 
@@ -228,6 +235,7 @@ def do_undo():
 
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
+    print("test")
     bottle.response.content_type = 'application/json'
     data = Dict(bottle.request.json)
     data["remote_address"] = bottle.request.client_ip
@@ -387,119 +395,4 @@ def get_everything_else(filepath):
 #---------------------------------------------------------------------------------------
 
 
-def main():
-    global SESSION_HANDLER
-    parser = argparse.ArgumentParser(description="AI for Earth Land Cover")
-
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose debugging", default=False)
-
-    # TODO: make sure the storage type is passed onto the Session objects
-    parser.add_argument(
-        '--storage_type',
-        action="store", dest="storage_type", type=str,
-        choices=["table", "file"],
-        default=None
-    )
-    parser.add_argument("--storage_path", action="store", dest="storage_path", type=str, help="Path to directory where output will be stored", default=None)
-    parser.add_argument("--host", action="store", dest="host", type=str, help="Host to bind to", default="0.0.0.0")
-    parser.add_argument("--port", action="store", dest="port", type=int, help="Port to listen on", default=8080)
-
-    subparsers = parser.add_subparsers(dest="subcommand", help='Help for subcommands') # TODO: If we use Python3.7 we can use the required keyword here
-    parser_a = subparsers.add_parser('local', help='For running models on the local server')
-    parser_b = subparsers.add_parser('remote', help='For running models with RPC calls')
-    parser.add_argument("--remote_host", action="store", dest="remote_host", type=str, help="RabbitMQ host", default="0.0.0.0")
-    parser.add_argument("--remote_port", action="store", dest="remote_port", type=int, help="RabbitMQ port", default=8080)
-
-    args = parser.parse_args(sys.argv[1:])
-
-
-    # create Session factory to use based on whether we are running locally or remotely
-    run_local = None
-    if args.subcommand == "local":
-        print("Sessions will be spawned on the local machine")
-        run_local = True
-    elif args.subcommand == "remote":
-        print("Sessions will be spawned remotely")
-        run_local = False
-    else:
-        print("Must specify 'local' or 'remote' on command line")
-        return
-    SESSION_HANDLER = SessionHandler(run_local, args)
-    SESSION_HANDLER.start_monitor()
-
-    # Setup logging
-    log_path = os.getcwd() + "/logs"
-    setup_logging(log_path, "server") # TODO: don't delete logs
-
-
-    # Setup the bottle server
-    app = bottle.Bottle()
-
-    app.add_hook("after_request", enable_cors)
-    app.add_hook("before_request", setup_sessions)
-    app.add_hook("before_request", manage_sessions) # before every request we want to check to make sure there are no session issues
-
-    # API paths
-    app.route("/predPatch", method="OPTIONS", callback=do_options) # TODO: all of our web requests from index.html fire an OPTIONS call because of https://stackoverflow.com/questions/1256593/why-am-i-getting-an-options-request-instead-of-a-get-request, we should fix this
-    app.route('/predPatch', method="POST", callback=pred_patch)
-
-    app.route("/predTile", method="OPTIONS", callback=do_options)
-    app.route('/predTile', method="POST", callback=pred_tile)
-
-    app.route("/getInput", method="OPTIONS", callback=do_options)
-    app.route('/getInput', method="POST", callback=get_input)
-
-    app.route("/recordCorrection", method="OPTIONS", callback=do_options)
-    app.route('/recordCorrection', method="POST", callback=record_correction)
-
-    app.route("/retrainModel", method="OPTIONS", callback=do_options)
-    app.route('/retrainModel', method="POST", callback=retrain_model)
-
-    app.route("/resetModel", method="OPTIONS", callback=do_options)
-    app.route('/resetModel', method="POST", callback=reset_model)
-
-    app.route("/doUndo", method="OPTIONS", callback=do_options)
-    app.route("/doUndo", method="POST", callback=do_undo)
-
-    app.route("/doLoad", method="OPTIONS", callback=do_options)
-    app.route("/doLoad", method="POST", callback=do_load)
-
-    app.route("/createSession", method="OPTIONS", callback=do_options)
-    app.route("/createSession", method="POST", callback=create_session)
-
-    app.route("/killSession", method="OPTIONS", callback=do_options)
-    app.route("/killSession", method="POST", callback=kill_session)
-
-    app.route("/whoami", method="GET", callback=whoami)
-
-    # Content paths
-    app.route("/", method="GET", callback=get_landing_page)
-    app.route("/favicon.ico", method="GET", callback=get_favicon)
-    app.route("/<filepath:re:.*>", method="GET", callback=get_everything_else)
-
-
-    manage_session_folders()
-    session_opts = {
-        'session.type': 'file',
-        'session.cookie_expires': 3000,
-        'session.data_dir': SESSION_FOLDER,
-        'session.auto': True
-    }
-    app = beaker.middleware.SessionMiddleware(app, session_opts)
-
-    server = cheroot.wsgi.Server(
-        (args.host, args.port),
-        app
-    )
-
-    server.max_request_header_size = 2**13
-    server.max_request_body_size = 2**27
-
-    try:
-        server.start()
-    finally:
-        server.stop()
-
-
-if __name__ == "__main__":
-    main()
+bottle.run(app, host="localhost", port="4446")

@@ -7,7 +7,7 @@ import time
 import torch
 import sys
 sys.path.append(str(Path(os.environ["REPO_DIR"])))
-from src.unet import Unet
+from src.models.unet import Unet
 
 
 class PytorchUNet(BackendModel):

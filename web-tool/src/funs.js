@@ -39,30 +39,6 @@ export function addButtons(parent_id) {
     .append("button")
     .text("New Polygon")
     .on("click", newPoly);
-
-  d3s.select(parent_id)
-    .append("input")
-    .text("Upload Tiff")
-    .attrs({"type": "file",})
-    .on("click", uploadTiff)
-}
-
-function uploadTiff(data) {
-  d3f.json(backendUrl + "uploadTiff", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      "extent": [[0, 1], [2, 3]],
-    })
-  }).then((data) => console.log(data));
-
-  d3f.json(backendUrl + "test", {
-    method: "ROUTE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      "extent": [[0, 1], [2, 3]],
-    })
-  }).then((data) => console.log(data));
 }
 
 function newPoly() {

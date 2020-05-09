@@ -52,9 +52,10 @@ def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and target masks',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-n', '--name', type=str, help='Name of run', dest='run_name', required=True)
-    parser.add_argument('-e', '--epochs', type=int, default=250, help='Number of epochs (Default 250)', dest='epochs')
-    parser.add_argument('-b', '--batch_size', type=int, default=9, help='Batch size (Default 9)', dest='batch_size')
-    parser.add_argument('-s', '--save_every', type=int, default=5, help='Save every n epoch (Default 5)', dest='save_every')
+    parser.add_argument('-e', '--epochs', type=int, default=100, help='Number of epochs (Default 100)', dest='epochs')
+    parser.add_argument('-b', '--batch_size', type=int, default=16, help='Batch size (Default 16)', dest='batch_size')
+    parser.add_argument('-s', '--save_every', type=int, default=25, help='Save every n epoch (Default 25)', dest='save_every')
+    parser.add_argument('-t', '--threshold', type=float, default=0.5, help='Threshold value for tensorboard', dest='threshold')
     parser.add_argument('-p', '--path', type=str, default='./data/glaciers_hkh/', help='Root path', dest='path')
     parser.add_argument('-c', '--conf', type=str, default='./conf/train_conf.yaml', help='Configuration File for training', dest='conf')
 
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset,batch_size=args.batch_size, shuffle=True, num_workers=8)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=3)
 
-    frame = Framework(model_opts=conf.model_opts, optimizer_opts=conf.optim_opts, metrics_opts=conf.metrics_opts, out_dir=f"{args.path}models/{args.run_name}")
+    frame = Framework(model_opts=conf.model_opts, optimizer_opts=conf.optim_opts, metrics_opts=conf.metrics_opts, reg_opts=conf.reg_opts, out_dir=f"{args.path}models/{args.run_name}")
 
     # Tensorboard path
     writer = SummaryWriter(f"{args.path}/runs/{args.run_name}")
@@ -86,18 +87,18 @@ if __name__ == "__main__":
     _view_x_train = _sample_train_images[:,:,:,[2,1,0]]
     _view_x_train = unnormalize(_view_x_train, f"{args.path}/processed/stats.json",channels=(2,1,0))
     _view_x_train = _view_x_train.permute(0,3,1,2)
-    train_img_grid = torchvision.utils.make_grid(_view_x_train, nrow=3)
+    train_img_grid = torchvision.utils.make_grid(_view_x_train, nrow=4)
     _labels = _sample_train_labels.permute(0,3,1,2)
-    train_label_grid = torchvision.utils.make_grid(_labels, nrow=3)
+    train_label_grid = torchvision.utils.make_grid(_labels, nrow=4)
     writer.add_image("Train/image", train_img_grid)
     writer.add_image("Train/labels", train_label_grid)
 
     _view_x_val = _sample_val_images[:,:,:,[2,1,0]]
     _view_x_val = unnormalize(_view_x_val, f"{args.path}/processed/stats.json",channels=(2,1,0))
     _view_x_val = _view_x_val.permute(0,3,1,2)
-    val_img_grid = torchvision.utils.make_grid(_view_x_val, nrow=3)
+    val_img_grid = torchvision.utils.make_grid(_view_x_val, nrow=4)
     _labels = _sample_val_labels.permute(0,3,1,2)
-    val_label_grid = torchvision.utils.make_grid(_labels, nrow=3)
+    val_label_grid = torchvision.utils.make_grid(_labels, nrow=4)
     writer.add_image("Validation/image", val_img_grid)
     writer.add_image("Validation/labels", val_label_grid)
 
@@ -127,22 +128,24 @@ if __name__ == "__main__":
         # Write Images to tensorboard
         if epoch % args.save_every == 0:
             y_hat = frame.infer(_sample_train_images.to(frame.device))
-            y_hat = torch.sigmoid(y_hat) > 0.5
+            # y_hat = torch.sigmoid(y_hat) > args.threshold
+            y_hat = torch.sigmoid(y_hat)
             _preds = y_hat.permute(0,3,2,1)
-            pred_grid = torchvision.utils.make_grid(_preds, nrow=3)
+            pred_grid = torchvision.utils.make_grid(_preds, nrow=4)
             writer.add_image("Train/predictions", pred_grid, epoch)
 
         ## Validation loop
         loss = 0
         for i, (x,y) in enumerate(val_loader):
             y_hat = frame.infer(x.to(frame.device))
-            _loss = frame.calc_loss(y_hat,y.to(frame.device)).item()
+            _loss = frame.calc_loss(y_hat.to(frame.device), y.to(frame.device)).item()
             loss += _loss
             if i == 0:
                 metrics=frame.calculate_metrics()
             else:
                 metrics+=frame.calculate_metrics()
-        epoch_val_loss = loss / len(val_dataset)         
+        epoch_val_loss = loss / len(val_dataset)
+        frame.val_operations(epoch_val_loss)         
         # Print and write scalars to tensorboard
         print(f"\nV_Loss: {epoch_val_loss:.5f}", end = " ")
         for i, k in enumerate(conf.metrics_opts):
@@ -153,10 +156,14 @@ if __name__ == "__main__":
         # Write images to tensorboard
         if epoch % args.save_every == 0:
             y_hat = frame.infer(_sample_val_images.to(frame.device))
-            y_hat = torch.sigmoid(y_hat) > 0.5
+            # y_hat = torch.sigmoid(y_hat) > args.threshold
+            y_hat = torch.sigmoid(y_hat)
             _preds = y_hat.permute(0,3,2,1)
-            val_pred_grid = torchvision.utils.make_grid(_preds, nrow=3)
+            val_pred_grid = torchvision.utils.make_grid(_preds, nrow=4)
             writer.add_image("Validation/predictions", val_pred_grid, epoch)
+        # Write combined loss graph to tensorboard
+        writer.add_scalars('Loss', {'train':epoch_train_loss,
+                                    'val':epoch_val_loss}, epoch)
         print("\n")
         
         # Save model

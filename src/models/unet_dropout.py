@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class ConvBlock(nn.Module):
     def __init__(self, inchannels, outchannels, dropout, spatial, padding=1):
         super().__init__()
@@ -52,7 +51,7 @@ class UnetDropout(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
 
         in_channels = inchannels
-        out_channels = 16
+        out_channels = 8
         for _ in range(net_depth):
             conv = ConvBlock(in_channels, out_channels, dropout, spatial)
             self.downblocks.append(conv)

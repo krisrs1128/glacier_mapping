@@ -3,17 +3,22 @@ model_opts:
   args: 
     inchannels: 12
     outchannels: 1
-    net_depth: 4
-    dropout: 0.2
+    net_depth: 5
+    dropout: 0.3
     spatial: True
 optim_opts:
   name: "Adam"
   args: 
     lr: 0.0001
 metrics_opts:
-  precision:
-    threshold: 0.5
   IoU:
-    threshold: 0.5
+    threshold: 0.4
   pixel_acc:
-    threshold: 0.5
+    threshold: 0.4
+  precision:
+    threshold: 0.4
+  recall:
+    threshold: 0.4
+reg_opts:
+  l1_reg: 0.0005
+  # l2_reg: 0.001

@@ -6,11 +6,11 @@ import src.models.unet
 import src.models.unet_dropout
 import torch
 import os
-# from torch import optim
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 class Framework():
 
-    def __init__(self,loss_fn=None, model_opts=None, optimizer_opts=None, metrics_opts=None, out_dir="outputs"):
+    def __init__(self,loss_fn=None, model_opts=None, optimizer_opts=None, metrics_opts=None, reg_opts = None, out_dir="outputs"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
@@ -28,8 +28,16 @@ class Framework():
         self.model = model_def(**model_opts.args).to(self.device)
         optimizer_def = getattr(torch.optim, optimizer_opts.name)
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
-        # self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'max', patience=25)
+        self.lrscheduler = ReduceLROnPlateau(self.optimizer, 'min', verbose=True, patience=5, min_lr=1e-6)
         self.metrics_opts = metrics_opts
+        try:
+            self.l1_lambda = reg_opts.l1_reg
+        except:
+            self.l1_lambda = False
+        # try:
+        #     self.l2_lambda = reg_opts.l2_reg
+        # except:
+        #     self.l2_lambda = False
 
     def set_input(self, x, y):
         self.x = x.permute(0, 3, 1, 2).to(self.device)
@@ -43,6 +51,9 @@ class Framework():
         self.optimizer.step()
         return self.loss.item()
 
+    def val_operations(self, val_loss):
+        self.lrscheduler.step(val_loss)
+
     def save(self, out_dir, epoch):
         model_path = Path(self.out_dir, f"model_{epoch}.pt")
         optim_path = Path(self.out_dir, f"optim_{epoch}.pt")
@@ -54,8 +65,19 @@ class Framework():
         with torch.no_grad():
             return self.model(x).permute(0, 3, 2, 1)
 
-    def calc_loss(self, y, y_hat):
-        return self.loss_fn(y, y_hat)
+    def calc_loss(self, y_hat, y):
+        loss = self.loss_fn(y_hat, y)
+        if self.l1_lambda:
+            l1_regularization = torch.tensor(0.0).to(self.device)
+            for param in self.model.parameters():
+                l1_regularization += torch.sum(abs(param))
+            loss = loss + self.l1_lambda*l1_regularization
+        # if self.l2_lambda:
+        #     l2_regularization = torch.tensor(0.0).to(self.device)
+        #     for param in self.model.parameters():
+        #         l2_regularization += torch.norm(param, 2)**2
+        #     loss = loss + self.l2_lambda*l2_regularization
+        return loss
 
 
     def calculate_metrics(self):

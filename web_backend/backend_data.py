@@ -10,12 +10,12 @@ import pandas as pd
 import fiona
 import shapely.geometry
 import pathlib
-from osgeo import gdal
+#from osgeo import gdal
 import rasterio
 import subprocess
 from PIL import Image
 import web_backend.DataLoader as DL
-import tempfile
+
 
 def reproject_directory(input_dir, output_dir, dst_epsg=4326):
     inputs = pathlib.Path(input_dir).glob("*.tif")
@@ -23,14 +23,15 @@ def reproject_directory(input_dir, output_dir, dst_epsg=4326):
         print(f"reprojecting {str(im_path)}")
         im = rasterio.open(im_path)
         output_path = pathlib.Path(output_dir, f"{im_path.stem}-warped.tiff")
+        print(output_path)
         subprocess.call(["gdalwarp", "-s_srs", str(im.crs), "-t_srs",
-                         f"EPSG:{dst_epsg}", str(im_path), str(output_path)])
+                         f"EPSG:{dst_epsg}", str(im_path),
+                         "-wo", "NUM_THREADS=ALL_CPUS", str(output_path)])
 
 
 def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     inputs = list(pathlib.Path(input_dir).glob("*.tif"))
     vrt_opts = gdal.BuildVRTOptions(**kwargs)
-    print(inputs)
     gdal.BuildVRT(output_path, inputs, options=vrt_opts)
 
 
@@ -48,11 +49,10 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--tile", default=False)
     args = parser.parse_args()
 
-    tmp = tempfile.mkdtemp()
-    reproject_directory(args.input_dir, tmp)
+    reproject_directory(args.input_dir, args.output_dir)
     vrt_path = pathlib.Path(args.output_dir, args.name)
-    vrt_from_dir(tmp, str(vrt_path) + "full")
-    vrt_from_dir(tmp, str(vrt_path) + "245", bandList=[2, 4, 5])
+    vrt_from_dir(args.output_dir, str(vrt_path) + "full")
+    vrt_from_dir(args.output_dir, str(vrt_path) + "245", bandList=[2, 4, 5])
 
     if args.tile:
         tiles(vrt_path, args.output_dir)

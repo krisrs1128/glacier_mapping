@@ -31,7 +31,7 @@ import numpy as np
 
 np.random.seed(7) 
 
-def unnormalize(x, conf, channels=(0,2,1)):
+def unnormalize(x, conf, channels=(2,1,0)):
     '''
     Given normalized input, gives RGB image to show in tensorboard
     Input:
@@ -52,10 +52,9 @@ def get_args():
     parser = argparse.ArgumentParser(description='Train the UNet on images and target masks',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-n', '--name', type=str, help='Name of run', dest='run_name', required=True)
-    parser.add_argument('-e', '--epochs', type=int, default=100, help='Number of epochs (Default 100)', dest='epochs')
+    parser.add_argument('-e', '--epochs', type=int, default=500, help='Number of epochs (Default 500)', dest='epochs')
     parser.add_argument('-b', '--batch_size', type=int, default=16, help='Batch size (Default 16)', dest='batch_size')
-    parser.add_argument('-s', '--save_every', type=int, default=25, help='Save every n epoch (Default 25)', dest='save_every')
-    parser.add_argument('-t', '--threshold', type=float, default=0.5, help='Threshold value for tensorboard', dest='threshold')
+    parser.add_argument('-s', '--save_every', type=int, default=5, help='Save every n epoch (Default 5)', dest='save_every')
     parser.add_argument('-p', '--path', type=str, default='./data/glaciers_hkh/', help='Root path', dest='path')
     parser.add_argument('-c', '--conf', type=str, default='./conf/train_conf.yaml', help='Configuration File for training', dest='conf')
 
@@ -64,6 +63,9 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()   
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
+
+    # filter_channels = (5,4,2)
+    filter_channels = np.array(range(12))
 
     train_dataset = GlacierDataset(Path(args.path, "processed/train"))
     val_dataset = GlacierDataset(Path(args.path, "processed/test"))
@@ -81,11 +83,13 @@ if __name__ == "__main__":
 
     # Prepare image grid train/val, x,y to write in tensorboard
     _sample_train_images, _sample_train_labels = iter(train_loader).next()
+    _sample_train_images = _sample_train_images[:,:,:,filter_channels]
     _sample_val_images, _sample_val_labels = iter(val_loader).next()
+    _sample_val_images = _sample_val_images[:,:,:,filter_channels]
 
     # Write image to tensorboard
     _view_x_train = _sample_train_images[:,:,:,[2,1,0]]
-    _view_x_train = unnormalize(_view_x_train, f"{args.path}/processed/stats.json",channels=(2,1,0))
+    _view_x_train = unnormalize(_view_x_train, f"{args.path}/processed/stats.json",channels=(2,1,0)) #(2,1,0)
     _view_x_train = _view_x_train.permute(0,3,1,2)
     train_img_grid = torchvision.utils.make_grid(_view_x_train, nrow=4)
     _labels = _sample_train_labels.permute(0,3,1,2)
@@ -109,6 +113,7 @@ if __name__ == "__main__":
         ## Training loop
         loss = 0
         for i, (x,y) in enumerate(train_loader):
+            x = x[:,:,:,filter_channels]
             frame.set_input(x,y)
             _loss = frame.optimize()
             print(f"Epoch {epoch}/{args.epochs}, Training batch {i+1} of {n_batches}, Loss= {_loss/args.batch_size:.5f}", end="\r", flush=True)
@@ -128,7 +133,6 @@ if __name__ == "__main__":
         # Write Images to tensorboard
         if epoch % args.save_every == 0:
             y_hat = frame.infer(_sample_train_images.to(frame.device))
-            # y_hat = torch.sigmoid(y_hat) > args.threshold
             y_hat = torch.sigmoid(y_hat)
             _preds = y_hat.permute(0,3,2,1)
             pred_grid = torchvision.utils.make_grid(_preds, nrow=4)
@@ -137,6 +141,7 @@ if __name__ == "__main__":
         ## Validation loop
         loss = 0
         for i, (x,y) in enumerate(val_loader):
+            x = x[:,:,:,filter_channels]
             y_hat = frame.infer(x.to(frame.device))
             _loss = frame.calc_loss(y_hat.to(frame.device), y.to(frame.device)).item()
             loss += _loss
@@ -156,7 +161,6 @@ if __name__ == "__main__":
         # Write images to tensorboard
         if epoch % args.save_every == 0:
             y_hat = frame.infer(_sample_val_images.to(frame.device))
-            # y_hat = torch.sigmoid(y_hat) > args.threshold
             y_hat = torch.sigmoid(y_hat)
             _preds = y_hat.permute(0,3,2,1)
             val_pred_grid = torchvision.utils.make_grid(_preds, nrow=4)

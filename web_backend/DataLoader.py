@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from DataLoaderAbstract import DataLoader
+from web_backend.DataLoaderAbstract import DataLoader
 from pathlib import Path
 from rasterio.vrt import WarpedVRT
 from rasterio.windows import from_bounds
 import base64
-import cv2
+# import cv2
 import fiona
 import fiona.transform
 import numpy as np
@@ -34,15 +34,14 @@ def extent_to_transformed_geom(extent, dest_crs="EPSG:4269"):
     return fiona.transform.transform_geom(src_crs, dest_crs, geom)
 
 
-def warp_data_to_3857(src_img, src_crs, src_transform, src_bounds, resolution=10):
+def warp_data(src_img, src_crs, src_transform, src_bounds, dest_epsg=3857, resolution=10):
     ''' Assume that src_img is (height, width, channels)
     '''
     assert len(src_img.shape) == 3
     src_height, src_width, num_channels = src_img.shape
-
     src_img_tmp = np.rollaxis(src_img.copy(), 2, 0)
 
-    dst_crs = rasterio.crs.CRS.from_epsg(3857)
+    dst_crs = rasterio.crs.CRS.from_epsg(dest_epsg)
     dst_bounds = rasterio.warp.transform_bounds(src_crs, dst_crs, *src_bounds)
     dst_transform, width, height = rasterio.warp.calculate_default_transform(
         src_crs,

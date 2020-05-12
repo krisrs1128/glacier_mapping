@@ -12,14 +12,19 @@ import shapely.geometry
 import pathlib
 from osgeo import gdal
 import rasterio
+import subprocess
 from PIL import Image
+import web_backend.DataLoader as DL
 import tempfile
 
-def reproject_directory(input_dir, output_dir, crs_string="EPSG:4326"):
+def reproject_directory(input_dir, output_dir, dst_epsg=4326):
     inputs = pathlib.Path(input_dir).glob("*.tif")
-    for im in inputs:
-        print(f"reprojecting {str(im)}")
-        gdal.Warp(pathlib.Path(output_dir, s.stem), s, dstSRS=crs_string)
+    for im_path in inputs:
+        print(f"reprojecting {str(im_path)}")
+        im = rasterio.open(im_path)
+        output_path = pathlib.Path(output_dir, f"{im_path.stem}-warped.tiff")
+        subprocess.call(["gdalwarp", "-s_srs", str(im.crs), "-t_srs",
+                         f"EPSG:{dst_epsg}", str(im_path), str(output_path)])
 
 
 def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
@@ -29,14 +34,15 @@ def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     gdal.BuildVRT(output_path, inputs, options=vrt_opts)
 
 
-def tiles(input_file, output_dir, zoom_levels="15-17"):
-    gdal2tiles.generate_tiles(input_file, output_dir, zoom="15-17")
+def tiles(input_vrt, output_dir, zoom_levels="15-17", channels=[2, 4, 5]):
+    gdal2tiles.generate_tiles(input_vrt, output_dir, zoom="15-17")
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Merge to a VRT")
-    parser.add_argument("-d", "--input_dir", type=str, default="../../data_glaciers/")
+    # parser.add_argument("-d", "--input_dir", type=str, default="../../data_glaciers/")
+    parser.add_argument("-d", "--input_dir", type=str, default="/Users/krissankaran/Desktop/")
     parser.add_argument("-o", "--output_dir", type=str, default="./")
     parser.add_argument("-n", "--name", type=str, default="output.vrt")
     parser.add_argument("-t", "--tile", default=False)
@@ -45,7 +51,8 @@ if __name__ == "__main__":
     tmp = tempfile.mkdtemp()
     reproject_directory(args.input_dir, tmp)
     vrt_path = pathlib.Path(args.output_dir, args.name)
-    vrt_from_dir(tmp, vrt_path)
+    vrt_from_dir(tmp, str(vrt_path) + "full")
+    vrt_from_dir(tmp, str(vrt_path) + "245", bandList=[2, 4, 5])
 
     if args.tile:
         tiles(vrt_path, args.output_dir)

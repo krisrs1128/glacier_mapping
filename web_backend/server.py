@@ -34,43 +34,10 @@ bottle.TEMPLATE_PATH.insert(0, REPO_DIR + "/views") # let bottle know where we a
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 
-
-def setup_sessions():
-    '''This method is called before every request. Adds the beaker SessionMiddleware on as request.session.
-    '''
-    bottle.request.session = bottle.request.environ['beaker.session']
-    bottle.request.client_ip = bottle.request.environ.get('HTTP_X_FORWARDED_FOR') or bottle.request.environ.get('REMOTE_ADDR')
-
-
-def manage_sessions():
-    '''This method is called before every request. Checks to see if there a session associated with the current request.
-    If there is then update the last interaction time on that session.
-    '''
-    if SESSION_HANDLER.is_expired(bottle.request.session.id): # Someone is trying to use a session that we have deleted due to inactivity
-        SESSION_HANDLER.cleanup_expired_session(bottle.request.session.id)
-        bottle.request.session.delete() # TODO: I'm not sure how the actual session is deleted on the client side
-        LOGGER.info("Cleaning up an out of date session")
-    elif not SESSION_HANDLER.is_active(bottle.request.session.id):
-        LOGGER.warning("We are getting a request that doesn't have an active session")
-    else:
-        SESSION_HANDLER.touch_session(bottle.request.session.id) # let the SESSION_HANDLER know that this session has activity
-
 @app.route('/', method = 'OPTIONS')
 @app.route('/<path:path>', method = 'OPTIONS')
 def options_handler(path = None):
     return
-
-@app.post("/uploadTiff")
-def upload_tiff():
-    upload = bottle.request.files.get("upload")
-    output_path = Path("tiffs", upload.filename)
-    if not Path(output_path).exists():
-        upload.save(output_path)
-        funs.save_image(output_path)
-
-
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
 
 @app.hook("after_request")
 def enable_cors():
@@ -81,48 +48,9 @@ def enable_cors():
     bottle.response.headers['Access-Control-Allow-Origin'] = '*'
     bottle.response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
     bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
-
-
-def create_session():
-    print("test")
-    bottle.response.content_type = 'application/json'
-    data = bottle.request.json
-
-    SESSION_HANDLER.create_session(bottle.request.session.id, data["model"])
-
-    bottle.response.status = 200
-    return json.dumps(data)
-
-
-def kill_session():
-    bottle.response.content_type = 'application/json'
-    data = bottle.request.json
-
-    SESSION_HANDLER.kill_session(bottle.request.session.id)
-    SESSION_HANDLER.cleanup_expired_session(bottle.request.session.id)
-    bottle.request.session.delete()
-
-    bottle.response.status = 200
-    return json.dumps(data)
-
-
-def do_load():
-    bottle.response.content_type = 'application/json'
-    data = bottle.request.json
-
-    cached_model = data["cachedModel"]
-
-    SESSION_HANDLER.get_session(bottle.request.session.id).reset(False, from_cached=cached_model)
-    SESSION_HANDLER.get_session(bottle.request.session.id).load(cached_model)
-
-    data["message"] = "Loaded new model from %s" % (cached_model)
-    data["success"] = True
-
-    bottle.response.status = 200
-    return json.dumps(data)
-
 
 def reset_model():
     bottle.response.content_type = 'application/json'
@@ -165,74 +93,7 @@ def retrain_model():
     return json.dumps(data)
 
 
-def record_correction():
-    bottle.response.content_type = 'application/json'
-    data = bottle.request.json
-    data["remote_address"] = bottle.request.client_ip
-
-    SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
-
-    #
-    tlat, tlon = data["extent"]["ymax"], data["extent"]["xmin"]
-    blat, blon = data["extent"]["ymin"], data["extent"]["xmax"]
-    class_list = data["classes"]
-    name_list = [item["name"] for item in class_list]
-    class_idx = data["value"] # what we want to switch the class to
-    origin_crs = "epsg:%d" % (data["extent"]["spatialReference"]["latestWkid"])
-
-    # record points in lat/lon
-    xs, ys = fiona.transform.transform(origin_crs, "epsg:4326", [tlon], [tlat])
-
-    #
-    naip_crs, naip_transform, naip_index = SESSION_HANDLER.get_session(bottle.request.session.id).current_transform
-
-    xs, ys = fiona.transform.transform(origin_crs, naip_crs.to_dict(), [tlon,blon], [tlat,blat])
-
-    tdst_x = xs[0]
-    tdst_y = ys[0]
-    tdst_col, tdst_row = (~naip_transform) * (tdst_x, tdst_y)
-    tdst_row = int(np.floor(tdst_row))
-    tdst_col = int(np.floor(tdst_col))
-
-    bdst_x = xs[1]
-    bdst_y = ys[1]
-    bdst_col, bdst_row = (~naip_transform) * (bdst_x, bdst_y)
-    bdst_row = int(np.floor(bdst_row))
-    bdst_col = int(np.floor(bdst_col))
-
-    tdst_row, bdst_row = min(tdst_row, bdst_row), max(tdst_row, bdst_row)
-    tdst_col, bdst_col = min(tdst_col, bdst_col), max(tdst_col, bdst_col)
-
-    SESSION_HANDLER.get_session(bottle.request.session.id).model.add_sample(tdst_row, bdst_row, tdst_col, bdst_col, class_idx)
-    num_corrected = (bdst_row-tdst_row) * (bdst_col-tdst_col)
-
-    data["message"] = "Successfully submitted correction"
-    data["success"] = True
-    data["count"] = num_corrected
-
-    bottle.response.status = 200
-    return json.dumps(data)
-
-
-def do_undo():
-    ''' Method called for POST `/doUndo`
-    '''
-    bottle.response.content_type = 'application/json'
-    data = bottle.request.json
-    data["remote_address"] = bottle.request.client_ip
-
-    SESSION_HANDLER.get_session(bottle.request.session.id).add_entry(data) # record this interaction
-
-    # Forward the undo command to the backend model
-    success, message, num_undone = SESSION_HANDLER.get_session(bottle.request.session.id).model.undo()
-    data["message"] = message
-    data["success"] = success
-    data["count"] = num_undone
-
-    bottle.response.status = 200
-    return json.dumps(data)
-
-
+@app.post("/predPatch")
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
     print("test")
@@ -274,6 +135,7 @@ def pred_patch():
     return json.dumps(data)
 
 
+@app.post("/predTile")
 def pred_tile():
     ''' Method called for POST `/predTile`'''
     bottle.response.content_type = 'application/json'
@@ -353,6 +215,7 @@ def pred_tile():
     return json.dumps(data)
 
 
+@app.post("/getInput")
 def get_input():
     ''' Method called for POST `/getInput`
     '''
@@ -374,25 +237,6 @@ def get_input():
     data["input_rgb"] = DL.encode_rgb(img_data[:, :, [6, 3, 1]])
     bottle.response.status = 200
     return json.dumps(data)
-
-def whoami():
-    return str(bottle.request.session) + " " + str(bottle.request.session.id)
-
-
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
-def get_landing_page():
-    return bottle.static_file("landing_page.html", root=REPO_DIR + "/")
-
-def get_favicon():
-    return
-
-def get_everything_else(filepath):
-    return bottle.static_file(filepath, root=REPO_DIR + "/")
-
-
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
 
 
 bottle.run(app, host="localhost", port="4446")

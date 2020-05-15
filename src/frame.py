@@ -38,8 +38,8 @@ class Framework():
     def save(self, out_dir, epoch):
         model_path = Path(self.out_dir, f"model_{epoch}.pt")
         optim_path = Path(self.out_dir, f"optim_{epoch}.pt")
-        torch.save(self.model.state_dict, model_path)
-        torch.save(self.optimizer.state_dict, optim_path)
+        torch.save(self.model.state_dict(), model_path)
+        torch.save(self.optimizer.state_dict(), optim_path)
 
     def infer(self, x):
         x = x.permute(0, 3, 1, 2).to(self.device)
@@ -52,6 +52,7 @@ class Framework():
 
     def calculate_metrics(self):
         results = []
+<<<<<<< Updated upstream
         for metrics in self.metrics_opts:
             for k,v in self.metrics_opts.items():
                 yhat_temp = self.y_hat
@@ -61,4 +62,22 @@ class Framework():
                 metric_value = metric_fun(yhat_temp,self.y.to(self.device))
                 results.append(metric_value)
 
+=======
+        for k, v in self.metrics_opts.items():
+            b_metric = []
+            for batch_y, batch_y_hat in zip(self.y, self.y_hat):
+                c_metric = []
+                for channel_wise_y, channel_wise_y_hat in zip(batch_y, batch_y_hat):
+                    y = channel_wise_y.bool().to(self.device)
+                    if "threshold" in v.keys():
+                        y_hat = torch.sigmoid(channel_wise_y_hat) > v["threshold"]
+                    else:
+                        y_hat = channel_wise_y_hat.bool()
+                    y_hat = y_hat.to(self.device)
+                    metric_fun = getattr(src.metrics, k)
+                    metric_value = metric_fun(y_hat, y)
+                    c_metric.append(metric_value)
+                b_metric.append(np.mean(np.asarray(c_metric)))
+            results.append(np.sum(np.asarray(b_metric)))
+>>>>>>> Stashed changes
         return np.array(results)

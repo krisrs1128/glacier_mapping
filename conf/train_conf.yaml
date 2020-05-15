@@ -1,0 +1,24 @@
+model_opts:
+  name: "UnetDropout"
+  args: 
+    inchannels: 3
+    outchannels: 1
+    net_depth: 5
+    dropout: 0.3
+    spatial: True
+optim_opts:
+  name: "Adam"
+  args: 
+    lr: 0.0001
+metrics_opts:
+  IoU:
+    threshold: 0.4
+  pixel_acc:
+    threshold: 0.4
+  precision:
+    threshold: 0.4
+  recall:
+    threshold: 0.4
+reg_opts:
+  l1_reg: 0.0005
+  # l2_reg: 0.001

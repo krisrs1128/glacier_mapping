@@ -38,8 +38,8 @@ class Framework():
     def save(self, out_dir, epoch):
         model_path = Path(self.out_dir, f"model_{epoch}.pt")
         optim_path = Path(self.out_dir, f"optim_{epoch}.pt")
-        torch.save(self.model.state_dict, model_path)
-        torch.save(self.optimizer.state_dict, optim_path)
+        torch.save(self.model.state_dict(), model_path)
+        torch.save(self.optimizer.state_dict(), optim_path)
 
     def infer(self, x):
         x = x.permute(0, 3, 1, 2).to(self.device)

@@ -25,14 +25,14 @@
       "args": {
         "inchannels": 3,
         "outchannels": 1,
-        "net_depth": 2
+        "net_depth": 5
       },
       "inputShape": [
         512,
         512,
         3
       ],
-      "fn": "data/models/model_245.pt",
+      "fn": "data/glaciers_hkh/models/test/model_3.pt",
       "fineTuneLayer": 0
     }
   }

@@ -22,7 +22,7 @@ class PytorchUNet(BackendModel):
             state = torch.load(model_spec["fn"], map_location=torch.device("cpu"))
 
         self.model = Unet(**model_spec["args"])
-        self.model.load_state_dict(state())
+        self.model.load_state_dict(state)
         self.model.eval()
         self.verbose = verbose
 

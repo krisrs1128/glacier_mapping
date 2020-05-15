@@ -19,7 +19,6 @@ import addict
 from torch.utils.tensorboard import SummaryWriter
 import torch
 from pathlib import Path
-<<<<<<< Updated upstream
 
 path = "/scratch/sankarak/data/glaciers/processed/"
 
@@ -216,20 +215,8 @@ if __name__ == "__main__":
         writer.add_scalars('Loss', {'train':epoch_train_loss,
                                     'val':epoch_val_loss}, epoch)
         print("\n")
->>>>>>> Stashed changes
-        
-        if i == 0:
-            metrics=frame.calculate_metrics()
-        else:
-            metrics+=frame.calculate_metrics()
 
-
-    writer.add_scalar('Batch Val Loss', loss/len(val_dataset), epoch)
-    print("val Loss: ", loss / len(val_loader))
-
-<<<<<<< Updated upstream
     for k, item in enumerate(metrics):
         writer.add_scalar('Val Epoch Metrics '+str(k), item/len(val_dataset), epoch)
-=======
+
     writer.close()
->>>>>>> Stashed changes

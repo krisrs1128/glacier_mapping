@@ -32,7 +32,7 @@
         512,
         3
       ],
-      "fn": "../data/models/model_245.pt",
+      "fn": "data/models/model_245.pt",
       "fineTuneLayer": 0
     }
   }

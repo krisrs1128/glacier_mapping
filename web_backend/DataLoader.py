@@ -22,6 +22,7 @@ import shapely.geometry
 REPO_DIR = os.environ["REPO_DIR"]
 
 def extent_to_transformed_geom(extent, dest_crs="EPSG:4269"):
+    print(extent)
     left, right = extent["xmin"], extent["xmax"]
     top, bottom = extent["ymax"], extent["ymin"]
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import shapely
 import shapely.geometry
-import DataLoader as DL
+import web_backend.DataLoader as DL
 import fiona
 import fiona.transform
 import json

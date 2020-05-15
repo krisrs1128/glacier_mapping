@@ -6,6 +6,7 @@ import * as d3s from 'd3-selection';
 import * as d3sm from 'd3-selection-multi';
 import * as f from './funs';
 import dataset from '../../conf/dataset.json';
+import models from '../../conf/models.json';
 import { state, map, backendUrl } from './globals';
 
 // Setup the map
@@ -22,13 +23,14 @@ d3s.select("#root")
   .on("click", predFun);
 
 function predFun() {
-  d3f.json(backendUrl + "/predPatch", {
+  d3f.json(backendUrl + "predPatch", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      "extent": [[0, 1], [2, 3]],
+      "extent": {"xmin": 34, "xmax": 34.2, "ymin": 78, "ymax": 78.2},
       "dataset": dataset,
-      "classes": dataset["classes"]
+      "classes": dataset["classes"],
+      "models": models["benjamins_unet"]
     })
   }).then((data) => console.log(data));
 }

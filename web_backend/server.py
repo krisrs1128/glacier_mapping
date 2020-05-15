@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 # pylint: disable=E1137,E1136,E0110,E1101
-from Datasets import load_dataset, get_area_from_geometry
-from Session import Session, manage_session_folders, SESSION_FOLDER
-from SessionHandler import SessionHandler
+from web_backend.Datasets import load_dataset, get_area_from_geometry
+from web_backend.Session import Session, manage_session_folders, SESSION_FOLDER
 from addict import Dict
-from log import setup_logging, LOGGER
-import DataLoader as DL
-import Utils as utils
+from web_backend.log import setup_logging, LOGGER
+import web_backend.DataLoader as DL
+from web_backend.ServerModelsPytorch import PytorchUNet
+import web_backend.Utils as utils
 import argparse
 import beaker.middleware
 import bottle
@@ -23,13 +23,15 @@ import os
 import rasterio
 import rasterio.warp
 import sys
-import funs
 app = bottle.Bottle()
 
 DATASET = load_dataset()
 REPO_DIR = os.environ["REPO_DIR"]
-SESSION_HANDLER = None
 bottle.TEMPLATE_PATH.insert(0, REPO_DIR + "/views") # let bottle know where we are storing the template files
+
+with open("conf/models.json", "r") as f:
+    models = json.load(f)
+    model = PytorchUNet(models["benjamins_unet"]["model"], 0)
 
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
@@ -99,7 +101,6 @@ def pred_patch():
     print("test")
     bottle.response.content_type = 'application/json'
     data = Dict(bottle.request.json)
-    data["remote_address"] = bottle.request.client_ip
 
     # Inputs
     extent = data.extent
@@ -108,10 +109,11 @@ def pred_patch():
     name_list = [item["name"] for item in data["classes"]]
 
     # Load the input data sources for the given tile
-    print(DATASET)
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
+    print(loaded_query)
 
     #   Run a model on the input data
+    print(model)
     output = model.run(loaded_query["src_img"], extent, False)
     loaded_query["src_img"] = None # save memory
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"

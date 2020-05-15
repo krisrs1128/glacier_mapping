@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from Models import load_models
-from ServerModelsPytorch import PytorchUNet
-from Session import Session
-from log import LOGGER
+from web_backend.Models import load_models
+from web_backend.ServerModelsPytorch import PytorchUNet
+from web_backend.Session import Session
+from web_backend.log import LOGGER
 from queue import Queue
 import socket
 import subprocess

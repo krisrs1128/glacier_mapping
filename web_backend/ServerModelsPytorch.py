@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from ServerModelsAbstract import BackendModel
+from web_backend.ServerModelsAbstract import BackendModel
 from pathlib import Path
 import numpy as np
 import os

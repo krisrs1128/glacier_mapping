@@ -3,15 +3,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class ConvBlock(nn.Module):
-    def __init__(self, inchannels, outchannels, padding=1, dropout=0.0):
+    def __init__(self, inchannels, outchannels, dropout, spatial, padding=1):
         super().__init__()
         self.conv1 = nn.Conv2d(inchannels, outchannels,
                                kernel_size=3, padding=padding)
         self.conv2 = nn.Conv2d(outchannels, outchannels,
                                kernel_size=3, padding=padding)
-        self.dropout = nn.Dropout(p=dropout)
+        if spatial:
+            self.dropout = nn.Dropout2d(p=dropout)
+        else:
+            self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -21,11 +23,11 @@ class ConvBlock(nn.Module):
 
 
 class UpBlock(nn.Module):
-    def __init__(self, inchannels, outchannels):
+    def __init__(self, inchannels, outchannels, dropout, spatial):
         super().__init__()
         self.upconv = nn.ConvTranspose2d(inchannels, outchannels,
                                          kernel_size=2, stride=2)
-        self.conv = ConvBlock(inchannels, outchannels)
+        self.conv = ConvBlock(inchannels, outchannels, dropout, spatial)
 
     def forward(self, x, skips):
         x = self.upconv(x)
@@ -42,24 +44,24 @@ class UnetDropout(nn.Module):
         x = torch.from_numpy(np.random.uniform(0,1,(1,10,512,512))).float()
         model(x)
     """
-    def __init__(self, inchannels, outchannels, net_depth, dropout = 0.2):
+    def __init__(self, inchannels, outchannels, net_depth, dropout = 0.2, spatial = False):
         super().__init__()
         self.downblocks = nn.ModuleList()
         self.upblocks = nn.ModuleList()
         self.pool = nn.MaxPool2d(2, 2)
 
         in_channels = inchannels
-        out_channels = 64
+        out_channels = 8
         for _ in range(net_depth):
-            conv = ConvBlock(in_channels, out_channels, dropout = dropout)
+            conv = ConvBlock(in_channels, out_channels, dropout, spatial)
             self.downblocks.append(conv)
             in_channels, out_channels = out_channels, 2 * out_channels
 
-        self.middle_conv = ConvBlock(in_channels, out_channels, dropout = dropout)
+        self.middle_conv = ConvBlock(in_channels, out_channels, dropout, spatial)
 
         in_channels, out_channels = out_channels, int(out_channels / 2)
         for _ in range(net_depth):
-            upconv = UpBlock(in_channels, out_channels)
+            upconv = UpBlock(in_channels, out_channels, dropout, spatial)
             self.upblocks.append(upconv)
             in_channels, out_channels = out_channels, int(out_channels / 2)
 

@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 """
-Training/Eval Pipeline:
+Training/Validation Pipeline:
     1- Initialize loaders (train & validation)
         1.1-Pass all params onto both loaders
     2- Initialize the framework
-    3- Train Loop 10 epochs
+    3- Train Loop e epochs
         3.1 Pass entire data loader through epoch
         3.2 Iterate over dataloader with specific batch
-    4- Log Epoch level train acc, test acc, train loss, test loss.
+    4- Log Epoch level train loss, test loss, metrices, image prediction each s step.
     5- Save checkpoints after 5 epochs
-
+    6- -n is the required parameter (name_of_the_run)
+    6- models are saved in path/models/name_of_the_run
+    7- tensorboard is saved in path/runs/name_of_the_run
 """
+from addict import Dict
+import argparse
 from pathlib import Path
 from src.data import GlacierDataset
 from src.frame import Framework
@@ -18,64 +22,14 @@ from torch.utils.data import DataLoader, Subset
 import addict
 from torch.utils.tensorboard import SummaryWriter
 import torch
+import torchvision
 from pathlib import Path
-
-path = "/scratch/sankarak/data/glaciers/processed/"
-
-train_dataset = GlacierDataset(Path(path, "train"))
-train_dataset = Subset(train_dataset, range(10))
-
-val_dataset = GlacierDataset(Path(path, "test"))
-val_dataset = Subset(val_dataset, range(10))
-
-
-train_loader = DataLoader(train_dataset,batch_size=5, shuffle=True, num_workers=8)
-val_loader = DataLoader(val_dataset, batch_size=15, shuffle=True, num_workers=3)
-
-model_opts = addict.Dict({"name" : "Unet", "args" : {"inchannels": 3, "outchannels": 1, "net_depth": 2}})
-optim_opts = addict.Dict({"name": "Adam", "args": {"lr": 1e-4}})
-metrics_opts = addict.Dict({"precision": {"threshold": 0.2}, "IoU": {"threshold": 0.4}})
-frame = Framework(model_opts=model_opts, optimizer_opts=optim_opts, metrics_opts=metrics_opts)
-
-
-
-writer = SummaryWriter()
-
-## Train Loop
-epochs=10
-for epoch in range(1, epochs):
-    loss = 0
-    for i, (x,y) in enumerate(train_loader):
-        frame.set_input(x,y)
-        loss += frame.optimize()
-        if i == 0:
-            metrics=frame.calculate_metrics()
-        else:
-            metrics+=frame.calculate_metrics()
-
-    print("Epoch metrics:", metrics/len(train_dataset))
-    print("epoch Loss:", loss / len(train_dataset))
-    writer.add_scalar('Epoch Loss', loss/len(train_dataset), epoch)
-    for k, item in enumerate(metrics):
-        writer.add_scalar('Epoch Metrics '+str(k), item/len(train_dataset), epoch)
-
-
-
-    if epoch%5==0:
-        frame.save(frame.out_dir, epoch)
-
-    ## validation loop
-    loss = 0
-    for i, (x,y) in enumerate(val_loader):
-        y_hat = frame.infer(x.to(frame.device))
-        loss += frame.loss(y_hat,y.to(frame.device)).item()
-=======
-import math 
+import math
 import json
 import yaml
 import numpy as np
 
-np.random.seed(7) 
+np.random.seed(7)
 
 def unnormalize(x, conf, channels=(2,1,0)):
     '''
@@ -84,7 +38,7 @@ def unnormalize(x, conf, channels=(2,1,0)):
         x is tensor of shape B * H * W * C
         conf is path to stats.json
     Output:
-        returns unnormalized tensor B * H * W * C 
+        returns unnormalized tensor B * H * W * C
     '''
     j = json.load(open(conf))
     mean = j['means']
@@ -100,18 +54,18 @@ def get_args():
     parser.add_argument('-n', '--name', type=str, help='Name of run', dest='run_name', required=True)
     parser.add_argument('-e', '--epochs', type=int, default=500, help='Number of epochs (Default 500)', dest='epochs')
     parser.add_argument('-b', '--batch_size', type=int, default=16, help='Batch size (Default 16)', dest='batch_size')
-    parser.add_argument('-s', '--save_every', type=int, default=1, help='Save every n epoch (Default 5)', dest='save_every')
+    parser.add_argument('-s', '--save_every', type=int, default=5, help='Save every n epoch (Default 5)', dest='save_every')
     parser.add_argument('-p', '--path', type=str, default='./data/glaciers_hkh/', help='Root path', dest='path')
     parser.add_argument('-c', '--conf', type=str, default='./conf/train_conf.yaml', help='Configuration File for training', dest='conf')
 
     return parser.parse_args()
 
 if __name__ == "__main__":
-    args = get_args()   
+    args = get_args()
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
 
     filter_channels = (0, 1, 2)
-    # filter_channels = np.array(range(12))
+    filter_channels = np.array(range(12))
 
     train_dataset = GlacierDataset(Path(args.path, "processed/train"))
     val_dataset = GlacierDataset(Path(args.path, "processed/test"))
@@ -196,7 +150,7 @@ if __name__ == "__main__":
             else:
                 metrics+=frame.calculate_metrics()
         epoch_val_loss = loss / len(val_dataset)
-        frame.val_operations(epoch_val_loss)         
+        frame.val_operations(epoch_val_loss)
         # Print and write scalars to tensorboard
         print(f"\nV_Loss: {epoch_val_loss:.5f}", end = " ")
         for i, k in enumerate(conf.metrics_opts):
@@ -215,8 +169,8 @@ if __name__ == "__main__":
         writer.add_scalars('Loss', {'train':epoch_train_loss,
                                     'val':epoch_val_loss}, epoch)
         print("\n")
-
-    for k, item in enumerate(metrics):
-        writer.add_scalar('Val Epoch Metrics '+str(k), item/len(val_dataset), epoch)
+        # Save model
+        if epoch % args.save_every == 0:
+            frame.save(frame.out_dir, epoch)
 
     writer.close()

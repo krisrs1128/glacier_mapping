@@ -195,6 +195,11 @@ class GlacierClassifier():
             max_iter = grid.best_params_['max_iter']
             early_stopping = grid.best_params_[early_stopping]
 
+            # The best parameters are {'alpha': 0.002, 'early_stopping': True, 
+            # 'hidden_layer_sizes': (256, 128, 64), 'learning_rate': 'constant', 
+            # 'learning_rate_init': 0.0025, 'max_iter': 200, 'momentum': 0.5, 
+            # 'solver': 'adam'} with a score of 0.90
+
         if train:
             estimator = MLPClassifier(solver=solver, alpha=alpha, learning_rate=learning_rate,
                                       learning_rate_init=learning_rate_init, momentum=momentum,

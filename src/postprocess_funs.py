@@ -21,6 +21,7 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
     :param filter_channel: The channel to do the filtering on.
     """
     slice_meta = slice_meta[slice_meta[f"mask_mean_{filter_channel}"] > filter_perc]
+    slice_meta = slice_meta[slice_meta["img_mean"] > 0]
     return [{"img": d["img_slice"], "mask": d["mask_slice"]} for _, d in slice_meta.iterrows()]
 
 
@@ -47,7 +48,7 @@ def reshuffle(split_ids, output_dir="output/", n_cpu=3):
         def wrapper(i):
             cur_locs = {}
             for im_type in ["img", "mask"]:
-                print(f"shuffling image {i} - {im_type}")
+                # print(f"shuffling image {i} - {im_type}")
                 source = split_ids[split_type][i][im_type]
                 target = Path(output_dir, split_type, os.path.basename(source)).resolve()
                 copyfile(source, target)
@@ -79,7 +80,7 @@ def generate_stats(image_paths, sample_size, outpath="stats.json"):
     means = np.nanmean(batch, axis=(0,1,2))
     stds = np.nanstd(batch, axis=(0,1,2))
 
-    with open(outpath, "w") as f:
+    with open(outpath, "w+") as f:
         stats = {
             "means": means.tolist(),
             "stds": stds.tolist()

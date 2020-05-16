@@ -29,7 +29,7 @@ def merge_patches(patches, overlap, output_size):
     return result[:output_size[0], :output_size[1]]
 
 
-def infer_tile(img, model, process_conf):
+def infer_tile(img, model, process_conf, window=None):
     """
     infer_tile(tile) -> mask
 
@@ -43,8 +43,8 @@ def infer_tile(img, model, process_conf):
     process_opts = Dict(yaml.load(open(process_conf, "r")))
     slice_opts = process_opts.slice
 
-    # reshape and slice hte input
-    img_np = img.read()
+    # reshape and slice the input
+    img_np = img.read(window=window)
     img_np = np.transpose(img_np, (1, 2, 0))
     size_ = (slice_opts.size[0], slice_opts.size[1], img_np.shape[2])
     img_pad = np.zeros((img_np.shape[0] + size_[0], img_np.shape[1] + size_[1], img_np.shape[2]))
@@ -63,7 +63,7 @@ def infer_tile(img, model, process_conf):
 
             with torch.no_grad():
                 y_hat = model(patch).numpy()
-                predictions[i, j, 0] = np.transpose(y_hat, (1, 2, 0))
+                predictions[i, j, 0] = np.transpose(y_hat, (0, 2, 3, 1))
 
     return merge_patches(predictions, process_opts.slice.overlap, img_np.shape)
 

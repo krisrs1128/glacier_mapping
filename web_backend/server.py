@@ -98,30 +98,26 @@ def retrain_model():
 @app.post("/predPatch")
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
-    print("test")
     bottle.response.content_type = 'application/json'
     data = Dict(bottle.request.json)
 
     # Inputs
     extent = data.extent
     dataset = data.dataset
-    print(data)
     name_list = [item["name"] for item in data["classes"]]
 
     # Load the input data sources for the given tile
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
-    print(loaded_query)
 
     #   Run a model on the input data
-    print(model)
-    output = model.run(loaded_query["src_img"], extent, False)
+    output = model.run(loaded_query["src_img"], loaded_query["window"])
     loaded_query["src_img"] = None # save memory
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
     assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
 
     #   Warp output to EPSG:3857
-    output, output_bounds = DL.warp_data_to_3857(
-        output,
+    output, output_bounds = DL.warp_data(
+        output.to(np.float32),
         loaded_query["src_crs"],
         loaded_query["src_transform"],
         loaded_query["src_bounds"]

@@ -27,7 +27,7 @@ function predFun() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      "extent": {"xmin": 34, "xmax": 34.2, "ymin": 78, "ymax": 78.2},
+      "extent": {"xmin": 80.5, "xmax": 80.8, "ymin": 26.7, "ymax": 27, "crs": 4326},
       "dataset": dataset,
       "classes": dataset["classes"],
       "models": models["benjamins_unet"]

@@ -4,7 +4,7 @@ from pathlib import Path
 from rasterio.vrt import WarpedVRT
 from rasterio.windows import from_bounds
 import base64
-# import cv2
+import cv2
 import fiona
 import fiona.transform
 import numpy as np

@@ -117,7 +117,7 @@ def pred_patch():
 
     #   Warp output to EPSG:3857
     output, output_bounds = DL.warp_data(
-        output.to(np.float32),
+        output.astype(np.float32),
         loaded_query["src_crs"],
         loaded_query["src_transform"],
         loaded_query["src_bounds"]

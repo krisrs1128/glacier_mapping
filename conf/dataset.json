@@ -14,8 +14,8 @@
     "initialZoom": 11,
     "url": "data/tiles/hkh/{z}/{x}/{-y}.png",
     "initialLocation": [
-      34.0322,
-      78.165
+      26.6,
+      80.5
     ],
     "args": {
       "attribution": "Georeferenced Image",

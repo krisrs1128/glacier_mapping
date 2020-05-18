@@ -10,7 +10,7 @@ import models from '../../conf/models.json';
 import { state, map, backendUrl } from './globals';
 
 // Setup the map
-f.initializeMap("#root");
+f.initializeMap();
 f.addButtons("#controls")
 map.on("zoom", f.redraw)
 

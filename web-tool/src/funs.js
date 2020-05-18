@@ -32,7 +32,66 @@ export function initializeMap() {
     .data(d3a.range(10)).enter()
     .append("g")
     .attr("id", (d) => "polygon-" + (d - 1));
+
+  map.on("keydown", function(event) {
+    if (event.originalEvent.key == "Shift") {
+      predictionExtent(event.latlng, "add");
+    }
+  });
+
 }
+
+function predictionExtent(latlng) {
+  let box = L.polygon([[0, 0], [0, 0]], {"id": "predictionBox"});
+  box.addTo(map);
+  map.addEventListener("mousemove", extentMoved(box));
+  map.addEventListener("keydown", removePatch(box));
+  map.addEventListener("click", predictPatch(box));
+}
+
+function extentMoved(box) {
+  return function(event) {
+    let box_coords = getPolyAround(event.latlng, 200);
+    box.setLatLngs(box_coords);
+  };
+}
+
+function removePatch(box) {
+  return function(event) {
+    if (event.originalEvent.key == "Escape") {
+      box.remove();
+    }
+  };
+}
+
+function predictPatch(box) {
+  return function(event) {
+    console.log(box);
+  };
+}
+
+function getPolyAround(latlng, radius){
+  // We convert the input lat/lon into the EPSG3857 projection, define our
+  // square, then re-convert to lat/lon
+  let latlngProjected = L.CRS.EPSG3857.project(latlng),
+      x = latlngProjected.x,
+      y = latlngProjected.y;
+
+  let top = Math.round(y + radius/2),
+      bottom = Math.round(y - radius/2),
+      left = Math.round(x - radius/2),
+      right = Math.round(x + radius/2);
+
+  // left / right are "x" points while top/bottom are the "y" points
+  let topleft = L.CRS.EPSG3857.unproject(L.point(left, top));
+  let bottomright = L.CRS.EPSG3857.unproject(L.point(right, bottom));
+
+  return [[topleft.lat, topleft.lng],
+          [topleft.lat, bottomright.lng],
+          [bottomright.lat, bottomright.lng],
+          [bottomright.lat, topleft.lng]];
+}
+
 
 export function addButtons(parent_id) {
   d3s.select(parent_id)

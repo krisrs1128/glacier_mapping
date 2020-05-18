@@ -29,11 +29,11 @@ def merge_patches(patches, overlap, output_size):
     return result[:output_size[0], :output_size[1]]
 
 
-def infer_tile(img, model, process_conf, window=None):
+def infer_tile(img, model, process_conf):
     """
     infer_tile(tile) -> mask
 
-    :param img: A raster tile on which to do inference.
+    :param img: A (unprocessed) numpy array on which to do inference.
     :param model: A pytorch model on which to perform inference. We assume it
       can accept images of size specified in process_conf.slice.size.
     :param process_conf: The path to a yaml file giving the postprocessing
@@ -42,30 +42,37 @@ def infer_tile(img, model, process_conf, window=None):
     """
     process_opts = Dict(yaml.load(open(process_conf, "r")))
     slice_opts = process_opts.slice
+    channels = process_opts.process_funs.extract_channel.img_channels
 
     # reshape and slice the input
-    img_np = img.read(window=window)
-    img_np = np.transpose(img_np, (1, 2, 0))
-    size_ = (slice_opts.size[0], slice_opts.size[1], img_np.shape[2])
-    img_pad = np.zeros((img_np.shape[0] + size_[0], img_np.shape[1] + size_[1], img_np.shape[2]))
+    img = np.transpose(img, (1, 2, 0))
+    size_ = (slice_opts.size[0], slice_opts.size[1], img.shape[2])
+    img_pad = np.zeros((img.shape[0] + size_[0], img.shape[1] + size_[1], img.shape[2]))
     slice_imgs = view_as_windows(img_pad, size_, step=size_[0] - slice_opts.overlap)
 
     I, J, _, _, _, _ = slice_imgs.shape
     predictions = np.zeros((I, J, 1, size_[0], size_[1], 1))
+    patches = np.zeros((I, J, 1, size_[0], size_[1], len(channels)))
+
     for i in range(I):
         for j in range(J):
             patch, _ = postprocess_tile(
                 slice_imgs[i, j, 0],
                 process_opts.process_funs
             )
-            patch = np.transpose(patch, (2, 0, 1))[None, :, :, :]
-            patch = torch.from_numpy(patch).float()
+
+            patches[i, j, :] = patch
+            patch = np.transpose(patch, (2, 0, 1))
+            patch = torch.from_numpy(patch).float().unsqueeze(0)
 
             with torch.no_grad():
                 y_hat = model(patch).numpy()
                 predictions[i, j, 0] = np.transpose(y_hat, (0, 2, 3, 1))
 
-    return merge_patches(predictions, process_opts.slice.overlap, img_np.shape)
+    x =  merge_patches(patches, process_opts.slice.overlap, img.shape)
+    y_hat =  merge_patches(predictions, process_opts.slice.overlap, img.shape)
+    return {"x": x, "y": y_hat}
+
 
 def get_hist(img, mask):
     """

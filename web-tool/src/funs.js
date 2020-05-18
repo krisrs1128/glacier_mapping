@@ -8,6 +8,8 @@ import 'leaflet/dist/leaflet.css';
 import { state, map, backendUrl } from './globals';
 import * as d3g from 'd3-geo';
 import layerInfo from '../../conf/layerInfo';
+import dataset from '../../conf/dataset.json';
+import models from '../../conf/models.json';
 import './map.css';
 
 
@@ -46,7 +48,7 @@ function predictionExtent(latlng) {
   box.addTo(map);
   map.addEventListener("mousemove", extentMoved(box));
   map.addEventListener("keydown", removePatch(box));
-  map.addEventListener("click", predictPatch(box));
+  map.addEventListener("click", predPatch(box));
 }
 
 function extentMoved(box) {
@@ -64,10 +66,33 @@ function removePatch(box) {
   };
 }
 
-function predictPatch(box) {
+function predPatch(box) {
   return function(event) {
-    console.log(box);
+    const coords = box.getBounds();
+
+    d3f.json(backendUrl + "predPatch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        extent: {
+          xmin: coords._southWest.lng,
+          xmax: coords._northEast.lng,
+          ymin: coords._southWest.lat,
+          ymax: coords._northEast.lat,
+          crs: 3857
+        },
+        dataset: dataset,
+        classes: dataset["classes"],
+        models: models["benjamins_unet"]
+      })
+    }).then((data) => displayPred(data));
   };
+}
+
+function displayPred(data) {
+  let coords = [[data.extent.xmin, data.extent.ymin],
+                [data.extent.xmax, data.extent.ymax]];
+  L.imageOverlay(data["output_soft"], coords).addTo(map);
 }
 
 function getPolyAround(latlng, radius){

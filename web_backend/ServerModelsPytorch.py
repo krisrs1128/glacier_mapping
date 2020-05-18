@@ -27,9 +27,8 @@ class PytorchUNet(BackendModel):
         self.model.eval()
         self.verbose = verbose
 
-    def run(self, img, window):
-        output = infer_tile(img, self.model, self.process_conf, window)
-        return output
+    def run(self, img):
+        return infer_tile(img, self.model, self.process_conf)
 
     def run_model_on_batch(self, batch_data, batch_size=32, predict_central_pixel_only=False):
         """ Expects batch_data to have shape (none, 240, 240, 4) and have values in the [0, 255] range.

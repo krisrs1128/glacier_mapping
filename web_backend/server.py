@@ -110,8 +110,7 @@ def pred_patch():
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
 
     #   Run a model on the input data
-    output = model.run(loaded_query["src_img"], loaded_query["window"])
-    loaded_query["src_img"] = None # save memory
+    output = model.run(loaded_query["src_img"])
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
     assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
 
@@ -128,6 +127,7 @@ def pred_patch():
     #   Convert images to base64 and return
     # ------------------------------------------------------
     img_soft = np.round(utils.class_prediction_to_img(output)).astype(np.uint8)
+    data["src_img"] = loaded_query["src_img"]
     data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
     return json.dumps(data)

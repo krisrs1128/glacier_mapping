@@ -13,6 +13,7 @@ import pathlib
 import rasterio
 import re
 import warnings
+
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
@@ -36,6 +37,8 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
 
     cols = ["id", "img", "mask", "img_width", "img_height", "mask_width", "mask_height"]
     metadata = pd.DataFrame({k: [] for k in cols})
+    if not os.path.exists(out_dir):
+      os.makedirs(out_dir)
     metadata_path = pathlib.Path(out_dir, "metadata.csv")
     metadata.to_csv(metadata_path, index=False)
 
@@ -43,7 +46,18 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
         print(f"working on image {k} / {len(img_paths)}")
         img, shps = rasterio.open(img_paths[k]), []
         for path in shps_paths[k]:
-            shps.append(gpd.read_file(path).to_crs(img.meta["crs"].data))
+            gdf = gpd.read_file(path)
+            gdf_crs = rasterio.crs.CRS(gdf.crs)
+            if gdf_crs != img.meta["crs"]:
+                gdf = gdf.to_crs(img.meta["crs"].data)
+            shps.append(gdf)
+
+        if rasterio.crs.CRS(img.meta["crs"].data) == rasterio.crs.CRS(shps[0].crs) == rasterio.crs.CRS(shps[1].crs):
+            pass 
+        else:
+            print("\nImageCRS: ",rasterio.crs.CRS(img.meta["crs"].data)) 
+            print("\nGlaciersCRS: ",rasterio.crs.CRS(shps[0].crs))
+            print("\nBordersCRS: ",rasterio.crs.CRS(shps[1].crs))
 
         # build mask over tiff's extent, and save
         shps = clip_shapefile(img.bounds, img.meta, shps)
@@ -52,7 +66,7 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
         np.save(str(out_path), mask)
         pd.DataFrame({
             "img_path": img_paths[k],
-            "mask": out_path + ".npy",
+            "mask": str(out_path) + ".npy",
             "width": img.meta["width"],
             "height": img.meta["height"],
             "mask_width": mask.shape[1],
@@ -76,9 +90,10 @@ def generate_mask(img_meta, shps):
     """
     result = np.zeros((img_meta["height"], img_meta["width"], len(shps)))
     for k, shp in enumerate(shps):
-        if img_meta["crs"].to_string() != shp.crs.to_string():
+        if rasterio.crs.CRS(img_meta["crs"]) != rasterio.crs.CRS(shp.crs):
             raise ValueError("Coordinate reference systems do not agree")
         result[:, :, k] = channel_mask(img_meta, shp)
+    result[:,:,0] = np.multiply(result[:,:,0], result[:,:,1])
     return result
 
 
@@ -128,10 +143,9 @@ def clip_shapefile(img_bounds, img_meta, shps):
     """
     bbox = box(*img_bounds)
     bbox_poly = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=img_meta["crs"].data)
-
     result = []
     for shp in shps:
-        if img_meta["crs"].to_string() != shp.crs.to_string():
+        if rasterio.crs.CRS(img_meta["crs"]) != rasterio.crs.CRS(shp.crs):
             raise ValueError("Coordinate reference systems do not agree")
 
         result.append(shp.loc[shp.intersects(bbox_poly["geometry"][0])])
@@ -185,7 +199,6 @@ if __name__ == "__main__":
     paths_df = path_pairs_landsat(img_dir)
     img_paths = paths_df["img"].values
     shps_paths = [[p["label"], p["border"]] for _, p in paths_df.iterrows()]
-
-    out_dir = "/scratch/sankarak/data/glaciers_azure/masks"
-    generate_masks(img_paths, shps_paths, out_dir=out_dir)
-    paths_df.to_csv(output_dir + "/paths.csv", index=False)
+    out_dir = img_dir+"masks"
+    generate_masks(img_paths, shps_paths, out_dir=out_dir, n_jobs=1)
+    paths_df.to_csv(out_dir + "/paths.csv", index=False)

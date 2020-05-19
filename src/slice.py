@@ -82,8 +82,10 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
         # update metadata
         stats = {"img_slice": str(img_slice_path), "mask_slice": str(mask_slice_path)}
+        img_slice_mean = np.nan_to_num(img_slices[k].mean())
         mask_mean = mask_slices[k].mean(axis=(0, 1))
         stats.update({f"mask_mean_{i}": v for i, v in enumerate(mask_mean)})
+        stats.update({f"img_mean": img_slice_mean})
         slice_stats.append(stats)
 
     slice_stats = pd.DataFrame(slice_stats)
@@ -92,11 +94,11 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
-    default_root = os.environ["SCRATCH"] + "/data/glaciers/"
+    default_root = "./data/glaciers_hkh/"
     parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default=default_root + "masks/metadata.csv")
     parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=default_root + "slices/")
     parser.add_argument("-s", "--start_line", type=int, default=0, help="start line in the metadata, from which to start processing")
-    parser.add_argument("-e", "--end_line", type=int, default=np.inf, help="end line in the metadata, at which to stop processing")
+    parser.add_argument("-e", "--end_line", type=int, default=100, help="end line in the metadata, at which to stop processing")
     parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="slice")
     parser.add_argument("-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=5)
     args = parser.parse_args()

@@ -94,11 +94,11 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
-    default_root = os.environ["SCRATCH"] + "/data/glaciers/"
+    default_root = "./data/glaciers_hkh/"
     parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default=default_root + "masks/metadata.csv")
     parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=default_root + "slices/")
     parser.add_argument("-s", "--start_line", type=int, default=0, help="start line in the metadata, from which to start processing")
-    parser.add_argument("-e", "--end_line", type=int, default=np.inf, help="end line in the metadata, at which to stop processing")
+    parser.add_argument("-e", "--end_line", type=int, default=100, help="end line in the metadata, at which to stop processing")
     parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="slice")
     parser.add_argument("-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=5)
     args = parser.parse_args()
@@ -117,5 +117,5 @@ if __name__ == "__main__":
     para = Parallel(n_jobs=args.n_cpu)
     metadata = para(delayed(wrapper)(k) for k in range(len(paths)))
     metadata = pd.concat(metadata, axis=0)
-    out_path = Path(args.output_dir, f"slices_subset.geojson")
+    out_path = Path(args.output_dir, f"slices_{args.start_line}-{args.end_line}.geojson")
     metadata.to_file(out_path, index=False, driver="GeoJSON")

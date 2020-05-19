@@ -32,14 +32,14 @@ class UpBlock(nn.Module):
 
 
 class Unet(nn.Module):
-    def __init__(self, inchannels, outchannels, net_depth):
+    def __init__(self, inchannels, outchannels, net_depth, channel_layer=16):
         super().__init__()
         self.downblocks = nn.ModuleList()
         self.upblocks = nn.ModuleList()
         self.pool = nn.MaxPool2d(2, 2)
 
         in_channels = inchannels
-        out_channels = 8
+        out_channels = channel_layer
         for _ in range(net_depth):
             conv = ConvBlock(in_channels, out_channels)
             self.downblocks.append(conv)

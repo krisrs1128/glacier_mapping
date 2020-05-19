@@ -195,10 +195,11 @@ class GlacierClassifier():
             max_iter = grid.best_params_['max_iter']
             early_stopping = grid.best_params_[early_stopping]
 
-            # The best parameters are {'alpha': 0.002, 'early_stopping': True, 
+            # The best parameters are {'alpha': 1e-06, 'early_stopping': True, 
             # 'hidden_layer_sizes': (256, 128, 64), 'learning_rate': 'constant', 
             # 'learning_rate_init': 0.0025, 'max_iter': 200, 'momentum': 0.5, 
-            # 'solver': 'adam'} with a score of 0.90
+            # 'solver': 'adam'} with a score of 0.85
+
 
         if train:
             estimator = MLPClassifier(solver=solver, alpha=alpha, learning_rate=learning_rate,
@@ -280,6 +281,8 @@ if __name__ == '__main__':
             class_names = ["Clean","Debris","Background"]
             clf = tree.DecisionTreeClassifier(random_state=42, max_depth=10000)
             fig = clf.fit(dataset.trainX,dataset.trainY)
+            outputs = estimator.predict(dataset.testX)
+            print(metrics.precision_recall_fscore_support(dataset.testY, outputs, average='weighted'))
             # tree.plot_tree(fig, filled=True, rounded=True, label="none", 
             #                 feature_names=feature_names, class_names=class_names, impurity=False)
             # plt.savefig("./DecisionTree.png", dpi=150)

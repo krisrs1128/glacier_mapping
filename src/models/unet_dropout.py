@@ -16,9 +16,8 @@ class ConvBlock(nn.Module):
             self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = self.conv2(x)
-        x = F.relu(self.dropout(x))
+        x = F.relu(self.dropout(self.conv1(x)))
+        x = F.relu(self.conv2(x))
         return x
 
 
@@ -44,14 +43,14 @@ class UnetDropout(nn.Module):
         x = torch.from_numpy(np.random.uniform(0,1,(1,10,512,512))).float()
         model(x)
     """
-    def __init__(self, inchannels, outchannels, net_depth, dropout = 0.2, spatial = False):
+    def __init__(self, inchannels, outchannels, net_depth, dropout = 0.2, spatial = False, channel_layer = 16):
         super().__init__()
         self.downblocks = nn.ModuleList()
         self.upblocks = nn.ModuleList()
         self.pool = nn.MaxPool2d(2, 2)
 
         in_channels = inchannels
-        out_channels = 8
+        out_channels = channel_layer
         for _ in range(net_depth):
             conv = ConvBlock(in_channels, out_channels, dropout, spatial)
             self.downblocks.append(conv)

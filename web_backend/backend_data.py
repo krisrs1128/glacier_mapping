@@ -36,8 +36,8 @@ def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     gdal.BuildVRT(output_path, inputs_str, options=vrt_opts)
 
 
-def tiles(input_vrt, output_dir, zoom_levels="15-17", channels=[2, 4, 5]):
-    gdal2tiles.generate_tiles(input_vrt, output_dir, zoom="15-17")
+def tiles(input_vrt, output_dir, zoom_levels="15-17"):
+    gdal2tiles.generate_tiles(input_vrt, output_dir, zoom=zoom_levels)
 
 
 if __name__ == "__main__":

@@ -45,8 +45,6 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
     def wrapper(k):
         print(f"working on image {k} / {len(img_paths)}")
         img, shps = rasterio.open(img_paths[k]), []
-        
-        # print(shps_paths)
         for path in shps_paths[k]:
             gdf = gpd.read_file(path)
             gdf_crs = rasterio.crs.CRS(gdf.crs)

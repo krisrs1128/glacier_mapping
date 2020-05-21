@@ -25,7 +25,8 @@
       "args": {
         "inchannels": 3,
         "outchannels": 1,
-        "net_depth": 5
+        "net_depth": 5,
+        "channel_layer": 8
       },
       "inputShape": [
         512,

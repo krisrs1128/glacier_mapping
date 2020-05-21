@@ -5,14 +5,12 @@ import * as d3f from 'd3-fetch';
 import * as d3s from 'd3-selection';
 import * as d3sm from 'd3-selection-multi';
 import * as f from './funs';
-import dataset from '../../conf/dataset.json';
-import models from '../../conf/models.json';
-import { state, map, backendUrl } from './globals';
+import map from './globals';
 
 // Setup the map
 f.initializeMap();
-f.addButtons("#controls")
-map.on("zoom", f.redraw)
+f.addButtons("#controls");
+map.on("zoom", f.redraw);
 
 // This is needed for Hot Module Replacement
 if (module.hot) {

@@ -13,7 +13,7 @@ import pathlib
 from osgeo import gdal
 
 def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
-    inputs = pathlib.Path(input_dir).glob(""**/*.tif*"")
+    inputs = pathlib.Path(input_dir).glob("**/*.tif*")
     vrt_opts = gdal.BuildVRTOptions(**kwargs)
     gdal.BuildVRT(output_path, inputs, options=vrt_opts)
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Merge to a VRT")
     parser.add_argument("-d", "--input_dir", type=str)
     parser.add_argument("-o", "--output_dir", type=str, default="./")
-    parser.add_argument("-o", "--output_name", type=str, default="output.vrt")
+    parser.add_argument("-n", "--output_name", type=str, default="output.vrt")
     parser.add_argument("-t", "--tile", default=False)
     args = parser.parse_args()
 

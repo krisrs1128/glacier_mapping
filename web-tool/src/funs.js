@@ -51,9 +51,17 @@ function predictionExtent(latlng) {
   map.addEventListener("click", predPatch(box));
 }
 
+/*
+ * Associate a Listener with an Extent
+ *
+ * We need a function factory because we need to associate our mousemove with a
+ * function that has a single 'event' argument. However, that event needs to
+ * refer to a previously instantiated extent / box. So, we return a function
+ * that has access to the box in its scope.
+ */
 function extentMoved(box) {
   return function(event) {
-    let box_coords = getPolyAround(event.latlng, 200);
+    let box_coords = getPolyAround(event.latlng, 10000);
     box.setLatLngs(box_coords);
   };
 }

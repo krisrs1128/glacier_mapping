@@ -61,7 +61,7 @@ function predictionExtent(latlng) {
  */
 function extentMoved(box) {
   return function(event) {
-    let box_coords = getPolyAround(event.latlng, 1000);
+    let box_coords = getPolyAround(event.latlng, 10000);
     box.setLatLngs(box_coords);
   };
 }

@@ -101,22 +101,16 @@ def pred_patch():
     bottle.response.content_type = 'application/json'
     data = Dict(bottle.request.json)
 
-    # Inputs
+    # Load the input data sources for the given tile
     extent = data.extent
     dataset = data.dataset
     name_list = [item["name"] for item in data["classes"]]
-
-    # Load the input data sources for the given tile
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
 
-    #   Run a model on the input data
+    # Run a model on the input data adn warp to EPSG:3857
     output = model.run(loaded_query["src_img"])
-    assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
-    assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
-
-    #   Warp output to EPSG:3857
-    output, output_bounds = DL.warp_data(
-        output.astype(np.float32),
+    y_hat, output_bounds = DL.warp_data(
+        output["y"].astype(np.float32),
         loaded_query["src_crs"],
         loaded_query["src_transform"],
         loaded_query["src_bounds"]
@@ -126,8 +120,8 @@ def pred_patch():
     # Step 5
     #   Convert images to base64 and return
     # ------------------------------------------------------
-    img_soft = np.round(utils.class_prediction_to_img(output)).astype(np.uint8)
-    data["src_img"] = loaded_query["src_img"]
+    img_soft = np.round(utils.class_prediction_to_img(y_hat))
+    data["src_img"] = DL.encode_rgb(np.float32(output["x"]))
     data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
     return json.dumps(data)

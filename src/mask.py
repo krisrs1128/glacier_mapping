@@ -53,9 +53,9 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
             shps.append(gdf)
 
         if rasterio.crs.CRS(img.meta["crs"].data) == rasterio.crs.CRS(shps[0].crs) == rasterio.crs.CRS(shps[1].crs):
-            pass 
+            pass
         else:
-            print("\nImageCRS: ",rasterio.crs.CRS(img.meta["crs"].data)) 
+            print("\nImageCRS: ",rasterio.crs.CRS(img.meta["crs"].data))
             print("\nGlaciersCRS: ",rasterio.crs.CRS(shps[0].crs))
             print("\nBordersCRS: ",rasterio.crs.CRS(shps[1].crs))
 

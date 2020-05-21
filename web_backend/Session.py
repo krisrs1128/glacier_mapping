@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from Utils import get_random_string, AtomicCounter
-from log import LOGGER
+from web_backend.Utils import get_random_string, AtomicCounter
+from web_backend.log import LOGGER
 import base64
 import collections
 import datetime

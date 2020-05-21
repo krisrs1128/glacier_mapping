@@ -4,7 +4,7 @@ from pathlib import Path
 from rasterio.vrt import WarpedVRT
 from rasterio.windows import from_bounds
 import base64
-# import cv2
+import cv2
 import fiona
 import fiona.transform
 import numpy as np
@@ -21,7 +21,7 @@ import shapely.geometry
 # ------------------------------------------------------
 REPO_DIR = os.environ["REPO_DIR"]
 
-def extent_to_transformed_geom(extent, dest_crs="EPSG:4269"):
+def extent_to_transformed_geom(extent, dest_crs):
     left, right = extent["xmin"], extent["xmax"]
     top, bottom = extent["ymax"], extent["ymin"]
 
@@ -30,8 +30,11 @@ def extent_to_transformed_geom(extent, dest_crs="EPSG:4269"):
         "coordinates": [[(left, top), (right, top), (right, bottom), (left, bottom), (left, top)]]
     }
 
-    src_crs = "EPSG:" + str(extent["spatialReference"]["latestWkid"])
-    return fiona.transform.transform_geom(src_crs, dest_crs, geom)
+    return fiona.transform.transform_geom(
+        f"EPSG:{extent['crs']}",
+        dest_crs,
+        geom
+    )
 
 
 def warp_data(src_img, src_crs, src_transform, src_bounds, dest_epsg=3857, resolution=10):
@@ -196,11 +199,9 @@ class DataLoaderGlacier(DataLoader):
             top=extent.bounds[3],
             transform=source_img.transform
         )
-        img_data = WarpedVRT(source_img).read(window=window)
-        img_data = np.nan_to_num(img_data)
 
         return {
-            "src_img": np.rollaxis(img_data, 0, 3),
+            "src_img": source_img.read(window=window),
             "src_crs": img_crs,
             "src_bounds": bounds,
             "src_transform": source_img.transform,

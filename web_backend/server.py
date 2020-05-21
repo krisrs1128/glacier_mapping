@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 # pylint: disable=E1137,E1136,E0110,E1101
-from Datasets import load_dataset, get_area_from_geometry
-from Session import Session, manage_session_folders, SESSION_FOLDER
-from SessionHandler import SessionHandler
+from web_backend.Datasets import load_dataset, get_area_from_geometry
+from web_backend.Session import Session, manage_session_folders, SESSION_FOLDER
 from addict import Dict
-from log import setup_logging, LOGGER
-import DataLoader as DL
-import Utils as utils
+from web_backend.log import setup_logging, LOGGER
+import web_backend.DataLoader as DL
+from web_backend.ServerModelsPytorch import PytorchUNet
+import web_backend.Utils as utils
 import argparse
 import beaker.middleware
 import bottle
@@ -23,13 +23,15 @@ import os
 import rasterio
 import rasterio.warp
 import sys
-import funs
 app = bottle.Bottle()
 
 DATASET = load_dataset()
 REPO_DIR = os.environ["REPO_DIR"]
-SESSION_HANDLER = None
 bottle.TEMPLATE_PATH.insert(0, REPO_DIR + "/views") # let bottle know where we are storing the template files
+
+with open("conf/models.json", "r") as f:
+    models = json.load(f)
+    model = PytorchUNet(models["benjamins_unet"]["model"], 0)
 
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
@@ -96,30 +98,25 @@ def retrain_model():
 @app.post("/predPatch")
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
-    print("test")
     bottle.response.content_type = 'application/json'
     data = Dict(bottle.request.json)
-    data["remote_address"] = bottle.request.client_ip
 
     # Inputs
     extent = data.extent
     dataset = data.dataset
-    print(data)
     name_list = [item["name"] for item in data["classes"]]
 
     # Load the input data sources for the given tile
-    print(DATASET)
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
 
     #   Run a model on the input data
-    output = model.run(loaded_query["src_img"], extent, False)
-    loaded_query["src_img"] = None # save memory
+    output = model.run(loaded_query["src_img"])
     assert len(output.shape) == 3, "The model function should return an image shaped as (height, width, num_classes)"
     assert (output.shape[2] < output.shape[0] and output.shape[2] < output.shape[1]), "The model function should return an image shaped as (height, width, num_classes)" # assume that num channels is less than img dimensions
 
     #   Warp output to EPSG:3857
-    output, output_bounds = DL.warp_data_to_3857(
-        output,
+    output, output_bounds = DL.warp_data(
+        output.astype(np.float32),
         loaded_query["src_crs"],
         loaded_query["src_transform"],
         loaded_query["src_bounds"]
@@ -130,6 +127,7 @@ def pred_patch():
     #   Convert images to base64 and return
     # ------------------------------------------------------
     img_soft = np.round(utils.class_prediction_to_img(output)).astype(np.uint8)
+    data["src_img"] = loaded_query["src_img"]
     data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
     return json.dumps(data)

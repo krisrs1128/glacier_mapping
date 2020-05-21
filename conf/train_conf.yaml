@@ -1,7 +1,7 @@
 model_opts:
   name: "UnetDropout"
   args: 
-    inchannels: 12
+    inchannels: 3
     outchannels: 1
     net_depth: 5
     dropout: 0.3

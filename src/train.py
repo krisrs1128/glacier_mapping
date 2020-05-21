@@ -24,12 +24,12 @@ from torch.utils.tensorboard import SummaryWriter
 import torch
 import torchvision
 from pathlib import Path
-import math 
+import math
 import json
 import yaml
 import numpy as np
 
-np.random.seed(7) 
+np.random.seed(7)
 
 def unnormalize(x, conf, channels=(2,1,0)):
     '''
@@ -38,7 +38,7 @@ def unnormalize(x, conf, channels=(2,1,0)):
         x is tensor of shape B * H * W * C
         conf is path to stats.json
     Output:
-        returns unnormalized tensor B * H * W * C 
+        returns unnormalized tensor B * H * W * C
     '''
     j = json.load(open(conf))
     mean = j['means']
@@ -61,10 +61,10 @@ def get_args():
     return parser.parse_args()
 
 if __name__ == "__main__":
-    args = get_args()   
+    args = get_args()
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
 
-    # filter_channels = (5,4,2)
+    filter_channels = (0, 1, 2)
     filter_channels = np.array(range(12))
 
     train_dataset = GlacierDataset(Path(args.path, "processed/train"))
@@ -150,7 +150,7 @@ if __name__ == "__main__":
             else:
                 metrics+=frame.calculate_metrics()
         epoch_val_loss = loss / len(val_dataset)
-        frame.val_operations(epoch_val_loss)         
+        frame.val_operations(epoch_val_loss)
         # Print and write scalars to tensorboard
         print(f"\nV_Loss: {epoch_val_loss:.5f}", end = " ")
         for i, k in enumerate(conf.metrics_opts):
@@ -169,7 +169,6 @@ if __name__ == "__main__":
         writer.add_scalars('Loss', {'train':epoch_train_loss,
                                     'val':epoch_val_loss}, epoch)
         print("\n")
-        
         # Save model
         if epoch % args.save_every == 0:
             frame.save(frame.out_dir, epoch)

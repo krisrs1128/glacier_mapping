@@ -18,8 +18,11 @@ def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     gdal.BuildVRT(output_path, inputs, options=vrt_opts)
 
 
-def tiles(input_file, output_dir, zoom_levels="15-17"):
-    gdal2tiles.generate_tiles(input_file, output_dir, zoom="15-17")
+def tiles(input_vrt, output_dir, zoom_levels="10"):
+    path = pathlib.Path(input_vrt)
+    intermediate = f"{path.parent}/{path.resolve().stem}-byte.vrt"
+    subprocess.call(["gdal_translate", "-ot", "Byte", input_vrt, f'{intermediate}'])
+    gdal2tiles.generate_tiles(f"{intermediate}", output_dir, zoom=zoom_levels, verbose=True, tile_size=1056)
 
 
 if __name__ == "__main__":

@@ -7,21 +7,18 @@
   },
   "dataLayer": {
     "type": "GLACIER",
-    "path": "data/tiles/hkh_10_channel.vrt",
+    "path": "../data/tiles/hkh_10_channel.vrt",
     "padding": 1100
   },
   "basemapLayer": {
-    "initialZoom": 11,
-    "url": "data/tiles/hkh/{z}/{x}/{-y}.png",
-    "initialLocation": [
-      34.0322,
-      78.165
-    ],
+    "initialZoom": 17,
+    "url": "../data/tiles/17/{z}/{x}/{-y}.png",
+    "initialLocation": [27.0, 81.0],
     "args": {
       "attribution": "Georeferenced Image",
-      "maxNativeZoom": 13,
-      "maxZoom": 14,
-      "minZoom": 8
+      "maxNativeZoom": 17,
+      "maxZoom": 17,
+      "minZoom": 16
     },
     "bounds": null
   },

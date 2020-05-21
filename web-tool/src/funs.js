@@ -8,6 +8,8 @@ import 'leaflet/dist/leaflet.css';
 import { state, map, backendUrl } from './globals';
 import * as d3g from 'd3-geo';
 import layerInfo from '../../conf/layerInfo';
+import dataset from '../../conf/dataset.json';
+import models from '../../conf/models.json';
 import './map.css';
 
 
@@ -32,7 +34,89 @@ export function initializeMap() {
     .data(d3a.range(10)).enter()
     .append("g")
     .attr("id", (d) => "polygon-" + (d - 1));
+
+  map.on("keydown", function(event) {
+    if (event.originalEvent.key == "Shift") {
+      predictionExtent(event.latlng, "add");
+    }
+  });
+
 }
+
+function predictionExtent(latlng) {
+  let box = L.polygon([[0, 0], [0, 0]], {"id": "predictionBox"});
+  box.addTo(map);
+  map.addEventListener("mousemove", extentMoved(box));
+  map.addEventListener("keydown", removePatch(box));
+  map.addEventListener("click", predPatch(box));
+}
+
+function extentMoved(box) {
+  return function(event) {
+    let box_coords = getPolyAround(event.latlng, 200);
+    box.setLatLngs(box_coords);
+  };
+}
+
+function removePatch(box) {
+  return function(event) {
+    if (event.originalEvent.key == "Escape") {
+      box.remove();
+    }
+  };
+}
+
+function predPatch(box) {
+  return function(event) {
+    const coords = box.getBounds();
+
+    d3f.json(backendUrl + "predPatch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        extent: {
+          xmin: coords._southWest.lng,
+          xmax: coords._northEast.lng,
+          ymin: coords._southWest.lat,
+          ymax: coords._northEast.lat,
+          crs: 3857
+        },
+        dataset: dataset,
+        classes: dataset["classes"],
+        models: models["benjamins_unet"]
+      })
+    }).then((data) => displayPred(data));
+  };
+}
+
+function displayPred(data) {
+  let coords = [[data.extent.xmin, data.extent.ymin],
+                [data.extent.xmax, data.extent.ymax]];
+  L.imageOverlay(data["output_soft"], coords).addTo(map);
+}
+
+function getPolyAround(latlng, radius){
+  // We convert the input lat/lon into the EPSG3857 projection, define our
+  // square, then re-convert to lat/lon
+  let latlngProjected = L.CRS.EPSG3857.project(latlng),
+      x = latlngProjected.x,
+      y = latlngProjected.y;
+
+  let top = Math.round(y + radius/2),
+      bottom = Math.round(y - radius/2),
+      left = Math.round(x - radius/2),
+      right = Math.round(x + radius/2);
+
+  // left / right are "x" points while top/bottom are the "y" points
+  let topleft = L.CRS.EPSG3857.unproject(L.point(left, top));
+  let bottomright = L.CRS.EPSG3857.unproject(L.point(right, bottom));
+
+  return [[topleft.lat, topleft.lng],
+          [topleft.lat, bottomright.lng],
+          [bottomright.lat, bottomright.lng],
+          [bottomright.lat, topleft.lng]];
+}
+
 
 export function addButtons(parent_id) {
   d3s.select(parent_id)

@@ -28,16 +28,16 @@ class Framework():
         self.model = model_def(**model_opts.args).to(self.device)
         optimizer_def = getattr(torch.optim, optimizer_opts.name)
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
-        self.lrscheduler = ReduceLROnPlateau(self.optimizer, 'min', verbose=True, patience=5, min_lr=1e-6)
+        self.lrscheduler = ReduceLROnPlateau(self.optimizer, 'min', verbose=True, patience=500, min_lr=1e-6)
         self.metrics_opts = metrics_opts
         try:
             self.l1_lambda = reg_opts.l1_reg
         except:
             self.l1_lambda = False
-        # try:
-        #     self.l2_lambda = reg_opts.l2_reg
-        # except:
-        #     self.l2_lambda = False
+        try:
+            self.l2_lambda = reg_opts.l2_reg
+        except:
+            self.l2_lambda = False
 
     def set_input(self, x, y):
         self.x = x.permute(0, 3, 1, 2).to(self.device)
@@ -72,11 +72,11 @@ class Framework():
             for param in self.model.parameters():
                 l1_regularization += torch.sum(abs(param))
             loss = loss + self.l1_lambda*l1_regularization
-        # if self.l2_lambda:
-        #     l2_regularization = torch.tensor(0.0).to(self.device)
-        #     for param in self.model.parameters():
-        #         l2_regularization += torch.norm(param, 2)**2
-        #     loss = loss + self.l2_lambda*l2_regularization
+        if self.l2_lambda:
+            l2_regularization = torch.tensor(0.0).to(self.device)
+            for param in self.model.parameters():
+                l2_regularization += torch.norm(param, 2)**2
+            loss = loss + self.l2_lambda*l2_regularization
         return loss
 
 

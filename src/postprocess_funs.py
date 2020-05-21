@@ -48,7 +48,7 @@ def reshuffle(split_ids, output_dir="output/", n_cpu=3):
         def wrapper(i):
             cur_locs = {}
             for im_type in ["img", "mask"]:
-                # print(f"shuffling image {i} - {im_type}")
+                print(f"shuffling image {i} - {im_type}")
                 source = split_ids[split_type][i][im_type]
                 target = Path(output_dir, split_type, os.path.basename(source)).resolve()
                 copyfile(source, target)

@@ -89,10 +89,10 @@ def generate_mask(img_meta, shps):
     :return mask: A K channel binary numpy array. The k^th channel gives the
       binary mask for the k^th input shapefile.
     """
-    result = np.zeros((img_meta["height"], img_meta["width"], len(shps)))
+    result = np.zeros((img_meta["height"], img_meta["width"], len(shps)), dtype="uint8")
     for k, shp in enumerate(shps):
         check_crs(img_meta["crs"], shp.crs)
-        result[:, :, k] = channel_mask(img_meta["crs"], shp.crs)
+        result[:, :, k] = channel_mask(img_meta, shp)
     result[:,:,0] = np.multiply(result[:,:,0], result[:,:,1])
     return result
 

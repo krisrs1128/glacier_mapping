@@ -51,7 +51,7 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
         img, shps = rasterio.open(img_paths[k]), []
         for path in shps_paths[k]:
             gdf = gpd.read_file(path)
-            check_crs(img_meta["crs"], gdf.crs)
+            gdf_crs = rasterio.crs.CRS.from_string(gdf.crs.to_string())
             if gdf_crs != img.meta["crs"]:
                 gdf = gdf.to_crs(img.meta["crs"].data)
             shps.append(gdf)
@@ -73,10 +73,10 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
     para = Parallel(n_jobs=n_jobs)
     para(delayed(wrapper)(k) for k in range(len(img_paths)))
 
+
 def check_crs(a, b):
     if rasterio.crs.CRS.from_string(a.to_string()) != rasterio.crs.CRS.from_string(b.to_string()):
         raise ValueError("Coordinate reference systems do not agree")
-
 
 def generate_mask(img_meta, shps):
     """
@@ -145,53 +145,9 @@ def clip_shapefile(img_bounds, img_meta, shps):
     bbox_poly = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=img_meta["crs"].data)
     result = []
     for shp in shps:
-        if rasterio.crs.CRS(img_meta["crs"]) != rasterio.crs.CRS(shp.crs):
-            raise ValueError("Coordinate reference systems do not agree")
-
+        check_crs(img_meta["crs"], shp.crs)
         result.append(shp.loc[shp.intersects(bbox_poly["geometry"][0])])
     return result
-
-
-def parse_path(path):
-    #
-    # example path: /scratch/sankarak/data/glaciers_azure/img_data/2005/nepal
-    # year is the number right after data/
-    # https://regexr.com/4ponn
-    regexes = re.compile("(data\/)([0-9]+)(\/)([A-z]+)").search(str(path))
-    _, year, _, region = regexes.groups()
-    return year, region
-
-
-def path_pairs_landsat(base_dir):
-    """
-    Mapping from Tiffs to their Labels
-
-    For the landsat 7 data whose IDs were given to us by ICIMOD's shapefiles,
-    this gives the mapping between the raw tiff file and the corresponding
-    shapefiles / borders.
-
-    :param base_dir: The directory containing img_data and vector_data. See
-      ee_codes/Readme.md for a description of the directory structure.
-    :return pairs: A pandas dataframe with columns "img", "label", and
-      "border". "img" gives the path to the raw tiffile, "label" is the path to
-      the shapefile for that tiff, and "borders" is the path to the shapefile
-      for the border of the enclosing country.
-    """
-    pairs = []
-    img_paths = pathlib.Path(base_dir).glob("**/*tif")
-    for k, img_path in enumerate(img_paths):
-        year, region = parse_path(img_path)
-        label_dir = pathlib.Path(base_dir, "vector_data", year, region, "data")
-        label_path = pathlib.Path(label_dir, f"Glacier_{year}.shp")
-
-        border_path = pathlib.Path(base_dir, "vector_data", "borders", region, f"{region}.shp")
-        pairs.append({
-            "img": str(img_path),
-            "label": str(label_path),
-            "border": str(border_path)
-        })
-
-    return pd.DataFrame(pairs)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ import geopandas as gpd
 import numpy as np
 import os
 import pandas as pd
+import yaml
 import pathlib
 import rasterio
 import re
@@ -33,31 +34,27 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
     :param out_dir: The directory to which to save all the results.
     """
     if not out_dir:
-        out_dir = os.getcwd()
+        data_dir = os.environ["DATA_DIR"]
+        out_dir = pathlib.Path(data_dir, "processed", "masks")
 
+    pathlib.Path(out_dir).mkdir(parents=True)
     cols = ["id", "img", "mask", "img_width", "img_height", "mask_width", "mask_height"]
     metadata = pd.DataFrame({k: [] for k in cols})
-    if not os.path.exists(out_dir):
-      os.makedirs(out_dir)
-    metadata_path = pathlib.Path(out_dir, "metadata.csv")
-    metadata.to_csv(metadata_path, index=False)
+    metadata_path = pathlib.Path(out_dir, "mask_metadata.csv")
+    if not metadata_path.exists():
+        metadata.to_csv(metadata_path, index=False)
+    else:
+        raise ValueError(f"Cannot overwrite {metadata_path}.")
 
     def wrapper(k):
         print(f"working on image {k} / {len(img_paths)}")
         img, shps = rasterio.open(img_paths[k]), []
         for path in shps_paths[k]:
             gdf = gpd.read_file(path)
-            gdf_crs = rasterio.crs.CRS(gdf.crs)
+            check_crs(img_meta["crs"], gdf.crs)
             if gdf_crs != img.meta["crs"]:
                 gdf = gdf.to_crs(img.meta["crs"].data)
             shps.append(gdf)
-
-        if rasterio.crs.CRS(img.meta["crs"].data) == rasterio.crs.CRS(shps[0].crs) == rasterio.crs.CRS(shps[1].crs):
-            pass
-        else:
-            print("\nImageCRS: ",rasterio.crs.CRS(img.meta["crs"].data))
-            print("\nGlaciersCRS: ",rasterio.crs.CRS(shps[0].crs))
-            print("\nBordersCRS: ",rasterio.crs.CRS(shps[1].crs))
 
         # build mask over tiff's extent, and save
         shps = clip_shapefile(img.bounds, img.meta, shps)
@@ -76,6 +73,10 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
     para = Parallel(n_jobs=n_jobs)
     para(delayed(wrapper)(k) for k in range(len(img_paths)))
 
+def check_crs(a, b):
+    if rasterio.crs.CRS.from_string(a.to_string()) != rasterio.crs.CRS.from_string(b.to_string()):
+        raise ValueError("Coordinate reference systems do not agree")
+
 
 def generate_mask(img_meta, shps):
     """
@@ -90,9 +91,8 @@ def generate_mask(img_meta, shps):
     """
     result = np.zeros((img_meta["height"], img_meta["width"], len(shps)))
     for k, shp in enumerate(shps):
-        if rasterio.crs.CRS(img_meta["crs"]) != rasterio.crs.CRS(shp.crs):
-            raise ValueError("Coordinate reference systems do not agree")
-        result[:, :, k] = channel_mask(img_meta, shp)
+        check_crs(img_meta["crs"], shp.crs)
+        result[:, :, k] = channel_mask(img_meta["crs"], shp.crs)
     result[:,:,0] = np.multiply(result[:,:,0], result[:,:,1])
     return result
 
@@ -195,10 +195,11 @@ def path_pairs_landsat(base_dir):
 
 
 if __name__ == "__main__":
-    img_dir = "/scratch/sankarak/data/glaciers_azure/"
-    paths_df = path_pairs_landsat(img_dir)
-    img_paths = paths_df["img"].values
-    shps_paths = [[p["label"], p["border"]] for _, p in paths_df.iterrows()]
-    out_dir = img_dir+"masks"
-    generate_masks(img_paths, shps_paths, out_dir=out_dir, n_jobs=1)
-    paths_df.to_csv(out_dir + "/paths.csv", index=False)
+    data_dir = os.environ["DATA_DIR"]
+    root_dir = os.environ["ROOT_DIR"]
+    img_dir = pathlib.Path(data_dir, "img_data")
+    masking_paths = yaml.load(open(pathlib.Path(root_dir, "conf", "masking_paths.yaml"), "r"))
+    img_paths = [p["img_path"] for p in masking_paths.values()]
+    mask_paths = [p["mask_paths"] for p in masking_paths.values()]
+
+    generate_masks(img_paths, mask_paths, n_jobs=1)

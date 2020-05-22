@@ -1,0 +1,10 @@
+mask_1:
+  img_path: data/raw/img_data/2010/nepal/Nepal_139041_20111225.tif
+  mask_paths:
+    - data/raw/vector_data/2010/nepal/Glacier_2010.shp
+    - data/raw/vector_data/2005/hkh/clean.shp
+mask_2:
+  img_path: data/raw/img_data/2010/nepal/Nepal_140041_20091108.tif
+  mask_paths:
+    - data/raw/vector_data/2010/nepal/Glacier_2010.shp
+    - data/raw/vector_data/2005/hkh/clean.shp

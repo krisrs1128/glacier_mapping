@@ -1,23 +1,36 @@
 #!/usr/bin/env python
 from addict import Dict
+from addict import Dict
+from pathlib import Path
 from skimage.util.shape import view_as_windows
-from src.postprocess_funs import postprocess_tile
+from src.frame import Framework
 from src.models.unet import Unet
-import matplotlib.pyplot as plt
-import numpy as np
-import rasterio
-import torch
-import yaml
-import src.metrics
-import src.mask
+from src.process_slices_funs import postprocess_tile
+from torchvision.utils import save_image
+import argparse
 import geopandas as gpd
-
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+import numpy as np
+import os
 import pandas as pd
+import rasterio
+import src.mask
+import src.metrics
+import torch
+import yaml
 
 
-def merge_patches(patches, overlap, output_size):
+def squash(x):
+    return (x - x.min()) / x.ptp()
+
+
+def append_name(s, args):
+    return f"{s}_{Path(args.input).stem}-{Path(args.model).stem}-{Path(args.process_conf).stem}.png"
+
+
+def merge_patches(patches, overlap, subset_ix):
     I, J, _, height, width, channels = patches.shape
     result = np.zeros((I * height, J * width, channels))
     for i in range(I):
@@ -26,12 +39,12 @@ def merge_patches(patches, overlap, output_size):
             ix_j = j * (width - overlap)
             result[ix_i:(ix_i + height), ix_j:(ix_j + width)] = patches[i, j]
 
-    return result[:output_size[0], :output_size[1]]
+    return result[subset_ix[0], subset_ix[1]]
 
 
-def infer_tile(img, model, process_conf):
+def inference(img, model, process_conf):
     """
-    infer_tile(tile) -> mask
+    inference(tile) -> mask
 
     :param img: A (unprocessed) numpy array on which to do inference.
     :param model: A pytorch model on which to perform inference. We assume it
@@ -40,14 +53,17 @@ def infer_tile(img, model, process_conf):
       options. Used to convert the raw tile into the tensor used for inference.
     :return prediction: A segmentation mask of the same width and height as img.
     """
-    process_opts = Dict(yaml.load(open(process_conf, "r")))
+    process_opts = Dict(yaml.safe_load(open(process_conf, "r")))
     slice_opts = process_opts.slice
     channels = process_opts.process_funs.extract_channel.img_channels
 
-    # reshape and slice the input
+    # reshape, pad, and slice the input
     img = np.transpose(img, (1, 2, 0))
     size_ = (slice_opts.size[0], slice_opts.size[1], img.shape[2])
-    img_pad = np.zeros((img.shape[0] + size_[0], img.shape[1] + size_[1], img.shape[2]))
+    subset_ix = slice(size_[0], img.shape[0] + size_[0]), slice(size_[1], img.shape[1] + size_[1])
+    img_pad = np.zeros((img.shape[0] + 2 * size_[0], img.shape[1] + 2 * size_[1], img.shape[2]))
+
+    img_pad[subset_ix[0], subset_ix[1]] = img
     slice_imgs = view_as_windows(img_pad, size_, step=size_[0] - slice_opts.overlap)
 
     I, J, _, _, _, _ = slice_imgs.shape
@@ -69,9 +85,9 @@ def infer_tile(img, model, process_conf):
                 y_hat = model(patch).numpy()
                 predictions[i, j, 0] = np.transpose(y_hat, (0, 2, 3, 1))
 
-    x =  merge_patches(patches, process_opts.slice.overlap, img.shape)
-    y_hat =  merge_patches(predictions, process_opts.slice.overlap, img.shape)
-    return {"x": x, "y": y_hat}
+    x =  merge_patches(patches, process_opts.slice.overlap, subset_ix)
+    y_hat =  merge_patches(predictions, process_opts.slice.overlap, subset_ix)
+    return x, y_hat
 
 
 def get_hist(img, mask):
@@ -168,40 +184,42 @@ def get_hist(img, mask):
 
 
 if __name__ == '__main__':
+    data_dir = Path(os.environ["DATA_DIR"])
+    root_dir = Path(os.environ["ROOT_DIR"])
+
     parser = argparse.ArgumentParser(description="Draw inferences from a raw tiff")
-    parser.add_argument("-t", "--tiff", help="path to tiff file to draw inference on")
-    parser.add_argument("-m", "--model", help="path to the model to use for predictions")
-    parser.add_argument("-p", "--process", help="path to the slice processing file")
-    parser.add_argument("-c", "--masks", help="comma separated list of shapefiles containing true masks")
-
-
-    img_path = "/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif"
-    model_path = "/scratch/sankarak/data/glaciers/model_188.pt"
-    process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"
-    mask_paths = ["/scratch/sankarak/data/glaciers/vector_data/2005/hkh/data/Glacier_2005.shp",
-                  "/scratch/sankarak/data/glaciers/vector_data/2000/nepal/data/Glacier_2000.shp"]
+    parser.add_argument("-m", "--model", default = data_dir / "runs/minimal_run/models/model_3.pt", help="path to the model to use for predictions")
+    # parser.add_argument("-i", "--input", default=data_dir / "raw/img_data/2010/nepal/Nepal_139041_20111225.tif", help="path to tiff file to draw inference on")
+    parser.add_argument("-i", "--input", default="data/raw/img_data/2010/nepal/nepal_mini.tiff", help="path to tiff file to draw inference on")
+    parser.add_argument("-t", "--train_conf", default=root_dir / "conf/train.yaml", help="path to the configuration file used for training (to fetch model initialization parameters)")
+    parser.add_argument("-p", "--process_conf", default=root_dir / "conf/postprocess.yaml", help="path to the slice processing file")
+    parser.add_argument("-c", "--channels", default=[2, 4, 5], help="input channels to save for png")
+    parser.add_argument("-o", "--output_dir", default=data_dir / "outputs", help="input channels to save for png")
+    args = parser.parse_args()
 
     print("loading raster")
-    img = rasterio.open(img_path)
-    print("getting mask")
-    state_dict = torch.load(model_path, map_location="cpu")
-    model = Unet(10, 1, 4)
+    img = rasterio.open(args.input).read()
+    train_conf = Dict(yaml.safe_load(open(args.train_conf, "r")))
+    process_conf = Dict(yaml.safe_load(open(args.process_conf, "r")))
+
+    model = Framework(model_opts=train_conf.model_opts, optimizer_opts=train_conf.optim_opts).model
+
+    if torch.cuda.is_available():
+        state_dict = torch.load(args.model)
+    else:
+        state_dict = torch.load(args.model, map_location="cpu")
+
     model.load_state_dict(state_dict)
-    y_hat = infer_tile(img, model, process_conf)
+    print("making predictions")
+    x, y_hat = inference(img, model, args.process_conf)
 
-    # get true mask
-    mask_shps = [gpd.read_file(f) for f in mask_paths]
-    mask_shps = [s.to_crs(img.meta["crs"].data) for s in mask_shps]
-    mask = src.mask.generate_mask(img.meta, mask_shps)
-    mask = torch.from_numpy(mask)
+    # convert input to png
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    plt.imsave(output_dir / append_name("input", args), squash(img[args.channels].transpose(1, 2, 0)))
 
-    print("getting metrics")
-    metric_results = {}
-    for k in range(mask.shape[2]):
-        metric_results[k] = {}
-        for metric in ["precision", "tp_fp_fn", "pixel_acc", "dice"]:
-            l = getattr(src.metrics, metric)
-            metric_results[k][metric] = l(mask[:, :, k], y_hat[:, :, k])
+    plt.imsave(output_dir / append_name("x", args), squash(x[:, :, :3]))
 
-    # print / plot the result
-    print(metric_results)
+    # convert prediction to png
+    for j in range(y_hat.shape[2]):
+        plt.imsave(output_dir / append_name(f"y_hat-prepred-{j}", args), squash(y_hat[:, :, j]))

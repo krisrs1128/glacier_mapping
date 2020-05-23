@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     # global statistics: get the means and variances in the train split
     print("getting stats")
-    conf.process_funs.normalize.stats_path = Path(args.output_dir, conf.process_funs.normalize.stats_path)
+    conf.process_funs.normalize.stats_path = Path(conf.process_funs.normalize.stats_path)
 
     stats = pf.generate_stats(
         [p["img"] for p in target_locs["train"]],

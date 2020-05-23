@@ -42,7 +42,7 @@ def get_args():
     parser.add_argument('-s', '--save_every', type=int, default=5, help='Save every n epoch (Default 5)', dest='save_every')
 
     conf_dir = Path(os.environ["ROOT_DIR"], "conf")
-    parser.add_argument('-c', '--conf', type=str, default=str(conf_dir / 'train_conf.yaml'), help='Configuration File for training', dest='conf')
+    parser.add_argument('-c', '--conf', type=str, default=str(conf_dir / 'train.yaml'), help='Configuration File for training', dest='conf')
 
     return parser.parse_args()
 

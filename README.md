@@ -33,7 +33,7 @@ the raw tiffs and shapefiles, the required inputs are,
 * environmental variables specified in `.env`
 * `conf/masking_paths.yaml`: Says how to burn shapefiles into image masks.
 * `conf/postprocess.yaml`: Says how to filter and transform sliced images.
-* `conf/train_conf.yaml`: Specifies training options.
+* `conf/train.yaml`: Specifies training options.
 
 At each step, the following intermediate files are created,
 * `python3 -m src.mask` --> writes mask_{id}.npy's and mask_metadata.csv

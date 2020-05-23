@@ -12,7 +12,6 @@ import os
 import pandas as pd
 import pathlib
 import rasterio
-import re
 import warnings
 import yaml
 

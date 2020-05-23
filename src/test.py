@@ -6,7 +6,6 @@ Test Pipeline:
     4- Saves an output csv file in the specified directory
     5- Save images in output directory
 """
-from pathlib import Path
 from src.models.unet import Unet
 import glob
 import geopandas as gpd

@@ -78,6 +78,7 @@ def check_crs(a, b):
     if rasterio.crs.CRS.from_string(a.to_string()) != rasterio.crs.CRS.from_string(b.to_string()):
         raise ValueError("Coordinate reference systems do not agree")
 
+
 def generate_mask(img_meta, shps):
     """
     Generate K-Channel Label Masks over Raster Image
@@ -154,7 +155,7 @@ if __name__ == "__main__":
     data_dir = os.environ["DATA_DIR"]
     root_dir = os.environ["ROOT_DIR"]
     img_dir = pathlib.Path(data_dir, "img_data")
-    masking_paths = yaml.load(open(pathlib.Path(root_dir, "conf", "masking_paths.yaml"), "r"))
+    masking_paths = yaml.safe_load(open(pathlib.Path(root_dir, "conf", "masking_paths.yaml"), "r"))
     img_paths = [p["img_path"] for p in masking_paths.values()]
     mask_paths = [p["mask_paths"] for p in masking_paths.values()]
 

@@ -15,19 +15,23 @@ from pathlib import Path
 import addict
 import geopandas as gpd
 import numpy as np
+import os
 import pandas as pd
-import src.postprocess_funs as pf
+import src.process_slices_funs as pf
 import yaml
 
 
 if __name__ == "__main__":
+    processed_dir = Path(os.environ["DATA_DIR"], "processed")
+    conf_dir = Path(os.environ["ROOT_DIR"], "conf")
+
     parser = ArgumentParser()
-    default_root = "./data/glaciers/"
-    parser.add_argument("-d", "--slice_dir", type=str, default=default_root + "/slices/", help="path to directory with all the slices")
-    parser.add_argument("-m", "--slice_meta", type=str, default=default_root + "/slices/slices_subset.geojson", help="path to the slices metadata")
-    parser.add_argument("-o", "--output_dir", type=str, default=default_root + "/processed", help="path to output directory for postprocessed files")
-    parser.add_argument("-c", "--conf", type=str, default="./conf/postprocess.yaml", help="Path to the file specifying postprocessing options.")
-    parser.add_argument("-n", "--n_cpu", type=int, default=4, help="Path to the file specifying postprocessing options.")
+    parser.add_argument("-d", "--slice_dir", type=str, default=processed_dir / "slices/", help="path to directory with all the slices")
+    parser.add_argument("-m", "--slice_meta", type=str, default=processed_dir / "slices/slices_0-100.geojson", help="path to the slices metadata")
+    parser.add_argument("-s", "--slice_stats", type=str, default=processed_dir / "slices/stats.json", help="path to file containing stats to use for normalization")
+    parser.add_argument("-o", "--output_dir", type=str, default=processed_dir, help="path to output directory for postprocessed files")
+    parser.add_argument("-c", "--conf", type=str, default=conf_dir / "postprocess.yaml", help="Path to the file specifying postprocessing options.")
+    parser.add_argument("-n", "--n_cpu", type=int, default=4, help="Number of CPUs to parallelize processing over")
     args = parser.parse_args()
 
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
@@ -40,7 +44,7 @@ if __name__ == "__main__":
         filter_perc=conf.filter_percentage,
         filter_channel=conf.filter_channel
     )
-    
+
     # validation: get ids for the ones that will be training vs. testing.
     print("reshuffling")
     split_fun = getattr(pf, conf.split_method)
@@ -49,7 +53,6 @@ if __name__ == "__main__":
 
     # global statistics: get the means and variances in the train split
     print("getting stats")
-    print(conf.process_funs.normalize.stats_path)
     conf.process_funs.normalize.stats_path = Path(args.output_dir, conf.process_funs.normalize.stats_path)
 
     stats = pf.generate_stats(

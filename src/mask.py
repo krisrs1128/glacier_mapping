@@ -5,14 +5,15 @@ from joblib import Parallel, delayed
 from rasterio.features import rasterize
 from shapely.geometry import box, Polygon
 from shapely.ops import cascaded_union
+import argparse
 import geopandas as gpd
 import numpy as np
 import os
 import pandas as pd
 import pathlib
 import rasterio
-import re
 import warnings
+import yaml
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
@@ -33,31 +34,27 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
     :param out_dir: The directory to which to save all the results.
     """
     if not out_dir:
-        out_dir = os.getcwd()
+        data_dir = os.environ["DATA_DIR"]
+        out_dir = pathlib.Path(data_dir, "processed", "masks")
 
+    pathlib.Path(out_dir).mkdir(parents=True)
     cols = ["id", "img", "mask", "img_width", "img_height", "mask_width", "mask_height"]
     metadata = pd.DataFrame({k: [] for k in cols})
-    if not os.path.exists(out_dir):
-      os.makedirs(out_dir)
-    metadata_path = pathlib.Path(out_dir, "metadata.csv")
-    metadata.to_csv(metadata_path, index=False)
+    metadata_path = pathlib.Path(out_dir, "mask_metadata.csv")
+    if not metadata_path.exists():
+        metadata.to_csv(metadata_path, index=False)
+    else:
+        raise ValueError(f"Cannot overwrite {metadata_path}.")
 
     def wrapper(k):
-        print(f"working on image {k} / {len(img_paths)}")
+        print(f"working on image {k + 1} / {len(img_paths)}")
         img, shps = rasterio.open(img_paths[k]), []
         for path in shps_paths[k]:
             gdf = gpd.read_file(path)
-            gdf_crs = rasterio.crs.CRS(gdf.crs)
+            gdf_crs = rasterio.crs.CRS.from_string(gdf.crs.to_string())
             if gdf_crs != img.meta["crs"]:
                 gdf = gdf.to_crs(img.meta["crs"].data)
             shps.append(gdf)
-
-        if rasterio.crs.CRS(img.meta["crs"].data) == rasterio.crs.CRS(shps[0].crs) == rasterio.crs.CRS(shps[1].crs):
-            pass
-        else:
-            print("\nImageCRS: ",rasterio.crs.CRS(img.meta["crs"].data))
-            print("\nGlaciersCRS: ",rasterio.crs.CRS(shps[0].crs))
-            print("\nBordersCRS: ",rasterio.crs.CRS(shps[1].crs))
 
         # build mask over tiff's extent, and save
         shps = clip_shapefile(img.bounds, img.meta, shps)
@@ -77,6 +74,11 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
     para(delayed(wrapper)(k) for k in range(len(img_paths)))
 
 
+def check_crs(a, b):
+    if rasterio.crs.CRS.from_string(a.to_string()) != rasterio.crs.CRS.from_string(b.to_string()):
+        raise ValueError("Coordinate reference systems do not agree")
+
+
 def generate_mask(img_meta, shps):
     """
     Generate K-Channel Label Masks over Raster Image
@@ -88,10 +90,9 @@ def generate_mask(img_meta, shps):
     :return mask: A K channel binary numpy array. The k^th channel gives the
       binary mask for the k^th input shapefile.
     """
-    result = np.zeros((img_meta["height"], img_meta["width"], len(shps)))
+    result = np.zeros((img_meta["height"], img_meta["width"], len(shps)), dtype="uint8")
     for k, shp in enumerate(shps):
-        if rasterio.crs.CRS(img_meta["crs"]) != rasterio.crs.CRS(shp.crs):
-            raise ValueError("Coordinate reference systems do not agree")
+        check_crs(img_meta["crs"], shp.crs)
         result[:, :, k] = channel_mask(img_meta, shp)
     result[:,:,0] = np.multiply(result[:,:,0], result[:,:,1])
     return result
@@ -145,60 +146,20 @@ def clip_shapefile(img_bounds, img_meta, shps):
     bbox_poly = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=img_meta["crs"].data)
     result = []
     for shp in shps:
-        if rasterio.crs.CRS(img_meta["crs"]) != rasterio.crs.CRS(shp.crs):
-            raise ValueError("Coordinate reference systems do not agree")
-
+        check_crs(img_meta["crs"], shp.crs)
         result.append(shp.loc[shp.intersects(bbox_poly["geometry"][0])])
     return result
 
 
-def parse_path(path):
-    #
-    # example path: /scratch/sankarak/data/glaciers_azure/img_data/2005/nepal
-    # year is the number right after data/
-    # https://regexr.com/4ponn
-    regexes = re.compile("(data\/)([0-9]+)(\/)([A-z]+)").search(str(path))
-    _, year, _, region = regexes.groups()
-    return year, region
-
-
-def path_pairs_landsat(base_dir):
-    """
-    Mapping from Tiffs to their Labels
-
-    For the landsat 7 data whose IDs were given to us by ICIMOD's shapefiles,
-    this gives the mapping between the raw tiff file and the corresponding
-    shapefiles / borders.
-
-    :param base_dir: The directory containing img_data and vector_data. See
-      ee_codes/Readme.md for a description of the directory structure.
-    :return pairs: A pandas dataframe with columns "img", "label", and
-      "border". "img" gives the path to the raw tiffile, "label" is the path to
-      the shapefile for that tiff, and "borders" is the path to the shapefile
-      for the border of the enclosing country.
-    """
-    pairs = []
-    img_paths = pathlib.Path(base_dir).glob("**/*tif")
-    for k, img_path in enumerate(img_paths):
-        year, region = parse_path(img_path)
-        label_dir = pathlib.Path(base_dir, "vector_data", year, region, "data")
-        label_path = pathlib.Path(label_dir, f"Glacier_{year}.shp")
-
-        border_path = pathlib.Path(base_dir, "vector_data", "borders", region, f"{region}.shp")
-        pairs.append({
-            "img": str(img_path),
-            "label": str(label_path),
-            "border": str(border_path)
-        })
-
-    return pd.DataFrame(pairs)
-
-
 if __name__ == "__main__":
-    img_dir = "/scratch/sankarak/data/glaciers_azure/"
-    paths_df = path_pairs_landsat(img_dir)
-    img_paths = paths_df["img"].values
-    shps_paths = [[p["label"], p["border"]] for _, p in paths_df.iterrows()]
-    out_dir = img_dir+"masks"
-    generate_masks(img_paths, shps_paths, out_dir=out_dir, n_jobs=1)
-    paths_df.to_csv(out_dir + "/paths.csv", index=False)
+    root_dir = pathlib.Path(os.environ["ROOT_DIR"])
+    masking_conf = root_dir / "conf" / "masking_paths.yaml"
+
+    parser = argparse.ArgumentParser(description="Defining label masks from tiff + shapefile pairs")
+    parser.add_argument("-m", "--masking_conf", default=masking_conf, help="yaml file specifying which shapefiles to burn onto tiffs. See conf/masking_paths.yaml for an example.")
+    args = parser.parse_args()
+
+    masking_paths = yaml.safe_load(open(args.masking_conf, "r"))
+    img_paths = [p["img_path"] for p in masking_paths.values()]
+    mask_paths = [p["mask_paths"] for p in masking_paths.values()]
+    generate_masks(img_paths, mask_paths, n_jobs=1)

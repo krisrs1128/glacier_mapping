@@ -14,83 +14,63 @@ Training/Validation Pipeline:
     7- tensorboard is saved in path/runs/name_of_the_run
 """
 from addict import Dict
-import argparse
 from pathlib import Path
 from src.data import GlacierDataset
 from src.frame import Framework
 from torch.utils.data import DataLoader, Subset
-import addict
 from torch.utils.tensorboard import SummaryWriter
+import addict
+import argparse
+import json
+import math
+import numpy as np
+import os
 import torch
 import torchvision
-from pathlib import Path
-import math
-import json
 import yaml
-import numpy as np
 
 np.random.seed(7)
 
-def unnormalize(x, conf, channels=(2,1,0)):
-    '''
-    Given normalized input, gives RGB image to show in tensorboard
-    Input:
-        x is tensor of shape B * H * W * C
-        conf is path to stats.json
-    Output:
-        returns unnormalized tensor B * H * W * C
-    '''
-    j = json.load(open(conf))
-    mean = j['means']
-    std = j['stds']
-    for i,channel in enumerate(channels):
-        x[:,:,:,i] = x[:,:,:,i]*std[channel]
-        x[:,:,:,i] += mean[channel]
-    return x
-
 def get_args():
+
     parser = argparse.ArgumentParser(description='Train the UNet on images and target masks',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-n', '--name', type=str, help='Name of run', dest='run_name', required=True)
     parser.add_argument('-e', '--epochs', type=int, default=500, help='Number of epochs (Default 500)', dest='epochs')
     parser.add_argument('-b', '--batch_size', type=int, default=16, help='Batch size (Default 16)', dest='batch_size')
     parser.add_argument('-s', '--save_every', type=int, default=5, help='Save every n epoch (Default 5)', dest='save_every')
-    parser.add_argument('-p', '--path', type=str, default='./data/glaciers_hkh/', help='Root path', dest='path')
-    parser.add_argument('-c', '--conf', type=str, default='./conf/train_conf.yaml', help='Configuration File for training', dest='conf')
+
+    conf_dir = Path(os.environ["ROOT_DIR"], "conf")
+    parser.add_argument('-c', '--conf', type=str, default=str(conf_dir / 'train.yaml'), help='Configuration File for training', dest='conf')
 
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_args()
+    data_dir = Path(os.environ["DATA_DIR"])
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
+    processed_dir = data_dir / "processed"
 
-    filter_channels = (0, 1, 2)
-    filter_channels = np.array(range(12))
-
-    train_dataset = GlacierDataset(Path(args.path, "processed/train"))
-    val_dataset = GlacierDataset(Path(args.path, "processed/test"))
+    train_dataset = GlacierDataset(processed_dir / "train")
+    val_dataset = GlacierDataset(processed_dir / "dev")
 
     train_loader = DataLoader(train_dataset,batch_size=args.batch_size, shuffle=True, num_workers=8)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=3)
-
-    frame = Framework(model_opts=conf.model_opts, optimizer_opts=conf.optim_opts, metrics_opts=conf.metrics_opts, reg_opts=conf.reg_opts, out_dir=f"{args.path}models/{args.run_name}")
+    frame = Framework(model_opts=conf.model_opts, optimizer_opts=conf.optim_opts, metrics_opts=conf.metrics_opts, reg_opts=conf.reg_opts, out_dir=f"{data_dir}/runs/{args.run_name}/models/")
 
     # Tensorboard path
-    writer = SummaryWriter(f"{args.path}/runs/{args.run_name}")
-    # Write input parameters
+    writer = SummaryWriter(f"{data_dir}/runs/{args.run_name}/logs/")
     writer.add_text("Arguments", json.dumps(vars(args)))
     writer.add_text("Configuration Parameters", json.dumps(conf))
 
     # Prepare image grid train/val, x,y to write in tensorboard
     _sample_train_images, _sample_train_labels = iter(train_loader).next()
-    _sample_train_images = _sample_train_images[:,:,:,filter_channels]
     _sample_val_images, _sample_val_labels = iter(val_loader).next()
-    _sample_val_images = _sample_val_images[:,:,:,filter_channels]
 
     # Write image to tensorboard
     _view_x_train = _sample_train_images[:,:,:,[2,1,0]]
-    _view_x_train = unnormalize(_view_x_train, f"{args.path}/processed/stats.json",channels=(2,1,0)) #(2,1,0)
     _view_x_train = _view_x_train.permute(0,3,1,2)
+    _view_x_train = (_view_x_train - _view_x_train.min()) / (_view_x_train.max() - _view_x_train.min())
     train_img_grid = torchvision.utils.make_grid(_view_x_train, nrow=4)
     _labels = _sample_train_labels.permute(0,3,1,2)
     train_label_grid = torchvision.utils.make_grid(_labels, nrow=4)
@@ -98,8 +78,8 @@ if __name__ == "__main__":
     writer.add_image("Train/labels", train_label_grid)
 
     _view_x_val = _sample_val_images[:,:,:,[2,1,0]]
-    _view_x_val = unnormalize(_view_x_val, f"{args.path}/processed/stats.json",channels=(2,1,0))
     _view_x_val = _view_x_val.permute(0,3,1,2)
+    _view_x_val = (_view_x_val - _view_x_val.min()) / (_view_x_val.max() - _view_x_val.min())
     val_img_grid = torchvision.utils.make_grid(_view_x_val, nrow=4)
     _labels = _sample_val_labels.permute(0,3,1,2)
     val_label_grid = torchvision.utils.make_grid(_labels, nrow=4)
@@ -113,7 +93,6 @@ if __name__ == "__main__":
         ## Training loop
         loss = 0
         for i, (x,y) in enumerate(train_loader):
-            x = x[:,:,:,filter_channels]
             frame.set_input(x,y)
             _loss = frame.optimize()
             print(f"Epoch {epoch}/{args.epochs}, Training batch {i+1} of {n_batches}, Loss= {_loss/args.batch_size:.5f}", end="\r", flush=True)
@@ -141,7 +120,6 @@ if __name__ == "__main__":
         ## Validation loop
         loss = 0
         for i, (x,y) in enumerate(val_loader):
-            x = x[:,:,:,filter_channels]
             y_hat = frame.infer(x.to(frame.device))
             _loss = frame.calc_loss(y_hat.to(frame.device), y.to(frame.device)).item()
             loss += _loss

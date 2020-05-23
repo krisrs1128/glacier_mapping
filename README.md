@@ -24,6 +24,23 @@ Raw training data are 7000x7000px 12 channel sentinel-2 tiff images from the Hin
 
 
 ## Pipeline
+
+### Overview
+
+The full preprocessing and training can be done using `run_minimal.sh`. Besides
+the raw tiffs and shapefiles, the required inputs are,
+
+* environmental variables specified in `.env`
+* `conf/masking_paths.yaml`: Says how to burn shapefiles into image masks.
+* `conf/postprocess.yaml`: Says how to filter and transform sliced images.
+* `conf/train.yaml`: Specifies training options.
+
+At each step, the following intermediate files are created,
+* `python3 -m src.mask` --> writes mask_{id}.npy's and mask_metadata.csv
+* `python3 -m src.slice` --> writes slice_{tiff_id}_img_{slice_id}, slice_{tiff_id}_label_{slice_id}, and slice_0-100.geojson (depending on which lines from mask_metadata are sliced)
+* `python3 -m src.process_slices` --> copies slices*npy from previous step into train/, dev/, test/ folders, and writes mean and standard deviations to path specified in postprocess.yaml
+* `python3 -m src.train` --> creates data/runs/run_name folder, containing logs/ with tensorboard logs and models/ with all checkpoints
+
 ![pipeline](pipeline.jpeg)
 ### Data Preprocessing:
 

@@ -93,27 +93,26 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
 
 if __name__ == "__main__":
+    processed_dir = Path(os.environ["DATA_DIR"], "processed")
+
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
-    default_root = "./data/glaciers_hkh/"
-    parser.add_argument("-p", "--paths_csv", type=str, help="csv file mapping tiffs to masks.", default=default_root + "masks/metadata.csv")
-    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=default_root + "slices/")
+    parser.add_argument("-m", "--mask_metadata", type=str, help="csv file mapping tiffs to masks.", default=processed_dir / "masks/mask_metadata.csv")
+    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=processed_dir / "slices/")
     parser.add_argument("-s", "--start_line", type=int, default=0, help="start line in the metadata, from which to start processing")
     parser.add_argument("-e", "--end_line", type=int, default=100, help="end line in the metadata, at which to stop processing")
     parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="slice")
     parser.add_argument("-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=5)
     args = parser.parse_args()
-    paths = pd.read_csv(args.paths_csv)[args.start_line:args.end_line]
+    paths = pd.read_csv(args.mask_metadata)[args.start_line:args.end_line]
 
-    ## Slicing all the Tiffs in input csv file into specified output directory
+    # Slicing all the Tiffs in input csv file into specified output directory
     def wrapper(row):
         img_path=paths.iloc[row]["img"]
         mask_path=paths.iloc[row]["mask"]
         print(f"## Slicing tiff {row +1}/{len(paths)} ...")
         return write_pair_slices(img_path, mask_path, args.output_dir, f"slice_{paths.index[row]}")
 
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
-
+    Path(args.output_dir).mkdir(parents=True)
     para = Parallel(n_jobs=args.n_cpu)
     metadata = para(delayed(wrapper)(k) for k in range(len(paths)))
     metadata = pd.concat(metadata, axis=0)

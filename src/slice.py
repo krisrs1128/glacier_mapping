@@ -93,11 +93,11 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
 
 if __name__ == "__main__":
-    p_dir = Path(os.environ["DATA_DIR"], "processed")
+    processed_dir = Path(os.environ["DATA_DIR"], "processed")
 
     parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
-    parser.add_argument("-m", "--mask_metadata", type=str, help="csv file mapping tiffs to masks.", default=p_dir / "masks/mask_metadata.csv")
-    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=p_dir / "slices/")
+    parser.add_argument("-m", "--mask_metadata", type=str, help="csv file mapping tiffs to masks.", default=processed_dir / "masks/mask_metadata.csv")
+    parser.add_argument("-o", "--output_dir", type=str, help="directory to save all outputs", default=processed_dir / "slices/")
     parser.add_argument("-s", "--start_line", type=int, default=0, help="start line in the metadata, from which to start processing")
     parser.add_argument("-e", "--end_line", type=int, default=100, help="end line in the metadata, at which to stop processing")
     parser.add_argument("-b", "--out_base", type=str, help="Name to prepend to all the slices", default="slice")

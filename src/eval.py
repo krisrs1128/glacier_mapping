@@ -168,6 +168,13 @@ def get_hist(img, mask):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Draw inferences from a raw tiff")
+    parser.add_argument("-t", "--tiff", help="path to tiff file to draw inference on")
+    parser.add_argument("-m", "--model", help="path to the model to use for predictions")
+    parser.add_argument("-p", "--process", help="path to the slice processing file")
+    parser.add_argument("-c", "--masks", help="comma separated list of shapefiles containing true masks")
+
+
     img_path = "/scratch/sankarak/data/glaciers/img_data/2005/hkh/LE07_140041_20051012.tif"
     model_path = "/scratch/sankarak/data/glaciers/model_188.pt"
     process_conf = "//home/sankarak/glacier_mapping/conf/postprocess.yaml"

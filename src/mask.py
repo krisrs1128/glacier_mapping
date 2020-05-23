@@ -5,15 +5,16 @@ from joblib import Parallel, delayed
 from rasterio.features import rasterize
 from shapely.geometry import box, Polygon
 from shapely.ops import cascaded_union
+import argparse
 import geopandas as gpd
 import numpy as np
 import os
 import pandas as pd
-import yaml
 import pathlib
 import rasterio
 import re
 import warnings
+import yaml
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
@@ -47,7 +48,7 @@ def generate_masks(img_paths, shps_paths, output_base="mask",
         raise ValueError(f"Cannot overwrite {metadata_path}.")
 
     def wrapper(k):
-        print(f"working on image {k} / {len(img_paths)}")
+        print(f"working on image {k + 1} / {len(img_paths)}")
         img, shps = rasterio.open(img_paths[k]), []
         for path in shps_paths[k]:
             gdf = gpd.read_file(path)
@@ -152,11 +153,14 @@ def clip_shapefile(img_bounds, img_meta, shps):
 
 
 if __name__ == "__main__":
-    data_dir = os.environ["DATA_DIR"]
-    root_dir = os.environ["ROOT_DIR"]
-    img_dir = pathlib.Path(data_dir, "img_data")
-    masking_paths = yaml.safe_load(open(pathlib.Path(root_dir, "conf", "masking_paths.yaml"), "r"))
+    root_dir = pathlib.Path(os.environ["ROOT_DIR"])
+    masking_conf = root_dir / "conf" / "masking_paths.yaml"
+
+    parser = argparse.ArgumentParser(description="Defining label masks from tiff + shapefile pairs")
+    parser.add_argument("-m", "--masking_conf", default=masking_conf, help="yaml file specifying which shapefiles to burn onto tiffs. See conf/masking_paths.yaml for an example.")
+    args = parser.parse_args()
+
+    masking_paths = yaml.safe_load(open(args.masking_conf, "r"))
     img_paths = [p["img_path"] for p in masking_paths.values()]
     mask_paths = [p["mask_paths"] for p in masking_paths.values()]
-
     generate_masks(img_paths, mask_paths, n_jobs=1)

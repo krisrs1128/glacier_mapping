@@ -26,11 +26,10 @@ if __name__ == "__main__":
     conf_dir = Path(os.environ["ROOT_DIR"], "conf")
 
     parser = ArgumentParser()
+    parser.add_argument("-c", "--conf", type=str, default=conf_dir / "postprocess.yaml", help="Path to the file specifying postprocessing options.")
     parser.add_argument("-d", "--slice_dir", type=str, default=processed_dir / "slices/", help="path to directory with all the slices")
     parser.add_argument("-m", "--slice_meta", type=str, default=processed_dir / "slices/slices_0-100.geojson", help="path to the slices metadata")
-    parser.add_argument("-s", "--slice_stats", type=str, default=processed_dir / "slices/stats.json", help="path to file containing stats to use for normalization")
     parser.add_argument("-o", "--output_dir", type=str, default=processed_dir, help="path to output directory for postprocessed files")
-    parser.add_argument("-c", "--conf", type=str, default=conf_dir / "postprocess.yaml", help="Path to the file specifying postprocessing options.")
     parser.add_argument("-n", "--n_cpu", type=int, default=4, help="Number of CPUs to parallelize processing over")
     args = parser.parse_args()
 

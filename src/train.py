@@ -57,10 +57,10 @@ if __name__ == "__main__":
 
     train_loader = DataLoader(train_dataset,batch_size=args.batch_size, shuffle=True, num_workers=8)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=3)
-    frame = Framework(model_opts=conf.model_opts, optimizer_opts=conf.optim_opts, metrics_opts=conf.metrics_opts, reg_opts=conf.reg_opts, out_dir=f"{data_dir}/models/{args.run_name}")
+    frame = Framework(model_opts=conf.model_opts, optimizer_opts=conf.optim_opts, metrics_opts=conf.metrics_opts, reg_opts=conf.reg_opts, out_dir=f"{data_dir}/runs/{args.run_name}/models/")
 
     # Tensorboard path
-    writer = SummaryWriter(f"{data_dir}/runs/{args.run_name}")
+    writer = SummaryWriter(f"{data_dir}/runs/{args.run_name}/logs/")
     writer.add_text("Arguments", json.dumps(vars(args)))
     writer.add_text("Configuration Parameters", json.dumps(conf))
 

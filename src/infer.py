@@ -188,9 +188,8 @@ if __name__ == '__main__':
     root_dir = Path(os.environ["ROOT_DIR"])
 
     parser = argparse.ArgumentParser(description="Draw inferences from a raw tiff")
-    parser.add_argument("-m", "--model", default = data_dir / "runs/minimal_run/models/model_3.pt", help="path to the model to use for predictions")
-    # parser.add_argument("-i", "--input", default=data_dir / "raw/img_data/2010/nepal/Nepal_139041_20111225.tif", help="path to tiff file to draw inference on")
-    parser.add_argument("-i", "--input", default="data/raw/img_data/2010/nepal/nepal_mini.tiff", help="path to tiff file to draw inference on")
+    parser.add_argument("-m", "--model", default = data_dir / "runs/minimal_run/models/model_5.pt", help="path to the model to use for predictions")
+    parser.add_argument("-i", "--input", default=data_dir / "raw/img_data/2010/nepal/Nepal_139041_20111225.tif", help="path to tiff file to draw inference on")
     parser.add_argument("-t", "--train_conf", default=root_dir / "conf/train.yaml", help="path to the configuration file used for training (to fetch model initialization parameters)")
     parser.add_argument("-p", "--process_conf", default=root_dir / "conf/postprocess.yaml", help="path to the slice processing file")
     parser.add_argument("-c", "--channels", default=[2, 4, 5], help="input channels to save for png")

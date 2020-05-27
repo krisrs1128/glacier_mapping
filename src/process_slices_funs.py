@@ -22,7 +22,10 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
     """
     slice_meta = slice_meta[slice_meta[f"mask_mean_{filter_channel}"] > filter_perc]
     slice_meta = slice_meta[slice_meta["img_mean"] > 0]
-    return [{"img": d["img_slice"], "mask": d["mask_slice"]} for _, d in slice_meta.iterrows()]
+    return [
+        {"img": d["img_slice"], "mask": d["mask_slice"]}
+        for _, d in slice_meta.iterrows()
+    ]
 
 
 def random_split(ids, split_ratio, **kwargs):
@@ -30,9 +33,9 @@ def random_split(ids, split_ratio, **kwargs):
     sizes = len(ids) * np.array(split_ratio)
     ix = [int(s) for s in np.cumsum(sizes)]
     return {
-        "train": ids[:ix[0]],
-        "dev": ids[ix[0]:ix[1]],
-        "test": ids[ix[1]:ix[2]]
+        "train": ids[: ix[0]],
+        "dev": ids[ix[0] : ix[1]],
+        "test": ids[ix[1] : ix[2]],
     }
 
 
@@ -50,7 +53,9 @@ def reshuffle(split_ids, output_dir="output/", n_cpu=3):
             for im_type in ["img", "mask"]:
                 print(f"shuffling image {i} - {im_type}")
                 source = split_ids[split_type][i][im_type]
-                target = Path(output_dir, split_type, os.path.basename(source)).resolve()
+                target = Path(
+                    output_dir, split_type, os.path.basename(source)
+                ).resolve()
                 copyfile(source, target)
                 cur_locs[im_type] = target
 
@@ -77,17 +82,14 @@ def generate_stats(image_paths, sample_size, outpath="stats.json"):
     image_paths = np.random.choice(image_paths, sample_size, replace=False)
     images = [np.load(image_path) for image_path in image_paths]
     batch = np.stack(images)
-    means = np.nanmean(batch, axis=(0,1,2))
-    stds = np.nanstd(batch, axis=(0,1,2))
+    means = np.nanmean(batch, axis=(0, 1, 2))
+    stds = np.nanstd(batch, axis=(0, 1, 2))
 
     with open(outpath, "w+") as f:
-        stats = {
-            "means": means.tolist(),
-            "stds": stds.tolist()
-        }
+        stats = {"means": means.tolist(), "stds": stds.tolist()}
 
-        json.dump(stats,f)
-    return(stats)
+        json.dump(stats, f)
+    return stats
 
 
 def normalize_(img, means, stds, **kwargs):
@@ -99,11 +101,11 @@ def normalize_(img, means, stds, **kwargs):
         :return img: Normalized img
     """
     for i in range(img.shape[2]):
-        img[:,:,i] -= means[i]
+        img[:, :, i] -= means[i]
         if stds[i] > 0:
-            img[:,:,i] /= stds[i]
+            img[:, :, i] /= stds[i]
         else:
-            img[:,:,i] = 0
+            img[:, :, i] = 0
 
     return img
 

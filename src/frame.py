@@ -8,9 +8,17 @@ import torch
 import os
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-class Framework():
 
-    def __init__(self,loss_fn=None, model_opts=None, optimizer_opts=None, metrics_opts=None, reg_opts = None, out_dir="outputs"):
+class Framework:
+    def __init__(
+        self,
+        loss_fn=None,
+        model_opts=None,
+        optimizer_opts=None,
+        metrics_opts=None,
+        reg_opts=None,
+        out_dir="outputs",
+    ):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
@@ -28,7 +36,9 @@ class Framework():
         self.model = model_def(**model_opts.args).to(self.device)
         optimizer_def = getattr(torch.optim, optimizer_opts.name)
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
-        self.lrscheduler = ReduceLROnPlateau(self.optimizer, 'min', verbose=True, patience=500, min_lr=1e-6)
+        self.lrscheduler = ReduceLROnPlateau(
+            self.optimizer, "min", verbose=True, patience=500, min_lr=1e-6
+        )
         self.metrics_opts = metrics_opts
         try:
             self.l1_lambda = reg_opts.l1_reg
@@ -46,7 +56,7 @@ class Framework():
     def optimize(self):
         self.optimizer.zero_grad()
         self.y_hat = self.model(self.x)
-        self.loss = self.calc_loss(self.y_hat,self.y)
+        self.loss = self.calc_loss(self.y_hat, self.y)
         self.loss.backward()
         self.optimizer.step()
         return self.loss.item()
@@ -71,14 +81,13 @@ class Framework():
             l1_regularization = torch.tensor(0.0).to(self.device)
             for param in self.model.parameters():
                 l1_regularization += torch.sum(abs(param))
-            loss = loss + self.l1_lambda*l1_regularization
+            loss = loss + self.l1_lambda * l1_regularization
         if self.l2_lambda:
             l2_regularization = torch.tensor(0.0).to(self.device)
             for param in self.model.parameters():
-                l2_regularization += torch.norm(param, 2)**2
-            loss = loss + self.l2_lambda*l2_regularization
+                l2_regularization += torch.norm(param, 2) ** 2
+            loss = loss + self.l2_lambda * l2_regularization
         return loss
-
 
     def calculate_metrics(self):
         results = []

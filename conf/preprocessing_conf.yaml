@@ -3,13 +3,14 @@ data:
   country: [] # list of countries to process, [] for all countries
   year: [] # list of years to process, [] for all years
   size: 512 # Size of the square slice (nxn)
+  overlap: 6
 
 validity_values:
   labels_perc: 0 # labels amounts has to more than labels_perc
   labels_in_border: 0 # labels amounts existing within the borders has
                       #  to more than labels_in_border
   is_nan_perc: 0.9 # percentage of nan allowed (transformed to zero afterwards),
-                   # nan is due to having pixels outside of the origianl satelitle image
+                   # nan is due to having pixels outside of the original satellite image
 
 spliting_values:
   random_split: false # select test randomly or based on the Dudh_Koshi basin

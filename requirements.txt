@@ -10,3 +10,5 @@ torch>=1.0.0
 torchvision
 matplotlib 
 seaborn
+tqdm
+addict

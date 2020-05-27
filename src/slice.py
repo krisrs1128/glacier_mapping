@@ -14,6 +14,7 @@ import os
 import pandas as pd
 import rasterio
 import shapely.geometry
+from tqdm import tqdm 
 
 def slice_tile(img, size=(512, 512), overlap=6):
     """Slice an image into overlapping patches
@@ -73,8 +74,7 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
     # loop over slices for individual tile / mask pairs
     slice_stats = []
-    for k in range(len(img_slices)):
-        print(f"saving {k}/{len(img_slices)}")
+    for k in tqdm(range(len(img_slices))):
         img_slice_path = Path(out_dir, f"{out_base}_img_{k:03}.npy")
         mask_slice_path = Path(out_dir, f"{out_base}_mask_{k:03}.npy")
         np.save(img_slice_path, img_slices[k])

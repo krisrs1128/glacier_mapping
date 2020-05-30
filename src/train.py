@@ -15,8 +15,8 @@ Training/Validation Pipeline:
 """
 from addict import Dict
 from pathlib import Path
-from src.data import GlacierDataset
-from src.frame import Framework
+from src.data.data import GlacierDataset
+from src.utils.frame import Framework
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import argparse

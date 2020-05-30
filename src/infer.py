@@ -1,22 +1,20 @@
 #!/usr/bin/env python
 from addict import Dict
-from addict import Dict
 from pathlib import Path
 from skimage.util.shape import view_as_windows
-from src.frame import Framework
+from src.utils.frame import Framework
 from src.models.unet import Unet
-from src.process_slices_funs import postprocess_tile
+from src.data.process_slices_funs import postprocess_tile
 from torchvision.utils import save_image
 import argparse
 import geopandas as gpd
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
 import rasterio
-import src.mask
+import src.data.mask
 import torch
 import yaml
 

@@ -7,10 +7,8 @@ import torch.nn.functional as F
 class ConvBlock(nn.Module):
     def __init__(self, inchannels, outchannels, padding=1):
         super().__init__()
-        self.conv1 = nn.Conv2d(inchannels, outchannels,
-                               kernel_size=3, padding=padding)
-        self.conv2 = nn.Conv2d(outchannels, outchannels,
-                               kernel_size=3, padding=padding)
+        self.conv1 = nn.Conv2d(inchannels, outchannels, kernel_size=3, padding=padding)
+        self.conv2 = nn.Conv2d(outchannels, outchannels, kernel_size=3, padding=padding)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -21,8 +19,9 @@ class ConvBlock(nn.Module):
 class UpBlock(nn.Module):
     def __init__(self, inchannels, outchannels):
         super().__init__()
-        self.upconv = nn.ConvTranspose2d(inchannels, outchannels,
-                                         kernel_size=2, stride=2)
+        self.upconv = nn.ConvTranspose2d(
+            inchannels, outchannels, kernel_size=2, stride=2
+        )
         self.conv = ConvBlock(inchannels, outchannels)
 
     def forward(self, x, skips):
@@ -53,8 +52,7 @@ class Unet(nn.Module):
             self.upblocks.append(upconv)
             in_channels, out_channels = out_channels, int(out_channels / 2)
 
-        self.seg_layer = nn.Conv2d(
-            2 * out_channels, outchannels, kernel_size=1)
+        self.seg_layer = nn.Conv2d(2 * out_channels, outchannels, kernel_size=1)
 
     def forward(self, x):
         decoder_outputs = []

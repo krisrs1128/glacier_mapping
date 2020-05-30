@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from pathlib import Path
 import numpy as np
-import src.metrics
+import src.utils.metrics
 import src.models.unet
 import src.models.unet_dropout
 import torch
@@ -102,7 +102,7 @@ class Framework:
                     else:
                         y_hat = channel_wise_y_hat.bool()
                     y_hat = y_hat.to(self.device)
-                    metric_fun = getattr(src.metrics, k)
+                    metric_fun = getattr(src.utils.metrics, k)
                     metric_value = metric_fun(y_hat, y)
                     c_metric.append(metric_value)
                 b_metric.append(np.mean(np.asarray(c_metric)))

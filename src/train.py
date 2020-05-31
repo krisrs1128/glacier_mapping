@@ -139,6 +139,35 @@ if __name__ == "__main__":
     writer.add_image("Validation/image", val_img_grid)
     writer.add_image("Validation/labels", val_label_grid)
 
+      # Saving json model file for the tool
+    tool_dir = f"{data_dir}/runs/{args.run_name}/tool_files/"
+    num_params = get_num_params(frame.model)
+
+    tool_dict = {
+        str(args.run_name): {
+            "metadata": {"displayName": str(args.run_name)},
+            "model": {
+                "type": "pytorch",
+                "numParameters": num_params,
+                "name": conf.model_opts.name,
+                "args": conf.model_opts.args,
+                "inputShape": (512, 512, int(conf.model_opts.args.inchannels)),
+                "fn": str(
+                    Path(
+                        f"{data_dir}/runs/{args.run_name}/models/", f"model_{args.epochs}.pt"
+                    )
+                ),
+                "fineTuneLayer": 0,
+                "process": "conf/postprocess.yaml",
+            },
+        }
+    }
+
+    tool_json = json.dumps(tool_dict, indent=4)
+
+    with open(tool_dir + "model.json", "w") as model_tool:
+        model_tool.write(tool_json)
+
     # Calculate number of batches once
     n_batches = int(math.ceil(len(train_dataset) / args.batch_size))
 
@@ -210,34 +239,5 @@ if __name__ == "__main__":
         # Save model
         if epoch % args.save_every == 0:
             frame.save(frame.out_dir, epoch)
-
-    # Saving json model file for the tool
-    tool_dir = f"{data_dir}/runs/{args.run_name}/tool_files/"
-    num_params = get_num_params(frame.model)
-
-    tool_dict = {
-        str(args.run_name): {
-            "metadata": {"displayName": str(args.run_name)},
-            "model": {
-                "type": "pytorch",
-                "numParameters": num_params,
-                "name": conf.model_opts.name,
-                "args": conf.model_opts.args,
-                "inputShape": (512, 512, int(conf.model_opts.args.inchannels)),
-                "fn": str(
-                    Path(
-                        f"{data_dir}/runs/{args.run_name}/models/", f"model_{epoch}.pt"
-                    )
-                ),
-                "fineTuneLayer": 0,
-                "process": "conf/postprocess.yaml",
-            },
-        }
-    }
-
-    tool_json = json.dumps(tool_dict, indent=4)
-
-    with open(tool_dir + "model.json", "w") as model_tool:
-        model_tool.write(tool_json)
 
     writer.close()

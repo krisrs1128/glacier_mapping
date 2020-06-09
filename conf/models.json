@@ -26,14 +26,14 @@
         "inchannels": 3,
         "outchannels": 1,
         "net_depth": 5,
-        "channel_layer": 8
+        "channel_layer": 16
       },
       "inputShape": [
         512,
         512,
         3
       ],
-      "fn": "data/glaciers_hkh/models/test/model_3.pt",
+      "fn": "data/runs/minimal_run/models/model_5.pt",
       "fineTuneLayer": 0,
       "process": "conf/postprocess.yaml"
     }

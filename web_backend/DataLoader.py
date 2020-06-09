@@ -19,7 +19,7 @@ import shapely.geometry
 # ------------------------------------------------------
 # Miscellaneous methods
 # ------------------------------------------------------
-REPO_DIR = os.environ["REPO_DIR"]
+DATA_DIR = os.environ["DATA_DIR"]
 
 def extent_to_transformed_geom(extent, dest_crs):
     left, right = extent["xmin"], extent["xmax"]
@@ -105,7 +105,7 @@ class DataLoaderCustom(DataLoader):
         self._padding = padding
 
     def get_data_from_extent(self, extent):
-        f = rasterio.open(Path(REPO_DIR, self.data_fn), "r")
+        f = rasterio.open(Path(DATA_DIR, self.data_fn), "r")
         src_index = f.index
         src_crs = f.crs
         transformed_geom = extent_to_transformed_geom(extent, f.crs.to_dict())
@@ -128,7 +128,7 @@ class DataLoaderCustom(DataLoader):
         mask_geom = shapely.geometry.mapping(shape)
 
         # Second, crop out that area for running the entire model on
-        f = rasterio.open(Path(REPO_DIR, self.data_fn), "r")
+        f = rasterio.open(Path(DATA_DIR, self.data_fn), "r")
         src_profile = f.profile
         src_crs = f.crs.to_string()
         src_bounds = f.bounds
@@ -151,7 +151,7 @@ class DataLoaderCustom(DataLoader):
         mask_geom = shape
 
         # Second, crop out that area for running the entire model on
-        f = rasterio.open(Path(REPO_DIR, self.data_fn), "r")
+        f = rasterio.open(Path(DATA_DIR, self.data_fn), "r")
         src_profile = f.profile
         src_crs = f.crs.to_string()
         src_bounds = f.bounds

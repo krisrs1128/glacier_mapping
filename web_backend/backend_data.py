@@ -50,6 +50,6 @@ if __name__ == "__main__":
 
     reproject_directory(args.input_dir, args.output_dir)
     vrt_path = pathlib.Path(args.output_dir, args.output_name)
-    vrt_from_dir(args.input_dir, str(vrt_path))
+    vrt_from_dir(args.output_dir, str(vrt_path))
     if args.tile:
         tiles(vrt_path, args.output_dir)

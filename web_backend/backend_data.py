@@ -47,10 +47,11 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output_dir", type=str, default="./")
     parser.add_argument("-n", "--output_name", type=str, default="output.vrt")
     parser.add_argument("-t", "--tile", default=False)
+    parser.add_argument("-b", "--bandList", nargs="+", default=list(range(10)))
     args = parser.parse_args()
 
     reproject_directory(args.input_dir, args.output_dir)
     vrt_path = pathlib.Path(args.output_dir, args.output_name)
-    vrt_from_dir(args.output_dir, str(vrt_path))
+    vrt_from_dir(args.output_dir, str(vrt_path), bandList=args.bandList)
     if args.tile:
         tiles(vrt_path, args.output_dir)

@@ -7,10 +7,11 @@ Utilities for Managing VRTs
 from osgeo import gdal
 import argparse
 import fiona
+import gdal2tiles
+import glob
 import numpy as np
 import pandas as pd
 import pathlib
-import glob
 import rasterio
 import shapely.geometry
 import subprocess

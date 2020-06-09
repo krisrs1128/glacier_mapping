@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-from src.eval import infer_tile
+from src.infer import inference
 from src.models.unet import Unet
 from web_backend.ServerModelsAbstract import BackendModel
 import numpy as np

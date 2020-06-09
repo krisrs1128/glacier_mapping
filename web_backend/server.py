@@ -26,8 +26,8 @@ import sys
 app = bottle.Bottle()
 
 DATASET = load_dataset()
-REPO_DIR = os.environ["REPO_DIR"]
-bottle.TEMPLATE_PATH.insert(0, REPO_DIR + "/views") # let bottle know where we are storing the template files
+DATA_DIR = os.environ["DATA_DIR"]
+bottle.TEMPLATE_PATH.insert(0, DATA_DIR + "/views") # let bottle know where we are storing the template files
 
 with open("conf/models.json", "r") as f:
     models = json.load(f)
@@ -174,7 +174,7 @@ def pred_tile():
 
     img_hard, img_hard_bounds = DL.warp_data_to_3857(img_hard, raster_crs, raster_transform, raster_bounds, resolution=10)
 
-    cv2.imwrite(os.path.join(REPO_DIR, "downloads/%s.png" % (tmp_id)), img_hard)
+    cv2.imwrite(os.path.join(DATA_DIR, "downloads/%s.png" % (tmp_id)), img_hard)
     data["downloadPNG"] = "downloads/%s.png" % (tmp_id)
 
     new_profile = raster_profile.copy()
@@ -186,12 +186,12 @@ def pred_tile():
     new_profile['height'] = naip_data.shape[0]
     new_profile['width'] = naip_data.shape[1]
     new_profile['nodata'] = 255
-    f = rasterio.open(os.path.join(REPO_DIR, "downloads/%s.tif" % (tmp_id)), 'w', **new_profile)
+    f = rasterio.open(os.path.join(DATA_DIR, "downloads/%s.tif" % (tmp_id)), 'w', **new_profile)
     f.write(output_hard.astype(np.uint8), 1)
     f.close()
     data["downloadTIFF"] = "downloads/%s.tif" % (tmp_id)
 
-    f = open(os.path.join(REPO_DIR, "downloads/%s.txt" % (tmp_id)), "w")
+    f = open(os.path.join(DATA_DIR, "downloads/%s.txt" % (tmp_id)), "w")
     f.write("Class id\tClass name\tPercent area\tArea (km^2)\n")
     for i in range(len(vals)):
         pct_area = (counts[i] / np.sum(counts))

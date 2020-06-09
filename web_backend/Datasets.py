@@ -9,7 +9,7 @@ import os
 import utm
 
 _DATASET_FN = "conf/dataset.json"
-REPO_DIR = os.environ["REPO_DIR"]
+DATA_DIR = os.environ["DATA_DIR"]
 
 def get_area_from_geometry(geom, src_crs="epsg:4326"):
     if geom["type"] == "Polygon":
@@ -48,43 +48,22 @@ def _load_geojson_as_list(fn):
 
 
 def _load_dataset(dataset):
-    # Step 1: load the shape layers
-    shape_layers = {}
-    if dataset["shapeLayers"] is not None:
-        for shape_layer in dataset["shapeLayers"]:
-            fn = os.path.join(REPO_DIR, shape_layer["shapesFn"])
-            if os.path.exists(fn):
-                shapes, areas, crs = _load_geojson_as_list(fn)
-                shape_layer["geoms"] = shapes
-                shape_layer["areas"] = areas
-                shape_layer["crs"] = crs["init"] # TODO: will this break with fiona version; I think `.crs` will turn into a PyProj object
-                shape_layers[shape_layer["name"]] = shape_layer
-            else:
-                raise ValueError(f"File {fn} in dataset.json does not exist.")
-
     # Step 2: make sure the dataLayer exists
     if dataset["dataLayer"]["type"] == "CUSTOM":
-        fn = os.path.join(REPO_DIR, dataset["dataLayer"]["path"])
+        fn = os.path.join(DATA_DIR, dataset["dataLayer"]["path"])
         if not os.path.exists(fn):
             return False # TODO: maybe we should make these errors more descriptive (explain why we can't load a dataset)
 
     # Step 3: setup the appropriate DatasetLoader
-    if dataset["dataLayer"]["type"] == "CUSTOM":
-        data_loader = DL.DataLoaderCustom(dataset["dataLayer"]["path"], shape_layers, dataset["dataLayer"]["padding"])
-    elif dataset["dataLayer"]["type"] == "USA_LAYER":
-        data_loader = DL.DataLoaderUSALayer(shape_layers, dataset["dataLayer"]["padding"])
-    elif dataset["dataLayer"]["type"] == "BASEMAP":
-        data_loader = DL.DataLoaderBasemap(dataset["dataLayer"]["path"], dataset["dataLayer"]["padding"])
-    elif dataset["dataLayer"]["type"] == "GLACIER":
+    if dataset["dataLayer"]["type"] == "GLACIER":
         data_loader = DL.DataLoaderGlacier(dataset["dataLayer"]["padding"], dataset["dataLayer"]["path"])
     else:
         raise ValueError(f"Cannot find loader for {dataset['dataLayer']['type']}")
 
     return {
         "data_loader": data_loader,
-        "shape_layers": shape_layers,
     }
 
 def load_dataset():
-    dataset_json = json.load(open(os.path.join(REPO_DIR, _DATASET_FN),"r"))
+    dataset_json = json.load(open(os.path.join(os.environ["ROOT_DIR"], _DATASET_FN),"r"))
     return _load_dataset(dataset_json)

@@ -7,12 +7,12 @@
   },
   "dataLayer": {
     "type": "GLACIER",
-    "path": "data/outputs/outputfull.vrt",
+    "path": "outputs/outputfull.vrt",
     "padding": 1100
   },
   "basemapLayer": {
     "initialZoom": 10,
-    "url": "data/outputs/{z}/{x}/{-y}.png",
+    "url": "outputs/{z}/{x}/{-y}.png",
     "initialLocation": [30.3090779, 82.8789515],
     "args": {
       "attribution": "Georeferenced Image",
@@ -24,7 +24,7 @@
   },
   "shapeLayers": [
     {
-      "shapesFn": "data/shapes/hkh.geojson",
+      "shapesFn": "shapes/hkh.geojson",
       "zoneNameId": "HKH",
       "name": "Area Boundaries"
     }

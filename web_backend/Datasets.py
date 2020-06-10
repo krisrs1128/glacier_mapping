@@ -26,26 +26,6 @@ def get_area_from_geometry(geom, src_crs="epsg:4326"):
     area = shapely.geometry.shape(projected_geom).area / 1000000.0 # we calculate the area in square meters then convert to square kilometers
     return area
 
-def _load_geojson_as_list(fn):
-    ''' Takes a geojson file as input and outputs a list of shapely `shape` objects in that file and their corresponding areas in km^2.
-
-    We calculate area here by re-projecting the shape into its local UTM zone, converting it to a shapely `shape`, then using the `.area` property.
-    '''
-    shapes = []
-    areas = []
-    crs = None
-    with fiona.open(fn) as f:
-        src_crs = f.crs
-        for row in f:
-            geom = row["geometry"]
-
-            area = get_area_from_geometry(geom, src_crs)
-            areas.append(area)
-
-            shape = shapely.geometry.shape(geom)
-            shapes.append(shape)
-    return shapes, areas, src_crs
-
 
 def _load_dataset(dataset):
     # Step 2: make sure the dataLayer exists

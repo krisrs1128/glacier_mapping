@@ -10,6 +10,8 @@ import time
 import torch
 import yaml
 
+DATA_DIR = os.environ["DATA_DIR"]
+
 class PytorchUNet(BackendModel):
     def __init__(self, model_spec, gpuid, verbose=False):
         self.input_size = model_spec["inputShape"]
@@ -17,10 +19,11 @@ class PytorchUNet(BackendModel):
         self.stride_x, self.stride_y, _ = self.input_size
         self.process_conf = model_spec["process"]
 
+        model_path = Path(DATA_DIR, model_spec["fn"])
         if torch.cuda.is_available():
-            state = torch.load(model_spec["fn"])
+            state = torch.load(model_path)
         else:
-            state = torch.load(model_spec["fn"], map_location=torch.device("cpu"))
+            state = torch.load(model_path, map_location=torch.device("cpu"))
 
         self.model = Unet(**model_spec["args"])
         self.model.load_state_dict(state)

@@ -8,15 +8,15 @@ python3 -m src.post_process.py
     --slice_meta=/path_to_slice_metadata.geojson
 
 """
-from addict import Dict
 from argparse import ArgumentParser
-from joblib import Parallel, delayed
 from pathlib import Path
+import os
+import yaml
+from addict import Dict
+from joblib import Parallel, delayed
 import geopandas as gpd
 import numpy as np
-import os
 import src.data.process_slices_funs as pf
-import yaml
 
 
 if __name__ == "__main__":
@@ -95,6 +95,9 @@ if __name__ == "__main__":
         print(f"postprocessing {split_type}...")
 
         def wrapper(i):
+            """
+            Process an individual img / mask pair
+            """
             img, mask = pf.postprocess(
                 target_locs[split_type][i]["img"],
                 target_locs[split_type][i]["mask"],

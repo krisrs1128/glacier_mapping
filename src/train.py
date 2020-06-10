@@ -34,7 +34,7 @@ np.random.seed(7)
 def get_num_params(model):
     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
     params = sum([np.prod(p.size()) for p in model_parameters])
-    return params
+    return int(params)
 
 
 def get_args():
@@ -103,8 +103,7 @@ if __name__ == "__main__":
         model_opts=conf.model_opts,
         optimizer_opts=conf.optim_opts,
         metrics_opts=conf.metrics_opts,
-        reg_opts=conf.reg_opts,
-        out_dir=f"{data_dir}/runs/{args.run_name}/models/",
+        reg_opts=conf.reg_opts
     )
 
     # Tensorboard path
@@ -139,8 +138,7 @@ if __name__ == "__main__":
     writer.add_image("Validation/image", val_img_grid)
     writer.add_image("Validation/labels", val_label_grid)
 
-      # Saving json model file for the tool
-    tool_dir = f"{data_dir}/runs/{args.run_name}/tool_files/"
+    # Saving json model file for the tool
     num_params = get_num_params(frame.model)
 
     tool_dict = {
@@ -165,6 +163,9 @@ if __name__ == "__main__":
 
     tool_json = json.dumps(tool_dict, indent=4)
 
+    tool_dir = f"{data_dir}/runs/{args.run_name}/tool_files/"
+    if not os.path.exists(tool_dir):
+        os.makedirs(tool_dir)
     with open(tool_dir + "model.json", "w") as model_tool:
         model_tool.write(tool_json)
 
@@ -175,8 +176,7 @@ if __name__ == "__main__":
         ## Training loop
         loss = 0
         for i, (x, y) in enumerate(train_loader):
-            frame.set_input(x, y)
-            _loss = frame.optimize()
+            y_hat, _loss = frame.optimize(x, y)
             print(
                 f"Epoch {epoch}/{args.epochs}, Training batch {i+1} of {n_batches}, Loss= {_loss/args.batch_size:.5f}",
                 end="\r",
@@ -184,9 +184,10 @@ if __name__ == "__main__":
             )
             loss += _loss
             if i == 0:
-                metrics = frame.calculate_metrics()
+                metrics = frame.calculate_metrics(y_hat, y)
             else:
-                metrics += frame.calculate_metrics()
+                metrics += frame.calculate_metrics(y_hat, y)
+
         # Print and write scalars to tensorboard
         epoch_train_loss = loss / len(train_dataset)
         print(f"\nT_Loss: {epoch_train_loss:.5f}", end=" ")
@@ -210,9 +211,9 @@ if __name__ == "__main__":
             _loss = frame.calc_loss(y_hat.to(frame.device), y.to(frame.device)).item()
             loss += _loss
             if i == 0:
-                metrics = frame.calculate_metrics()
+                metrics = frame.calculate_metrics(y_hat, y)
             else:
-                metrics += frame.calculate_metrics()
+                metrics += frame.calculate_metrics(y_hat, y)
         epoch_val_loss = loss / len(val_dataset)
         frame.val_operations(epoch_val_loss)
         # Print and write scalars to tensorboard
@@ -238,6 +239,7 @@ if __name__ == "__main__":
         print("\n")
         # Save model
         if epoch % args.save_every == 0:
-            frame.save(frame.out_dir, epoch)
+            out_dir=f"{data_dir}/runs/{args.run_name}/models/"
+            frame.save(out_dir, epoch)
 
     writer.close()

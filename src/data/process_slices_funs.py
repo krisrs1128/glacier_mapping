@@ -28,7 +28,7 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
     ]
 
 
-def random_split(ids, split_ratio):
+def random_split(ids, split_ratio, **kwargs):
     """
     Randomly split a list of paths into train / dev / test
     """

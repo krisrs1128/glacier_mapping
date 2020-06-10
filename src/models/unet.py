@@ -1,10 +1,21 @@
 #!/usr/bin/env python
+"""
+UNet Model Class
+
+This is a segmentation model to use for training and inference.
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class ConvBlock(nn.Module):
+    """
+    Single Encoder Block
+
+    Transforms large image with small inchannels into smaller image with larger
+    outchannels, via two convolution / relu pairs.
+    """
     def __init__(self, inchannels, outchannels, padding=1):
         super().__init__()
         self.conv1 = nn.Conv2d(inchannels, outchannels, kernel_size=3, padding=padding)
@@ -17,6 +28,12 @@ class ConvBlock(nn.Module):
 
 
 class UpBlock(nn.Module):
+    """
+    Single Decoder Block
+
+    Transforms small image with large inchannels into larger image with smaller
+    outchannels, via two convolution / relu pairs.
+    """
     def __init__(self, inchannels, outchannels):
         super().__init__()
         self.upconv = nn.ConvTranspose2d(
@@ -31,6 +48,12 @@ class UpBlock(nn.Module):
 
 
 class Unet(nn.Module):
+    """
+    U-Net Model
+
+    Combines the encoder and decoder blocks with skip connections, to arrive at
+    a U-Net model.
+    """
     def __init__(self, inchannels, outchannels, net_depth, channel_layer=16):
         super().__init__()
         self.downblocks = nn.ModuleList()
@@ -57,12 +80,12 @@ class Unet(nn.Module):
     def forward(self, x):
         decoder_outputs = []
 
-        for op in self.downblocks:
-            decoder_outputs.append(op(x))
+        for layer in self.downblocks:
+            decoder_outputs.append(layer(x))
             x = self.pool(decoder_outputs[-1])
 
         x = self.middle_conv(x)
 
-        for op in self.upblocks:
-            x = op(x, decoder_outputs.pop())
+        for layer in self.upblocks:
+            x = layer(x, decoder_outputs.pop())
         return self.seg_layer(x)

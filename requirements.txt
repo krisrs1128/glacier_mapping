@@ -18,3 +18,4 @@ joblib
 scikit-image
 bottle
 cheroot
+tensorboard

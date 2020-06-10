@@ -1,0 +1,12 @@
+/* This is a CSS style sheet for rules that should be applied over the
+   entire application.  We are not using the name prefix for these rules.  */
+
+/* class="container" - Sets some margins around the element so it is spaced
+                       from the top, bottom, and sides of the window. */
+
+.container {
+  padding: 40px 10px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}

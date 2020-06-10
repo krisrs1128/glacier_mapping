@@ -104,25 +104,32 @@ class Framework:
 
         return loss
 
+
     def calculate_metrics(self, y_hat, y):
         """
         Loop over metrics in train.yaml
         """
+        y = y.to(self.device)
+        y_hat = y_hat.to(self.device)
+
         results = []
         for k, metric in self.metrics_opts.items():
             b_metric = []
-            for batch_y, batch_y_hat in zip(y, y_hat):
+            for b_ix in range(y_hat.shape[0]): # loop over batches
                 c_metric = []
-                for channel_wise_y, channel_wise_y_hat in zip(batch_y, batch_y_hat):
-                    y = channel_wise_y.bool().to(self.device)
+
+                for c_ix in range(y_hat.shape[1]): # loop over channels
+                    y_bc = y[b_ix, c_ix]
+                    y_hat_bc = y_hat[b_ix, c_ix]
+
                     if "threshold" in metric.keys():
-                        y_hat = torch.sigmoid(channel_wise_y_hat) > metric["threshold"]
-                    else:
-                        y_hat = channel_wise_y_hat.bool()
-                        y_hat = y_hat.to(self.device)
-                        metric_fun = getattr(src.utils.metrics, k)
-                        metric_value = metric_fun(y_hat, y)
-                        c_metric.append(metric_value)
-                        b_metric.append(np.mean(np.asarray(c_metric)))
-                        results.append(np.sum(np.asarray(b_metric)))
+                        y_hat_bc = torch.sigmoid(y_hat_bc) > metric["threshold"]
+                        y_bc = y_bc.bool()
+
+                    metric_fun = getattr(src.utils.metrics, k)
+                    metric_value = metric_fun(y_hat, y)
+                    c_metric.append(metric_value)
+
+                b_metric.append(np.mean(np.asarray(c_metric)))
+            results.append(np.sum(np.asarray(b_metric)))
         return np.array(results)

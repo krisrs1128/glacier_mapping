@@ -211,9 +211,9 @@ if __name__ == "__main__":
             _loss = frame.calc_loss(y_hat.to(frame.device), y.to(frame.device)).item()
             loss += _loss
             if i == 0:
-                metrics = frame.calculate_metrics()
+                metrics = frame.calculate_metrics(y_hat, y)
             else:
-                metrics += frame.calculate_metrics()
+                metrics += frame.calculate_metrics(y_hat, y)
         epoch_val_loss = loss / len(val_dataset)
         frame.val_operations(epoch_val_loss)
         # Print and write scalars to tensorboard

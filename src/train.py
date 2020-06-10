@@ -175,8 +175,7 @@ if __name__ == "__main__":
         ## Training loop
         loss = 0
         for i, (x, y) in enumerate(train_loader):
-            frame.set_input(x, y)
-            _loss = frame.optimize()
+            y_hat, _loss = frame.optimize(x, y)
             print(
                 f"Epoch {epoch}/{args.epochs}, Training batch {i+1} of {n_batches}, Loss= {_loss/args.batch_size:.5f}",
                 end="\r",
@@ -184,9 +183,10 @@ if __name__ == "__main__":
             )
             loss += _loss
             if i == 0:
-                metrics = frame.calculate_metrics()
+                metrics = frame.calculate_metrics(y_hat, y)
             else:
-                metrics += frame.calculate_metrics()
+                metrics += frame.calculate_metrics(y_hat, y)
+
         # Print and write scalars to tensorboard
         epoch_train_loss = loss / len(train_dataset)
         print(f"\nT_Loss: {epoch_train_loss:.5f}", end=" ")

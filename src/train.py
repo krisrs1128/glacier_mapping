@@ -103,8 +103,7 @@ if __name__ == "__main__":
         model_opts=conf.model_opts,
         optimizer_opts=conf.optim_opts,
         metrics_opts=conf.metrics_opts,
-        reg_opts=conf.reg_opts,
-        out_dir=f"{data_dir}/runs/{args.run_name}/models/",
+        reg_opts=conf.reg_opts
     )
 
     # Tensorboard path
@@ -238,6 +237,7 @@ if __name__ == "__main__":
         print("\n")
         # Save model
         if epoch % args.save_every == 0:
-            frame.save(frame.out_dir, epoch)
+            out_dir=f"{data_dir}/runs/{args.run_name}/models/"
+            frame.save(out_dir, epoch)
 
     writer.close()

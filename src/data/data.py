@@ -1,12 +1,21 @@
+"""
+Custom Dataset for Training
+"""
 #!/usr/bin/env python
-from torch.utils.data import Dataset
 import glob
-import numpy as np
 import os
+from torch.utils.data import Dataset
+import numpy as np
 import torch
 
 
 class GlacierDataset(Dataset):
+    """
+    Custom Dataset for Glacier Data
+
+    Indexing the i^th element returns the underlying image and the associated
+    binary mask
+    """
 
     def __init__(self, folder_path):
         """Initialize dataset."""
@@ -24,4 +33,3 @@ class GlacierDataset(Dataset):
 
     def __len__(self):
         return len(self.img_files)
-    

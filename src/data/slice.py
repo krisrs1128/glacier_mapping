@@ -4,13 +4,13 @@ Convert Large Tiff and Mask files to Slices (512 x 512 subtiles)
 
 2020-02-26 10:36:48
 """
+from pathlib import Path
+import argparse
+import os
 from geopandas.geodataframe import GeoDataFrame
 from joblib import Parallel, delayed
-from pathlib import Path
 from skimage.util.shape import view_as_windows
-import argparse
 import numpy as np
-import os
 import pandas as pd
 import rasterio
 import shapely.geometry
@@ -35,6 +35,9 @@ def slice_tile(img, size=(512, 512), overlap=6):
 
 
 def slices_metadata(imgf, img_path, mask_path, size=(512, 512), overlap=6):
+    """
+    Write geometry and source information to metadata
+    """
     meta = slice_polys(imgf, size, overlap)
     meta["img_source"] = img_path
     meta["mask_source"] = mask_path
@@ -65,14 +68,19 @@ def slice_polys(imgf, size=(512, 512), overlap=6):
 
 
 def slice_pair(img, mask, **kwargs):
+    """
+    Slice an image / mask pair
+    """
     img_slices = slice_tile(img, **kwargs)
     mask_slices = slice_tile(mask, **kwargs)
     return img_slices, mask_slices
 
 
-def write_pair_slices(
-    img_path, mask_path, out_dir, out_base="slice", n_cpu=5, **kwargs
-):
+def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
+                      **kwargs):
+    """
+    Write sliced images and masks to numpy arrays
+    """
     imgf = rasterio.open(img_path)
     img = imgf.read().transpose(1, 2, 0)
     mask = np.load(mask_path)
@@ -92,7 +100,7 @@ def write_pair_slices(
         img_slice_mean = np.nan_to_num(img_slices[k].mean())
         mask_mean = mask_slices[k].mean(axis=(0, 1))
         stats.update({f"mask_mean_{i}": v for i, v in enumerate(mask_mean)})
-        stats.update({f"img_mean": img_slice_mean})
+        stats.update({"img_mean": img_slice_mean})
         slice_stats.append(stats)
 
     slice_stats = pd.DataFrame(slice_stats)
@@ -144,8 +152,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     paths = pd.read_csv(args.mask_metadata)[args.start_line : args.end_line]
 
-    # Slicing all the Tiffs in input csv file into specified output directory
     def wrapper(row):
+        """Slicing all the Tiffs in input csv file into specified output directory"""
         img_path = paths.iloc[row]["img"]
         mask_path = paths.iloc[row]["mask"]
         print(f"## Slicing tiff {row +1}/{len(paths)} ...")

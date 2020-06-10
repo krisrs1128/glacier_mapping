@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-from addict import Dict
-from joblib import Parallel, delayed
+"""
+Functions to support slice processing
+"""
 from pathlib import Path
 from shutil import copyfile
-import addict
 import json
-import numpy as np
 import os
-import pandas as pd
 import random
 import sys
+import numpy as np
+from joblib import Parallel, delayed
 
 
 def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
@@ -28,7 +28,10 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
     ]
 
 
-def random_split(ids, split_ratio, **kwargs):
+def random_split(ids, split_ratio):
+    """
+    Randomly split a list of paths into train / dev / test
+    """
     random.shuffle(ids)
     sizes = len(ids) * np.array(split_ratio)
     ix = [int(s) for s in np.cumsum(sizes)]
@@ -40,6 +43,12 @@ def random_split(ids, split_ratio, **kwargs):
 
 
 def reshuffle(split_ids, output_dir="output/", n_cpu=3):
+    """
+    Reshuffle Data for Training
+
+    Given a dictionary specifying train / dev / test split, copy into train /
+    dev / test folders.
+    """
     for split_type in split_ids:
         path = Path(output_dir, split_type)
         os.makedirs(path, exist_ok=True)
@@ -92,7 +101,7 @@ def generate_stats(image_paths, sample_size, outpath="stats.json"):
     return stats
 
 
-def normalize_(img, means, stds, **kwargs):
+def normalize_(img, means, stds):
     """
         :param img: Input image to normalize
         :param means: Computed mean of the input channels
@@ -118,11 +127,13 @@ def normalize(img, mask, stats_path):
 
 
 def impute(img, mask, value=0):
+    """Replace NAs with value"""
     img = np.nan_to_num(img, nan=value)
     return img, mask
 
 
 def extract_channel(img, mask, mask_channels=None, img_channels=None):
+    """Subset specific channels from raster"""
     if mask_channels is None:
         mask_channels = np.arange(mask.shape[2])
 
@@ -133,6 +144,7 @@ def extract_channel(img, mask, mask_channels=None, img_channels=None):
 
 
 def postprocess_tile(img, process_funs):
+    """Apply a list of processing functions"""
     # create fake mask input
     process_funs.extract_channel.mask_channels = 0
     mask = np.zeros((img.shape[0], img.shape[1], 1))
@@ -141,6 +153,7 @@ def postprocess_tile(img, process_funs):
 
 
 def postprocess_(img, mask, process_funs):
+    """Internal helper for postprocess_tile"""
     for fun_name, fun_args in process_funs.items():
         f = getattr(sys.modules[__name__], fun_name)
         img, mask = f(img, mask, **fun_args)

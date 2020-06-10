@@ -1,18 +1,18 @@
 """
 Generate Masks from Tiffs / Shapefiles
 """
+import argparse
+import os
+import pathlib
+import warnings
 from joblib import Parallel, delayed
 from rasterio.features import rasterize
 from shapely.geometry import box, Polygon
 from shapely.ops import cascaded_union
-import argparse
 import geopandas as gpd
 import numpy as np
-import os
 import pandas as pd
-import pathlib
 import rasterio
-import warnings
 import yaml
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
@@ -76,9 +76,12 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None, n_jo
     para(delayed(wrapper)(k) for k in range(len(img_paths)))
 
 
-def check_crs(a, b):
-    if rasterio.crs.CRS.from_string(a.to_string()) != rasterio.crs.CRS.from_string(
-        b.to_string()
+def check_crs(crs_a, crs_b):
+    """
+    Verify that two CRS objects Match
+    """
+    if rasterio.crs.CRS.from_string(crs_a.to_string()) != rasterio.crs.CRS.from_string(
+            crs_b.to_string()
     ):
         raise ValueError("Coordinate reference systems do not agree")
 
@@ -114,8 +117,8 @@ def channel_mask(img_meta, shp):
             poly_shp += [poly_from_coord(row["geometry"], img_meta["transform"])]
 
         else:  # case if multipolygon
-            for p in row["geometry"]:
-                poly_shp += [poly_from_coord(p, img_meta["transform"])]
+            for geom in row["geometry"]:
+                poly_shp += [poly_from_coord(geom, img_meta["transform"])]
 
     im_size = (img_meta["height"], img_meta["width"])
     return rasterize(shapes=poly_shp, out_shape=im_size)
@@ -168,7 +171,8 @@ if __name__ == "__main__":
         "-m",
         "--masking_conf",
         default=masking_conf,
-        help="yaml file specifying which shapefiles to burn onto tiffs. See conf/masking_paths.yaml for an example.",
+        help="""yaml file specifying which shapefiles to burn onto tiffs. See
+        conf/masking_paths.yaml for an example.""",
     )
     args = parser.parse_args()
 

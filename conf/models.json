@@ -33,7 +33,7 @@
         512,
         3
       ],
-      "fn": "runs/minimal_run/models/model_5.pt",
+      "fn": "/mnt/blobfuse/glaciers/runs/minimal_run/models/model_5.pt",
       "fineTuneLayer": 0,
       "process": "conf/postprocess.yaml"
     }

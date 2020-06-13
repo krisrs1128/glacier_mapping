@@ -130,6 +130,7 @@ def pred_patch():
 @app.post("/predTile")
 def pred_tile():
     ''' Method called for POST `/predTile`'''
+    print("responding to prediction")
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
     data["remote_address"] = bottle.request.client_ip

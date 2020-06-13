@@ -1,37 +1,15 @@
+var path = require('path');
+
 module.exports = {
-  entry: {
-    gettingStarted: './index.jsx',
+  entry: './index.js',
+  output: {
+    filename: './output.js',
+    path: path.resolve(__dirname, 'dist'),
   },
   module: {
     rules: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: ['babel-loader'],
-      },
-      {
-        test: /\.css$/,
-        use: [ "style-loader", "css-loader" ],
-      },
-      {
-        test: /\.(png|jpg|gif)$/,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              limit: 8192,
-            },
-          },
-        ],
-      },
+      { test: /\.css$/, loader: "style-loader!css-loader" },
+      {test: /\.(jpe?g|png|gif|svg)$/i, loader: "url-loader?name=app/images/[name].[ext]"},
     ],
-  },
-  resolve: {
-    extensions: ['*', '.js', '.jsx'],
-  },
-  output: {
-    path: `${__dirname}/compiled`,
-    publicPath: '/',
-    filename: '[name].bundle.js',
-  },
+  }
 };

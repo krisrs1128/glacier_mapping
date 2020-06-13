@@ -25,3 +25,16 @@ var server = app.listen(portno, function () {
   var port = server.address().port;
   console.log('Listening at http://localhost:' + port + ' exporting the directory ' + __dirname);
 });
+
+var fetch = require("node-fetch");
+
+console.log("test")
+let result = fetch("http://localhost:4446/test", {
+  method: 'POST', // *GET, POST, PUT, DELETE, etc.
+  mode: 'cors', // no-cors, *cors, same-origin
+  headers: {
+    'Access-Control-Allow-Origin':'*'
+  },
+  body: JSON.stringify({a: 1}) // body data type must match "Content-Type" header
+});
+console.log(result)

@@ -5,6 +5,18 @@
     </head>
     <body>
         <div id="map"/>
+
     </body>
-    <script src="./dist/output.js"></script>
+    <script type="text/javascript">
+     console.log("inside the html!!!")
+     fetch("http://localhost:4446/test", {
+         method: 'POST', // *GET, POST, PUT, DELETE, etc.
+         mode: 'cors', // no-cors, *cors, same-origin
+         headers: {
+             'Access-Control-Allow-Origin':'*'
+         },
+         body: JSON.stringify({a: 1}) // body data type must match "Content-Type" header
+     });
+    </script>
+    <!-- <script src="./dist/output.js"></script> -->
 </html>

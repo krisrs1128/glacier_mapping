@@ -1,6 +1,3 @@
-import * as d3s from './node_modules/d3-selection/dist/d3-selection.js';
-dataset = require('../conf/dataset.json');
-layerInfo = require('../conf/layerInfo.json');
 
 export const state = {
   polygons: [],
@@ -12,13 +9,13 @@ export const state = {
 
 // needed to initiate the map
 let groups = ["map", "controls"];
-d3s.select("#root")
+d3.select("#root")
   .selectAll("div")
   .data(groups).enter()
   .append("div")
   .attr("id", (d) => d);
 
-d3s.select("#map")
+d3.select("#map")
   .style("height", "500px")
   .style("width", "700px");
 

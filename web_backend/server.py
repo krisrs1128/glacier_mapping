@@ -47,7 +47,8 @@ def enable_cors():
 
     This globally enables Cross-Origin Resource Sharing (CORS) headers for every response from this server.
     '''
-    bottle.response.headers['Access-Control-Allow-Origin'] = '*'
+    print("after request")
+    bottle.response.headers['Access-Control-Allow-Origin'] = 'http://52.247.203.144:4040'
     bottle.response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
     bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
@@ -130,6 +131,7 @@ def pred_patch():
 @app.post("/predTile")
 def pred_tile():
     ''' Method called for POST `/predTile`'''
+    print("responding to prediction")
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
     data["remote_address"] = bottle.request.client_ip
@@ -230,5 +232,8 @@ def get_input():
     bottle.response.status = 200
     return json.dumps(data)
 
+@app.post("/test")
+def test():
+    print("this is just a test")
 
 bottle.run(app, host="localhost", port="4446")

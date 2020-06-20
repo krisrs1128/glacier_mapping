@@ -15,3 +15,6 @@ outputs/
 backup_data/
 shared/temp_files/
 .vscode
+web-tool/compiled
+web-tool/node_modules
+web-tool/package-lock.json

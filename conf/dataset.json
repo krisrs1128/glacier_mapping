@@ -12,7 +12,7 @@
   },
   "basemapLayer": {
     "initialZoom": 10,
-    "url": "outputs/{z}/{x}/{-y}.png",
+    "url": "outputs/tiles/{z}/{x}/{-y}.png",
     "initialLocation": [30.3090779, 82.8789515],
     "args": {
       "attribution": "Georeferenced Image",

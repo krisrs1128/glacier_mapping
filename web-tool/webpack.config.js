@@ -1,6 +1,23 @@
-// Whilst the configuration object can be modified here, the recommended way of making
-// changes is via the presets' options or Neutrino's API in `.neutrinorc.js` instead.
-// Neutrino's inspect feature can be used to view/export the generated configuration.
-const neutrino = require('neutrino');
+var path = require('path');
 
-module.exports = neutrino().webpack();
+module.exports = {
+  entry: './index.js',
+  output: {
+    filename: './output.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4446',
+        pathRewrite: { '^/api': '' },
+      },
+    }
+  },
+  module: {
+    rules: [
+      { test: /\.css$/, loader: "style-loader!css-loader" },
+      {test: /\.(jpe?g|png|gif|svg)$/i, loader: "url-loader?name=app/images/[name].[ext]"},
+    ],
+  }
+};

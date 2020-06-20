@@ -1,25 +1,9 @@
-import * as d3s from 'd3-selection';
-import * as d3a from 'd3-array';
-import * as d3sm from 'd3-selection-multi';
-import * as d3sh from 'd3-shape';
-import * as d3f from 'd3-fetch';
-import 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { state, map, backendUrl } from './globals';
-import * as d3g from 'd3-geo';
-import layerInfo from '../../conf/layerInfo';
-import dataset from '../../conf/dataset.json';
-import models from '../../conf/models.json';
-import './map.css';
+import { state, map, backendUrl } from './globals.js';
+
+
 
 
 export function initializeMap() {
-  // leaflet setup
-  let tiles = L.tileLayer(
-    layerInfo.ESRI.url,
-    {attribution: ""}
-  ).addTo(map);
-
   // add svg overlay
   L.svg({clickable:true}).addTo(map)
   const overlay = d3s.select(map.getPanes().overlayPane)

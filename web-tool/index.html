@@ -1,22 +1,39 @@
 <!doctype html>
 <html>
-    <head>
-        <title>Test</title>
+  <head>
+    <script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
+      <title>Test</title>
     </head>
     <body>
-        <div id="map"/>
+      <button type="button" id = "button" name = "button">Test</button>
+      <div id="map"/>
 
-    </body>
+      </body>
     <script type="text/javascript">
      console.log("inside the html!!!")
-     fetch("http://localhost:4446/test", {
-         method: 'POST', // *GET, POST, PUT, DELETE, etc.
-         mode: 'cors', // no-cors, *cors, same-origin
-         headers: {
-             'Access-Control-Allow-Origin':'*'
-         },
-         body: JSON.stringify({a: 1}) // body data type must match "Content-Type" header
-     });
+
+
+$.ajax({
+  type: 'POST',
+  crossDomain:'true',
+  url: "http://127.0.0.1:8080/hello/",
+  data: "test",
+  success: function(response){console.log(response)},
+  dataType: "json",
+  error: function(response){console.log(response)},
+});
+
+//fetch("http://127.0.0.1:8080/hello", {
+  //       method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    //     mode: 'no-cors', // no-cors, *cors, same-origin
+      //   headers: {
+        //   'Access-Control-Allow-Origin':'*',
+          // "Content-Type": "application/json"
+       //  },
+      //   data: JSON.stringify({a: 1}) // body data type must match "Content-Type" header    
+    // }).then(function(response){console.log(response.text())})
+  //then(response => response.json());
+       //.then(data => console.log(data));
     </script>
     <!-- <script src="./dist/output.js"></script> -->
 </html>

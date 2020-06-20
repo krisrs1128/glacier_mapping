@@ -2,7 +2,12 @@
 <html>
   <head>
     <script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
-      <title>Test</title>
+    <link rel="stylesheet" type="text/css" href="./node_modules/leaflet/dist/leaflet.css"> 
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  <title>Test</title>
     </head>
     <body>
       <button type="button" id = "button" name = "button">Test</button>
@@ -35,5 +40,6 @@ $.ajax({
   //then(response => response.json());
        //.then(data => console.log(data));
     </script>
+    <script type ="module" src = "index.js"></script>  
     <!-- <script src="./dist/output.js"></script> -->
 </html>

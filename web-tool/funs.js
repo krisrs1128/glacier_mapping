@@ -1,15 +1,15 @@
-import * as d3s from 'd3-selection';
-import * as d3a from 'd3-array';
-import * as d3sm from 'd3-selection-multi';
-import * as d3sh from 'd3-shape';
-import * as d3f from 'd3-fetch';
-import 'leaflet';
-import { state, map, backendUrl } from './globals';
-import * as d3g from 'd3-geo';
-import layerInfo from '../conf/layerInfo';
-import dataset from '../conf/dataset.json';
-import models from '../conf/models.json';
-import './styles/map.css';
+import * as d3s from './node_modules/d3-selection/dist/d3-selection.js';
+import * as d3a from './node_modules/d3-array/dist/d3-array.js';
+import * as d3sm from './node_modules/d3-selection-multi/build/d3-selection-multi.js';
+import * as d3sh from './node_modules/d3-shape/dist/d3-shape.js';
+import * as d3f from './node_modules/d3-fetch/dist/d3-fetch.js';
+import { state, map, backendUrl } from './globals.js';
+import * as d3g from './node_modules/d3-geo/dist/d3-geo.js';
+
+
+layerInfo = require('../conf/layerInfo.json');
+dataset = require('../conf/dataset.json');
+models = require('../conf/models.json');
 
 
 export function initializeMap() {

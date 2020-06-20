@@ -1,11 +1,8 @@
-import './styles/map.css';
-import 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import * as d3f from 'd3-fetch';
-import * as d3s from 'd3-selection';
-import * as d3sm from 'd3-selection-multi';
-import * as f from './funs';
-import { map, backendUrl } from './globals';
+import * as d3f from './node_modules/d3-fetch/dist/d3-fetch.js';
+import * as d3s from './node_modules/d3-selection/dist/d3-selection.min.js';
+import * as d3sm from './node_modules/d3-selection-multi/build/d3-selection-multi.js';
+import * as f from './funs.js';
+import { map, backendUrl } from './globals.js';
 
 // Setup the map
 f.initializeMap();

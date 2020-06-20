@@ -1,7 +1,6 @@
-import 'leaflet';
-import * as d3s from 'd3-selection';
-import dataset from '../conf/dataset';
-import layerInfo from '../conf/layerInfo';
+import * as d3s from './node_modules/d3-selection/dist/d3-selection.js';
+dataset = require('../conf/dataset.json');
+layerInfo = require('../conf/layerInfo.json');
 
 export const state = {
   polygons: [],

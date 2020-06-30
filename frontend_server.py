@@ -28,7 +28,7 @@ def main():
     args = parser.parse_args(sys.argv[1:])
 
     # TODO: Check for environment variables that should override the host and port
-    
+
     bottle_server_kwargs = {
         "host": args.host,
         "port": args.port,

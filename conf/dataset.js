@@ -1,4 +1,4 @@
-{
+export default {
   "classes": [
     {
       "count": 0,

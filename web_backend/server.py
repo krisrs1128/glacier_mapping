@@ -234,7 +234,10 @@ def get_input():
 
 @app.post("/test")
 def test():
+    bottle.response.content_type = 'application/json'
+    data = bottle.response.json
     print("this is just a test")
-    return json.dumps({"hey": "test"})
+    bottle.response.status = 200
+    return json.dumps(data)
 
 bottle.run(app, host="localhost", port="8080")

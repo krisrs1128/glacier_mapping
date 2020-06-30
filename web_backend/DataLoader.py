@@ -80,6 +80,14 @@ def encode_rgb(x):
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 
 
+def convert_to_geojson(y_hat, prob_threshold=0.6):
+    contours = skimage.measure.find_contours(y_hat, prob)
+    # poly = shapely.geometry.Polygon()
+    import pdb
+    pdb.set_trace()
+    return contours
+
+
 # ------------------------------------------------------
 # DataLoader for arbitrary GeoTIFFs
 # ------------------------------------------------------

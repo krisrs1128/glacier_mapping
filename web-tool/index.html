@@ -2,12 +2,12 @@
 <html>
   <head>
     <script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
-    <link rel="stylesheet" type="text/css" href="./node_modules/leaflet/dist/leaflet.css"> 
+    <link rel="stylesheet" type="text/css" href="./node_modules/leaflet/dist/leaflet.css">
    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-  <script src="https://d3js.org/d3.v5.min.js"></script> 
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src=""></script>
 
- 
   <title>Test</title>
     </head>
     <body>
@@ -21,7 +21,7 @@
 $.ajax({
   type: 'POST',
   crossDomain:'true',
-  url: "http://52.247.203.144:8080/hello/",
+  url: "http://52.247.203.144:8080/test/",
   data: "test",
   success: function(response){console.log(response)},
   dataType: "json",
@@ -35,11 +35,11 @@ $.ajax({
         //   'Access-Control-Allow-Origin':'*',
           // "Content-Type": "application/json"
        //  },
-      //   data: JSON.stringify({a: 1}) // body data type must match "Content-Type" header    
+      //   data: JSON.stringify({a: 1}) // body data type must match "Content-Type" header
     // }).then(function(response){console.log(response.text())})
   //then(response => response.json());
        //.then(data => console.log(data));
     </script>
-    <script type ="module" src = "index.js"></script>  
+    <script type ="module" src = "index.js"></script>
     <!-- <script src="./dist/output.js"></script> -->
 </html>

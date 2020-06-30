@@ -108,7 +108,7 @@ def pred_patch():
     name_list = [item["name"] for item in data["classes"]]
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
 
-    # Run a model on the input data adn warp to EPSG:3857
+    # Run a model on the input data and warp to EPSG:3857
     output = model.run(loaded_query["src_img"])
     y_hat, output_bounds = DL.warp_data(
         output["y"].astype(np.float32),
@@ -117,10 +117,10 @@ def pred_patch():
         loaded_query["src_bounds"]
     )
 
-    # ------------------------------------------------------
-    # Step 5
-    #   Convert images to base64 and return
-    # ------------------------------------------------------
+    # extract geojson associated with the prediction
+    y_geo = DL.convert_to_geojson(y_hat)
+
+    # Convert images to base64 and return
     img_soft = np.round(utils.class_prediction_to_img(y_hat))
     data["src_img"] = DL.encode_rgb(np.float32(output["x"]))
     data["output_soft"] = DL.encode_rgb(img_soft)
@@ -236,4 +236,4 @@ def get_input():
 def test():
     print("this is just a test")
 
-bottle.run(app, host="localhost", port="4446")
+bottle.run(app, host="localhost", port="8080")

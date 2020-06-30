@@ -235,5 +235,6 @@ def get_input():
 @app.post("/test")
 def test():
     print("this is just a test")
+    return json.dumps({"hey": "test"})
 
 bottle.run(app, host="localhost", port="8080")

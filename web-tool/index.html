@@ -21,16 +21,16 @@
 $.ajax({
   type: 'POST',
   crossDomain:'true',
-  url: "http://52.247.203.144:8080/test/",
+  url: "http://52.247.203.144:8000/test/",
   data: "test",
   success: function(response){console.log(response)},
   dataType: "json",
   error: function(response){console.log(response)},
 });
 
-//fetch("http://127.0.0.1:8080/hello", {
-  //       method: 'POST', // *GET, POST, PUT, DELETE, etc.
-    //     mode: 'no-cors', // no-cors, *cors, same-origin
+//fetch("http://127.0.0.1:8080/test", {
+  //       method: 'POST',
+    //     mode: 'no-cors',
       //   headers: {
         //   'Access-Control-Allow-Origin':'*',
           // "Content-Type": "application/json"

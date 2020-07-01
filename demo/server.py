@@ -24,4 +24,4 @@ def test():
     bottle.response.content_type = "application/json"
     return json.dumps({"test_backend": "test"})
 
-bottle.run(app, host="0.0.0.0", port="8080", debug=True, reloader=True)
+bottle.run(app, host="0.0.0.0", port="8080")

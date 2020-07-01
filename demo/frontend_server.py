@@ -16,7 +16,7 @@ def root_app():
 
 def main():
     parser = argparse.ArgumentParser(description="Frontend Server")
-    parser.add_argument("--host", action="store", dest="host", type=str, help="Host to bind to", default="localhost")
+    parser.add_argument("--host", action="store", dest="host", type=str, help="Host to bind to", default="0.0.0.0")
     parser.add_argument("--port", action="store", dest="port", type=int, help="Port to listen on", default="4040")
     args = parser.parse_args(sys.argv[1:])
 

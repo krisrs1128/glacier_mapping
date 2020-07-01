@@ -1,44 +1,30 @@
 <!doctype html>
 <html>
-  <head>
-    <script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
-    <link rel="stylesheet" type="text/css" href="./node_modules/leaflet/dist/leaflet.css">
-   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-  <script src="https://d3js.org/d3.v5.min.js"></script>
-  <script src=""></script>
+    <head>
+        <script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
+        <link rel="stylesheet" type="text/css" href="./node_modules/leaflet/dist/leaflet.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src=""></script>
 
-  <title>Test</title>
+        <title>Test</title>
     </head>
     <body>
-      <button type="button" id = "button" name = "button">Test</button>
-      <div id="map"/>
+        <button type="button" id = "button" name = "button">Test</button>
+        <div id="map"/>
 
-      </body>
+    </body>
     <script type="text/javascript">
-
-
-$.ajax({
-  type: 'POST',
-  crossDomain:'true',
-  url: "http://52.247.203.144:8080/test",
-  data: "test",
-  success: function(response){console.log(response)},
-  dataType: "json",
-  error: function(response){console.log(response)},
-});
-
-//fetch("http://127.0.0.1:8080/test", {
-  //       method: 'POST',
-    //     mode: 'no-cors',
-      //   headers: {
-        //   'Access-Control-Allow-Origin':'*',
-          // "Content-Type": "application/json"
-       //  },
-      //   data: JSON.stringify({a: 1}) // body data type must match "Content-Type" header
-    // }).then(function(response){console.log(response.text())})
-  //then(response => response.json());
-       //.then(data => console.log(data));
+     $.ajax({
+         type: 'POST',
+         crossDomain:'true',
+         url: "http://0.0.0.0:HTTP8080/test",
+         data: "test",
+         success: function(response){console.log(response)},
+         dataType: "json",
+         error: function(response){console.log(response)},
+     });
     </script>
     <script type ="module" src = "index.js"></script>
     <!-- <script src="./dist/output.js"></script> -->

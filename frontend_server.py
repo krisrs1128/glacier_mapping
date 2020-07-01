@@ -9,25 +9,16 @@ import bottle
 import argparse
 
 
-
 @bottle.get("/")
 def root_app():
     return bottle.static_file("index.html", root="./")
 
-@bottle.get("/<filepath:re:.*>")
-def everything_else(filepath):
-    return bottle.static_file(filepath, root="./")
 
 def main():
     parser = argparse.ArgumentParser(description="Frontend Server")
-
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose debugging", default=False)
     parser.add_argument("--host", action="store", dest="host", type=str, help="Host to bind to", default="0.0.0.0")
     parser.add_argument("--port", action="store", dest="port", type=int, help="Port to listen on", default="4040")
-
     args = parser.parse_args(sys.argv[1:])
-
-    # TODO: Check for environment variables that should override the host and port
 
     bottle_server_kwargs = {
         "host": args.host,

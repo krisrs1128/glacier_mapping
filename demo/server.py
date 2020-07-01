@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 import beaker.middleware
 import bottle
-import cheroot.wsgi
 import json
 app = bottle.Bottle()
 

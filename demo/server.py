@@ -5,13 +5,6 @@ import cheroot.wsgi
 import json
 app = bottle.Bottle()
 
-#---------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------
-
-@app.route('/', method = 'OPTIONS')
-@app.route('/<path:path>', method = 'OPTIONS')
-def options_handler(path = None):
-    return
 
 @app.hook("after_request")
 def enable_cors():

@@ -9,13 +9,11 @@
    $.ajax({
        type: 'POST',
        crossDomain:'true',
-       /* url: "http://52.247.203.144:8080/test", */
        url: "http://localhost:8080/test",
        data: {"test": "test"},
        success: function(response){ console.log(response) },
        dataType: "json",
        error: function(response){ console.log(response) },
    });
-
   </script>
 </html>

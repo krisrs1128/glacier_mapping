@@ -20,8 +20,8 @@ def enable_cors():
 
 @app.post("/test")
 def test():
-    bottle.response.content_type = 'application/json'
     print("this is just a test")
-    return json.dumps({"test": "test"})
+    bottle.response.content_type = "application/json"
+    return json.dumps({"test_backend": "test"})
 
-bottle.run(app, host="0.0.0.0", port="8080")
+bottle.run(app, host="0.0.0.0", port="8080", debug=True, reloader=True)

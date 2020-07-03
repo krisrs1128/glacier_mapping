@@ -14,7 +14,9 @@ import rasterio.crs
 import rasterio.io
 import rasterio.mask
 import rasterio.warp
+import skimage.measure
 import shapely.geometry
+import geopandas as gpd
 
 # ------------------------------------------------------
 # Miscellaneous methods
@@ -80,12 +82,16 @@ def encode_rgb(x):
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 
 
-def convert_to_geojson(y_hat, prob_threshold=0.6):
-    contours = skimage.measure.find_contours(y_hat, prob)
-    # poly = shapely.geometry.Polygon()
-    import pdb
-    pdb.set_trace()
-    return contours
+def convert_to_geojson(y_hat, bounds, threshold=0.21, output_channel=0):
+    contours = skimage.measure.find_contours(y_hat[:, :, output_channel], threshold)
+
+    for i in range(len(contours)):
+        for j in range(2):
+            contours[i][:, j] = bounds[j] + (bounds[j + 2] - bounds[j]) * contours[i][:, j] / 1000
+
+    polys = [shapely.geometry.Polygon(a) for a in contours]
+    mpoly = shapely.geometry.multipolygon.MultiPolygon(polys)
+    return gpd.GeoSeries(mpoly).__geo_interface__
 
 
 # ------------------------------------------------------

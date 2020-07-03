@@ -43,7 +43,7 @@ def do_options():
     bottle.response.status = 204
     return
 
-
+@app.hook("after_request")
 def enable_cors():
     '''From https://gist.github.com/richard-flosi/3789163
     This globally enables Cross-Origin Resource Sharing (CORS) headers for every response from this server.
@@ -97,11 +97,10 @@ def retrain_model():
     return json.dumps(data)
 
 
+@app.post("/predPatch")
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
-    print("pred patch is entered")
     bottle.response.headers['Content-type'] = 'application/json'
-
     data = Dict(bottle.request.json)
 
     # Load the input data sources for the given tile
@@ -112,28 +111,27 @@ def pred_patch():
     # Run a model on the input data and warp to EPSG:3857
     output = model.run(loaded_query["src_img"])
     y_hat, output_bounds = DL.warp_data(
-        output["y"].astype(np.float32),
+        output[1].astype(np.float32),
         loaded_query["src_crs"],
         loaded_query["src_transform"],
         loaded_query["src_bounds"]
     )
 
     # extract geojson associated with the prediction
-    y_geo = DL.convert_to_geojson(y_hat)
+    y_geo = DL.convert_to_geojson(y_hat, loaded_query["src_bounds"])
+    data["y_geo"] = y_geo
 
     # Convert images to base64 and return
     img_soft = np.round(utils.class_prediction_to_img(y_hat))
-    data["src_img"] = DL.encode_rgb(np.float32(output["x"]))
+    data["src_img"] = DL.encode_rgb(np.float32(output[0]))
     data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
-    print("pred patch is done")
     return json.dumps(data)
 
 
 @app.post("/predTile")
 def pred_tile():
     ''' Method called for POST `/predTile`'''
-    print("responding to prediction")
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
     data["remote_address"] = bottle.request.client_ip
@@ -235,15 +233,6 @@ def get_input():
     return json.dumps(data)
 
 
-@app.post("/test")
-def test():
-    print("this is just a test")
-    bottle.response.content_type = "application/json"
-    return json.dumps({"test_backend": "test"})
 
-
-app.add_hook("after_request", enable_cors)
-app.route("/predPatch", method="OPTIONS", callback=do_options) # TODO: all of our web requests from index.html fire an OPTIONS call because of https://stackoverflow.com/questions/1256593/why-am-i-getting-an-options-request-instead-of-a-get-request, we should fix this 
-app.route('/predPatch', method="POST", callback=pred_patch)
-
+app.route("/predPatch", method="OPTIONS", callback=do_options)
 bottle.run(app, host="0.0.0.0", port="8080")

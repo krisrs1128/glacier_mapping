@@ -8,6 +8,7 @@
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
         <script src="https://d3js.org/d3-array.v2.min.js"></script>
+        <script type="module" src="../conf/models.js"></script>
         <title>Test</title>
     </head>
     <body>
@@ -15,17 +16,6 @@
         <div id="map"/>
 
     </body>
-    <script type="text/javascript">
-     $.ajax({
-         type: 'POST',
-         crossDomain:'true',
-         url: "http://test.westus2.cloudapp.azure.com:8080/test",
-         data: "test",
-         success: function(response){console.log(response)},
-         dataType: "json",
-         error: function(response){console.log(response)},
-     });
-    </script>
     <script type ="module" src = "index.js"></script>
     <!-- <script src="./dist/output.js"></script> -->
 </html>

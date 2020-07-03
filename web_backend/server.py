@@ -36,18 +36,19 @@ with open("conf/models.json", "r") as f:
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 
-@app.route('/', method = 'OPTIONS')
-@app.route('/<path:path>', method = 'OPTIONS')
-def options_handler(path = None):
+def do_options():
+    '''This method is necessary for CORS to work (I think --Caleb)
+    '''
+    print("entering do-options")
+    bottle.response.status = 204
     return
 
-@app.hook("after_request")
+
 def enable_cors():
     '''From https://gist.github.com/richard-flosi/3789163
-
     This globally enables Cross-Origin Resource Sharing (CORS) headers for every response from this server.
     '''
-    print("after request")
+    print("enabling cors")
     bottle.response.headers['Access-Control-Allow-Origin'] = '*'
     bottle.response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
     bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
@@ -96,10 +97,11 @@ def retrain_model():
     return json.dumps(data)
 
 
-@app.post("/predPatch")
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
-    bottle.response.content_type = 'application/json'
+    print("pred patch is entered")
+    bottle.response.headers['Content-type'] = 'application/json'
+
     data = Dict(bottle.request.json)
 
     # Load the input data sources for the given tile
@@ -124,6 +126,7 @@ def pred_patch():
     data["src_img"] = DL.encode_rgb(np.float32(output["x"]))
     data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
+    print("pred patch is done")
     return json.dumps(data)
 
 
@@ -238,5 +241,9 @@ def test():
     bottle.response.content_type = "application/json"
     return json.dumps({"test_backend": "test"})
 
+
+app.add_hook("after_request", enable_cors)
+app.route("/predPatch", method="OPTIONS", callback=do_options) # TODO: all of our web requests from index.html fire an OPTIONS call because of https://stackoverflow.com/questions/1256593/why-am-i-getting-an-options-request-instead-of-a-get-request, we should fix this 
+app.route('/predPatch', method="POST", callback=pred_patch)
 
 bottle.run(app, host="0.0.0.0", port="8080")

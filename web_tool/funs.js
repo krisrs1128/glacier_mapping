@@ -61,13 +61,14 @@ function removePatch(box) {
 
 function predPatch(box) {
   return function(event) {
-    console.log(event)
     const coords = box.getBounds();
 
     $.ajax({
       type: 'POST',
+      url: "http://test.westus2.cloudapp.azure.com:8080/predPatch",
+      contentType: "application/json",
       crossDomain:'true',
-      url: "http://test.westus2.cloudapp.azure.com:8080/test",
+      dataType: "json",
       data: JSON.stringify({
         extent: {
           xmin: coords._southWest.lng,

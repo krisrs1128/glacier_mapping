@@ -48,7 +48,7 @@ def enable_cors():
     This globally enables Cross-Origin Resource Sharing (CORS) headers for every response from this server.
     '''
     print("after request")
-    bottle.response.headers['Access-Control-Allow-Origin'] = 'http://52.247.203.144:4040'
+    bottle.response.headers['Access-Control-Allow-Origin'] = '*'
     bottle.response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
     bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 

@@ -40,7 +40,7 @@
   },
   "dataLayer": {
     "padding": 1100,
-    "path": "outputs/outputfull.vrt",
+    "path": "web_tool/outputs/tiles/output-full.vrt",
     "type": "GLACIER"
   },
   "metadata": {

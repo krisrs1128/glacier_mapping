@@ -1,23 +1,18 @@
 import { state, map, backendUrl } from './globals.js';
-
+import dataset from '../conf/dataset.js';
+import models from '../conf/models.js';
 
 
 
 export function initializeMap() {
   // add svg overlay
   L.svg({clickable:true}).addTo(map)
-  const overlay = d3s.select(map.getPanes().overlayPane)
+  const overlay = d3.select(map.getPanes().overlayPane)
   overlay.select('svg')
     .attrs({
       "pointer-events": "auto",
       "id": "mapOverlay"
     });
-
-  d3s.select("#mapOverlay")
-    .selectAll("g")
-    .data(d3a.range(10)).enter()
-    .append("g")
-    .attr("id", (d) => "polygon-" + (d - 1));
 
   map.on("keydown", function(event) {
     if (event.originalEvent.key == "Shift") {
@@ -62,10 +57,13 @@ function predPatch(box) {
   return function(event) {
     const coords = box.getBounds();
 
-    d3f.json(backendUrl + "predPatch", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    $.ajax({
+      type: 'POST',
+      url: "http://test.westus2.cloudapp.azure.com:8080/predPatch",
+      contentType: "application/json",
+      crossDomain:'true',
+      dataType: "json",
+      data: JSON.stringify({
         extent: {
           xmin: coords._southWest.lng,
           xmax: coords._northEast.lng,
@@ -73,18 +71,27 @@ function predPatch(box) {
           ymax: coords._northEast.lat,
           crs: 3857
         },
-        dataset: dataset,
         classes: dataset["classes"],
         models: models["benjamins_unet"]
-      })
-    }).then((data) => displayPred(data));
+      }),
+      success: function(response){
+        displayPred(response);
+      }
+    });
   };
 }
 
-function displayPred(data) {
-  let coords = [[data.extent.xmin, data.extent.ymin],
-                [data.extent.xmax, data.extent.ymax]];
-  L.imageOverlay(data["output_soft"], coords).addTo(map);
+function decode_img(img_str) {
+  return "data:image/jpeg;base64," + img_str;
+}
+
+function displayPred(data, show_pixel_map=false) {
+  let coords = [[data.extent.ymin, data.extent.xmin],
+                [data.extent.ymax, data.extent.xmax]];
+  if (show_pixel_map) {
+    L.imageOverlay(decode_img(data["output_soft"]), coords).addTo(map);
+  }
+  L.geoJSON(data["y_geo"]).addTo(map);
 }
 
 function getPolyAround(latlng, radius){
@@ -111,7 +118,7 @@ function getPolyAround(latlng, radius){
 
 
 export function addButtons(parent_id) {
-  d3s.select(parent_id)
+  d3.select(parent_id)
     .append("button")
     .text("New Polygon")
     .on("click", newPoly);
@@ -200,7 +207,7 @@ export function redraw() {
   pointPoly = pointPoly.map((d) => [d.x, d.y]);
 
   // drawing the polygon nodes
-  d3s.select("#mapOverlay")
+  d3.select("#mapOverlay")
     .select("#polygon-" + state.focus)
     .selectAll("circle")
     .data(pointPoly).enter()
@@ -213,7 +220,7 @@ export function redraw() {
     .on("mouseup", nodeUp)
     .on("mousedown", nodeDown);
 
-  d3s.select("#mapOverlay")
+  d3.select("#mapOverlay")
     .select("#polygon-" + state.focus)
     .selectAll(".polyNode")
     .data(pointPoly)
@@ -222,18 +229,18 @@ export function redraw() {
       cy: (d) => d[1]
     });
 
-  d3s.select("#mapOverlay")
+  d3.select("#mapOverlay")
     .select("#polygon-" + state.focus)
     .selectAll(".polyNode")
     .data(pointPoly).exit()
     .remove();
 
   // draw the polygon edges
-  let line = d3sh.line()
+  let line = d3h.line()
       .x((d) => d[0])
       .y((d) => d[1]);
 
-  d3s.select("#mapOverlay")
+  d3.select("#mapOverlay")
     .select("#polygon-" + state.focus)
     .selectAll(".polyEdge")
     .data([pointPoly]).enter()
@@ -243,7 +250,7 @@ export function redraw() {
       "class": "polyEdge"
     });
 
-  d3s.select("#mapOverlay")
+  d3.select("#mapOverlay")
     .select("#polygon-" + state.focus)
     .selectAll(".polyEdge")
     .data([pointPoly])
@@ -251,7 +258,7 @@ export function redraw() {
       "d": line
     });
 
-  d3s.select("#mapOverlay")
+  d3.select("#mapOverlay")
     .select("#polygon-" + state.focus)
     .selectAll(".polyEdge")
     .data([pointPoly]).exit()

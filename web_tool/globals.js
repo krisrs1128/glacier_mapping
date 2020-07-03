@@ -1,3 +1,5 @@
+import layerInfo from '../conf/layerInfo.js';
+import dataset from '../conf/dataset.js';
 
 export const state = {
   polygons: [],

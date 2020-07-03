@@ -5,4 +5,3 @@ import { map, backendUrl } from './globals.js';
 f.initializeMap();
 f.addButtons("#controls");
 map.on("zoom", f.redraw);
-

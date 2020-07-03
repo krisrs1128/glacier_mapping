@@ -36,19 +36,20 @@ with open("conf/models.json", "r") as f:
 #---------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------
 
-@app.route('/', method = 'OPTIONS')
-@app.route('/<path:path>', method = 'OPTIONS')
-def options_handler(path = None):
+def do_options():
+    '''This method is necessary for CORS to work (I think --Caleb)
+    '''
+    print("entering do-options")
+    bottle.response.status = 204
     return
 
 @app.hook("after_request")
 def enable_cors():
     '''From https://gist.github.com/richard-flosi/3789163
-
     This globally enables Cross-Origin Resource Sharing (CORS) headers for every response from this server.
     '''
-    print("after request")
-    bottle.response.headers['Access-Control-Allow-Origin'] = 'http://52.247.203.144:4040'
+    print("enabling cors")
+    bottle.response.headers['Access-Control-Allow-Origin'] = '*'
     bottle.response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
     bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
@@ -99,30 +100,30 @@ def retrain_model():
 @app.post("/predPatch")
 def pred_patch():
     ''' Method called for POST `/predPatch`'''
-    bottle.response.content_type = 'application/json'
+    bottle.response.headers['Content-type'] = 'application/json'
     data = Dict(bottle.request.json)
 
     # Load the input data sources for the given tile
     extent = data.extent
-    dataset = data.dataset
     name_list = [item["name"] for item in data["classes"]]
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
 
-    # Run a model on the input data adn warp to EPSG:3857
+    # Run a model on the input data and warp to EPSG:3857
     output = model.run(loaded_query["src_img"])
     y_hat, output_bounds = DL.warp_data(
-        output["y"].astype(np.float32),
+        output[1].astype(np.float32),
         loaded_query["src_crs"],
         loaded_query["src_transform"],
         loaded_query["src_bounds"]
     )
 
-    # ------------------------------------------------------
-    # Step 5
-    #   Convert images to base64 and return
-    # ------------------------------------------------------
+    # extract geojson associated with the prediction
+    y_geo = DL.convert_to_geojson(y_hat, loaded_query["src_bounds"])
+    data["y_geo"] = y_geo
+
+    # Convert images to base64 and return
     img_soft = np.round(utils.class_prediction_to_img(y_hat))
-    data["src_img"] = DL.encode_rgb(np.float32(output["x"]))
+    data["src_img"] = DL.encode_rgb(np.float32(output[0]))
     data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
     return json.dumps(data)
@@ -131,7 +132,6 @@ def pred_patch():
 @app.post("/predTile")
 def pred_tile():
     ''' Method called for POST `/predTile`'''
-    print("responding to prediction")
     bottle.response.content_type = 'application/json'
     data = bottle.request.json
     data["remote_address"] = bottle.request.client_ip
@@ -232,8 +232,7 @@ def get_input():
     bottle.response.status = 200
     return json.dumps(data)
 
-@app.post("/test")
-def test():
-    print("this is just a test")
 
-bottle.run(app, host="localhost", port="4446")
+
+app.route("/predPatch", method="OPTIONS", callback=do_options)
+bottle.run(app, host="0.0.0.0", port="8080")

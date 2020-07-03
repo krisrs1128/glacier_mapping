@@ -14,6 +14,11 @@ def root_app():
     return bottle.static_file("index.html", root="./")
 
 
+@bottle.get("/<filepath:re:.*>")
+def everything_else(filepath):
+    return bottle.static_file(filepath, root="./")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Frontend Server")
     parser.add_argument("--host", action="store", dest="host", type=str, help="Host to bind to", default="0.0.0.0")

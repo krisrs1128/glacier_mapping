@@ -104,7 +104,6 @@ def pred_patch():
 
     # Load the input data sources for the given tile
     extent = data.extent
-    dataset = data.dataset
     name_list = [item["name"] for item in data["classes"]]
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
 

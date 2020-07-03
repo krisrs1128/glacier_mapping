@@ -14,12 +14,6 @@ export function initializeMap() {
       "id": "mapOverlay"
     });
 
-  d3.select("#mapOverlay")
-    .selectAll("g")
-    .data(d3.range(10)).enter()
-    .append("g")
-    .attr("id", (d) => "polygon-" + (d - 1));
-
   map.on("keydown", function(event) {
     if (event.originalEvent.key == "Shift") {
       predictionExtent(event.latlng, "add");
@@ -81,18 +75,23 @@ function predPatch(box) {
         models: models["benjamins_unet"]
       }),
       success: function(response){
-        console.log("success");
-        console.log(response);
         displayPred(response);
       }
     });
   };
 }
 
-function displayPred(data) {
-  let coords = [[data.extent.xmin, data.extent.ymin],
-                [data.extent.xmax, data.extent.ymax]];
-  L.imageOverlay(data["output_soft"], coords).addTo(map);
+function decode_img(img_str) {
+  return "data:image/jpeg;base64," + img_str;
+}
+
+function displayPred(data, show_pixel_map=false) {
+  let coords = [[data.extent.ymin, data.extent.xmin],
+                [data.extent.ymax, data.extent.xmax]];
+  if (show_pixel_map) {
+    L.imageOverlay(decode_img(data["output_soft"]), coords).addTo(map);
+  }
+  L.geoJSON(data["y_geo"]).addTo(map);
 }
 
 function getPolyAround(latlng, radius){

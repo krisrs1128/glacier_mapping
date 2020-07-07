@@ -41,5 +41,4 @@ export let map = L.map("map", {
 });
 
 L.control.layers(tiles).addTo(map);
-
 export let backendUrl = "http://localhost:4446/";

@@ -75,7 +75,6 @@ def inference(img, model, process_conf):
     for i in range(I):
         for j in range(J):
             patch, _ = postprocess_tile(slice_imgs[i, j, 0], process_opts.process_funs)
-
             patches[i, j, :] = patch
             patch = np.transpose(patch, (2, 0, 1))
             patch = torch.from_numpy(patch).float().unsqueeze(0)
@@ -87,6 +86,31 @@ def inference(img, model, process_conf):
     x = merge_patches(patches, process_opts.slice.overlap, subset_ix)
     y_hat = merge_patches(predictions, process_opts.slice.overlap, subset_ix)
     return x, y_hat
+
+
+def next_multiple(size):
+    return np.ceil(size / 512) * 512
+
+
+def pad_to_valid(img):
+    size_ = img.shape
+    out_rows = next_multiple(size_[1])
+    out_cols = next_multiple(size_[2])
+
+    pad_shape = (int(out_rows - size_[1]), int(out_cols - size_[2]))
+    return np.pad(img, ((0, 0), (0, pad_shape[0]), (0, pad_shape[1])))
+
+
+def infer_conv(img, model, channels=[2, 4, 5], mean=0, std=1):
+    size_ = img.shape
+    img = (img[channels, :, :] - mean) / std
+    img = pad_to_valid(img)
+    patch = torch.from_numpy(img).float().unsqueeze(0)
+    with torch.no_grad():
+        y_hat = model(patch).numpy()
+
+    # crop y_hat
+    return y_hat[:, :, :size_[1], :size_[2]]
 
 
 def get_hist(img, mask):
@@ -215,7 +239,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-m",
         "--model",
-        default=data_dir / "runs/minimal_run/models/model_5.pt",
+        default=data_dir / "runs/minimal_run/models/model_260.pt",
         help="path to the model to use for predictions",
     )
     parser.add_argument(
@@ -280,4 +304,3 @@ if __name__ == "__main__":
         plt.imsave(
             output_dir / append_name(f"y_hat-prepred-{j}", args), squash(y_hat[:, :, j])
         )
-

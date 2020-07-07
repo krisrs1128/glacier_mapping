@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-from src.infer import inference
+from src.infer import infer_conv
 from src.models.unet import Unet
 from web_backend.ServerModelsAbstract import BackendModel
 import numpy as np
@@ -31,7 +31,7 @@ class PytorchUNet(BackendModel):
         self.verbose = verbose
 
     def run(self, img):
-        return inference(img, self.model, self.process_conf)
+        return infer_conv(img, self.model)
 
     def run_model_on_batch(self, batch_data, batch_size=32, predict_central_pixel_only=False):
         """ Expects batch_data to have shape (none, 240, 240, 4) and have values in the [0, 255] range.

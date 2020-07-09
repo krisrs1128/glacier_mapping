@@ -3,7 +3,6 @@
 # All options below are default, and technically don't need to be specified.
 source .env
 python3 -m src.data.mask -m conf/masking_paths.yaml
-
 python3 -m src.data.slice -m $DATA_DIR/processed/masks/mask_metadata.csv -o $DATA_DIR/processed/slices/
 python3 -m src.data.process_slices -c conf/postprocess.yaml -d $DATA_DIR/data/processed/slices/ -m $DATA_DIR/processed/slices/slices_0-100.geojson -o $DATA_DIR/processed
 python3 -m src.train -n minimal_run -c conf/train.yaml

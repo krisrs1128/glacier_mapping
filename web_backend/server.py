@@ -109,9 +109,9 @@ def pred_patch():
     loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
 
     # Run a model on the input data and warp to EPSG:3857
-    output = model.run(loaded_query["src_img"])
+    x, y_hat = model.run(loaded_query["src_img"])
     y_hat, output_bounds = DL.warp_data(
-        output[1].astype(np.float32),
+        y_hat.astype(np.float32),
         loaded_query["src_crs"],
         loaded_query["src_transform"],
         loaded_query["src_bounds"]
@@ -122,9 +122,8 @@ def pred_patch():
     data["y_geo"] = y_geo
 
     # Convert images to base64 and return
-    img_soft = np.round(utils.class_prediction_to_img(y_hat))
-    data["src_img"] = DL.encode_rgb(np.float32(output[0]))
-    data["output_soft"] = DL.encode_rgb(img_soft)
+    data["src_img"] = DL.encode_rgb(x.astype(np.float32))
+    data["output_soft"] = DL.encode_rgb(y_hat)
     bottle.response.status = 200
     return json.dumps(data)
 

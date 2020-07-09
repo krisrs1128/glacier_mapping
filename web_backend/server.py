@@ -111,7 +111,7 @@ def pred_patch():
     # Run a model on the input data and warp to EPSG:3857
     output = model.run(loaded_query["src_img"])
     y_hat, output_bounds = DL.warp_data(
-        output[1].astype(np.float32),
+        output.astype(np.float32),
         loaded_query["src_crs"],
         loaded_query["src_transform"],
         loaded_query["src_bounds"]
@@ -123,7 +123,7 @@ def pred_patch():
 
     # Convert images to base64 and return
     img_soft = np.round(utils.class_prediction_to_img(y_hat))
-    data["src_img"] = DL.encode_rgb(np.float32(output[0]))
+    data["src_img"] = DL.encode_rgb(output.astype(np.float32))
     data["output_soft"] = DL.encode_rgb(img_soft)
     bottle.response.status = 200
     return json.dumps(data)

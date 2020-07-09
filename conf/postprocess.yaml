@@ -5,7 +5,7 @@ split_ratio: [0.7,0.1,0.2]
 normalization_sample_size: 100
 process_funs:
   normalize:
-    stats_path: "/mnt/blobfuse/glaciers/pipeline_demo/demo_data/data/processed/slices/stats_train.json"
+    stats_path: "/mnt/blobfuse/glaciers/processed/slices/stats_train.json"
   impute:
     value: 0
   extract_channel:

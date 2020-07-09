@@ -9,6 +9,7 @@ import sys
 import time
 import torch
 import yaml
+import json
 
 DATA_DIR = os.environ["DATA_DIR"]
 
@@ -30,8 +31,15 @@ class PytorchUNet(BackendModel):
         self.model.eval()
         self.verbose = verbose
 
-    def run(self, img):
-        return infer_conv(img, self.model)
+    def run(self, img, **kwargs):
+        opts = yaml.load(open(self.process_conf))
+        channels = opts["process_funs"]["extract_channel"]["img_channels"]
+        stats_path = opts["process_funs"]["normalize"]["stats_path"]
+        stats = json.load(open(stats_path, "r"))
+        means = np.array(stats["means"])
+        stds = np.array(stats["stds"])
+
+        return infer_conv(img, self.model, channels, means, stds)
 
     def run_model_on_batch(self, batch_data, batch_size=32, predict_central_pixel_only=False):
         """ Expects batch_data to have shape (none, 240, 240, 4) and have values in the [0, 255] range.

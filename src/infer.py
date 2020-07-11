@@ -114,7 +114,7 @@ def infer_conv(img, model, channels=[2, 4, 5], mean=0, std=1):
     # crop y_hat, after removing batch dimension
     y_hat = y_hat[0, :, :size_[1], :size_[2]]
     y_hat = sigmoid(y_hat)
-    return img, np.transpose(y_hat, (1, 2, 0))
+    return np.transpose(img, (1, 2, 0)), np.transpose(y_hat, (1, 2, 0))
 
 
 def get_hist(img, mask):

@@ -9,6 +9,8 @@ import fiona
 import fiona.transform
 import numpy as np
 import os
+import copy
+from shapely.ops import unary_union
 import rasterio
 import rasterio.crs
 import rasterio.io
@@ -82,17 +84,22 @@ def encode_rgb(x):
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 
 
-def convert_to_geojson(y_hat, bounds, threshold=0.21, output_channel=0):
-    contours = skimage.measure.find_contours(y_hat[:, :, output_channel], threshold)
+def convert_to_geojson(y_hat, bounds, threshold=0.55107):
+    y_hat = 1 - y_hat
+    threshold = np.quantile(y_hat, 0.9)
+    contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
 
     for i in range(len(contours)):
-        for j in range(2):
-            contours[i][:, j] = bounds[j] + (bounds[j + 2] - bounds[j]) * contours[i][:, j] / 1000
+        contours[i] = contours[i][:, [1, 0]]
+        contours[i][:, 1] = y_hat.shape[1] - contours[i][:, 1]
+        contours[i][:, 0] = bounds[0] + (bounds[2] - bounds[0]) * contours[i][:, 0] / y_hat.shape[0]
+        contours[i][:, 1] = bounds[1] + (bounds[3] - bounds[1]) * contours[i][:, 1] / y_hat.shape[1]
 
-    polys = [shapely.geometry.Polygon(a) for a in contours]
+    contours = [a for a in contours if len(a) > 100]
+    polys = unary_union([shapely.geometry.Polygon(a) for a in contours])
     mpoly = shapely.geometry.multipolygon.MultiPolygon(polys)
+    mpoly = mpoly.simplify(tolerance=0.0005)
     return gpd.GeoSeries(mpoly).__geo_interface__
-
 
 # ------------------------------------------------------
 # DataLoader for arbitrary GeoTIFFs

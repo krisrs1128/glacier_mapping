@@ -48,7 +48,7 @@ function predictionExtent(latlng) {
  */
 function extentMoved(box) {
   return function(event) {
-    let box_coords = getPolyAround(event.latlng, 10000);
+    let box_coords = getPolyAround(event.latlng, 5000);
     box.setLatLngs(box_coords);
   };
 }
@@ -83,8 +83,9 @@ function predPatch(box) {
         models: models["benjamins_unet"]
       }),
       success: function(response){
+        console.log(response)
         displayPred(response);
-      }
+      },
     });
   };
 }
@@ -99,7 +100,10 @@ function displayPred(data, show_pixel_map=true) {
   if (show_pixel_map) {
     L.imageOverlay(decode_img(data["output_soft"]), coords).addTo(map);
   }
-  L.geoJSON(data["y_geo"], { pmIgnore: false }).addTo(map);
+
+  L.geoJSON(data["y_geo"], {
+    pmIgnore: false
+  }).addTo(map);
 }
 
 function getPolyAround(latlng, radius){

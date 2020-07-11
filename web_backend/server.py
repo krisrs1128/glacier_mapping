@@ -118,12 +118,12 @@ def pred_patch():
     )
 
     # extract geojson associated with the prediction
-    y_geo = DL.convert_to_geojson(y_hat, loaded_query["src_bounds"])
+    y_geo = DL.convert_to_geojson(y_hat[:, :, 0], loaded_query["src_bounds"])
     data["y_geo"] = y_geo
 
     # Convert images to base64 and return
     data["src_img"] = DL.encode_rgb(x.astype(np.float32))
-    data["output_soft"] = DL.encode_rgb(y_hat)
+    data["output_soft"] = DL.encode_rgb((y_hat - y_hat.min()) / y_hat.ptp() * 255)
     bottle.response.status = 200
     return json.dumps(data)
 

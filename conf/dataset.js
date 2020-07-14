@@ -38,6 +38,21 @@ export default {
     "url": "outputs/tiles/{z}/{x}/{-y}.png",
     "initialZoom": 10
   },
+  "predictionLayer": {
+    "bounds": null,
+    "args": {
+      "minZoom": 10,
+      "maxZoom": 10,
+      "maxNativeZoom": 10,
+      "attribution": "Georeferenced Image"
+    },
+    "initialLocation": [
+      30.3090779,
+      82.8789515
+    ],
+    "url": "outputs/pred_tiles/{z}/{x}/{-y}.png",
+    "initialZoom": 10
+  },
   "dataLayer": {
     "padding": 1100,
     "path": "web_tool/outputs/tiles/output-full.vrt",

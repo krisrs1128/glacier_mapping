@@ -30,6 +30,10 @@ let tiles = {
     dataset.basemapLayer.url,
     {tms: true}
   ),
+  "prediction": L.tileLayer(
+    dataset.predictionLayer.url,
+    {tms: true}
+  ),
 };
 
 export let map = L.map("map", {

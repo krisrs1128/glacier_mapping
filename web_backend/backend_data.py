@@ -31,7 +31,7 @@ def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     """
     Build a VRT Indexing all Tiffs in a directory
     """
-    inputs = glob.glob(f"{input_dir}*.tif")
+    inputs = glob.glob(f"{input_dir}*.tif*")
     vrt_opts = gdal.BuildVRTOptions(**kwargs)
     gdal.BuildVRT(output_path, inputs, options=vrt_opts)
 
@@ -63,6 +63,6 @@ if __name__ == "__main__":
 
     reproject_directory(args.input_dir, args.output_dir)
     vrt_path = pathlib.Path(args.output_dir, args.output_name)
-    vrt_from_dir(args.output_dir, str(vrt_path), bandList=args.bandList)
+    vrt_from_dir(args.input_dir, str(vrt_path), bandList=args.bandList)
     if args.tile:
         tiles(vrt_path, args.output_dir)

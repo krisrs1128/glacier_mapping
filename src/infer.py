@@ -23,11 +23,29 @@ def squash(x):
     return (x - x.min()) / x.ptp()
 
 
-def append_name(s, args):
-    return f"{s}_{Path(args.input).stem}-{Path(args.model).stem}-{Path(args.process_conf).stem}.png"
+def append_name(s, args, filetype="png"):
+    return f"{s}_{Path(args.input).stem}-{Path(args.model).stem}-{Path(args.process_conf).stem}.{filetype}"
 
 
-def merge_patches(patches, overlap, subset_ix):
+def write_geotiff(y_hat, meta, output_path, n_channel=3):
+    # create empty raster with write geographic information
+    dst_file = rasterio.open(
+        output_path, 'w',
+        driver='GTiff',
+        height=y_hat.shape[0],
+        width=y_hat.shape[1],
+        count=y_hat.shape[2],
+        dtype=np.float32,
+        crs=meta["crs"],
+        transform=meta["transform"]
+    )
+
+    y_hat = 255.0 * y_hat.astype(np.float32)
+    for k in range(y_hat.shape[2]):
+        dst_file.write(y_hat[:, :, k], k + 1)
+
+
+def merge_patches(patches, overlap):
     I, J, _, height, width, channels = patches.shape
     result = np.zeros((I * height, J * width, channels))
     for i in range(I):
@@ -36,10 +54,10 @@ def merge_patches(patches, overlap, subset_ix):
             ix_j = j * (width - overlap)
             result[ix_i : (ix_i + height), ix_j : (ix_j + width)] = patches[i, j]
 
-    return result[subset_ix[0], subset_ix[1]]
+    return result
 
 
-def inference(img, model, process_conf):
+def inference(img, model, process_conf, overlap=0, infer_size=1024):
     """
     inference(tile) -> mask
 
@@ -51,26 +69,18 @@ def inference(img, model, process_conf):
     :return prediction: A segmentation mask of the same width and height as img.
     """
     process_opts = Dict(yaml.safe_load(open(process_conf, "r")))
-    slice_opts = process_opts.slice
     channels = process_opts.process_funs.extract_channel.img_channels
 
     # reshape, pad, and slice the input
+    size_ = img.shape
+    img = pad_to_valid(img)
     img = np.transpose(img, (1, 2, 0))
-    size_ = (slice_opts.size[0], slice_opts.size[1], img.shape[2])
-    subset_ix = (
-        slice(size_[0], img.shape[0] + size_[0]),
-        slice(size_[1], img.shape[1] + size_[1]),
-    )
-    img_pad = np.zeros(
-        (img.shape[0] + 2 * size_[0], img.shape[1] + 2 * size_[1], img.shape[2])
-    )
-
-    img_pad[subset_ix[0], subset_ix[1]] = img
-    slice_imgs = view_as_windows(img_pad, size_, step=size_[0] - slice_opts.overlap)
+    slice_size = (infer_size, infer_size, img.shape[2])
+    slice_imgs = view_as_windows(img, slice_size, step=slice_size[0] - overlap)
 
     I, J, _, _, _, _ = slice_imgs.shape
-    predictions = np.zeros((I, J, 1, size_[0], size_[1], 1))
-    patches = np.zeros((I, J, 1, size_[0], size_[1], len(channels)))
+    predictions = np.zeros((I, J, 1, slice_size[0], slice_size[1], 1))
+    patches = np.zeros((I, J, 1, slice_size[0], slice_size[1], len(channels)))
 
     for i in range(I):
         for j in range(J):
@@ -81,11 +91,12 @@ def inference(img, model, process_conf):
 
             with torch.no_grad():
                 y_hat = model(patch).numpy()
+                y_hat = 1 / (1 + np.exp(-y_hat))
                 predictions[i, j, 0] = np.transpose(y_hat, (0, 2, 3, 1))
 
-    x = merge_patches(patches, process_opts.slice.overlap, subset_ix)
-    y_hat = merge_patches(predictions, process_opts.slice.overlap, subset_ix)
-    return x, y_hat
+    x = merge_patches(patches, overlap)
+    y_hat = merge_patches(predictions, overlap)
+    return x[:size_[1], :size_[2], :], y_hat[:size_[1], :size_[2], :]
 
 
 def next_multiple(size):
@@ -262,7 +273,7 @@ if __name__ == "__main__":
         "-p",
         "--process_conf",
         default=root_dir / "conf/postprocess.yaml",
-        help="path to the slice processing file",
+        help="path to the mean and variances of channels"
     )
     parser.add_argument(
         "-c", "--channels", default=[2, 4, 5], help="input channels to save for png"
@@ -276,7 +287,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("loading raster")
-    img = rasterio.open(args.input).read()
+    imgf = rasterio.open(args.input)
+    img = imgf.read()
     train_conf = Dict(yaml.safe_load(open(args.train_conf, "r")))
     process_conf = Dict(yaml.safe_load(open(args.process_conf, "r")))
 
@@ -292,9 +304,10 @@ if __name__ == "__main__":
     model.load_state_dict(state_dict)
     print("making predictions")
     x, y_hat = inference(img, model, args.process_conf)
+    output_dir = Path(args.output_dir)
+    write_geotiff(y_hat, imgf.meta, output_dir / append_name("geo", args, "tiff"))
 
     # convert input to png
-    output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     plt.imsave(
         output_dir / append_name("input", args),

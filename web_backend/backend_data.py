@@ -36,7 +36,7 @@ def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     gdal.BuildVRT(output_path, inputs, options=vrt_opts)
 
 
-def tiles(input_vrt, output_dir, zoom_levels="10"):
+def tiles(input_vrt, output_dir, zoom_levels="8-14"):
     """
     Generate PNG tiles from a VRT
     """
@@ -59,10 +59,11 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--output_name", type=str, default="output.vrt")
     parser.add_argument("-t", "--tile", default=False)
     parser.add_argument("-b", "--bandList", nargs="+", default=list(range(1, 13)))
+    parser.add_argument("-z", "--zoomLevels", nargs="+", default="8-14")
     args = parser.parse_args()
 
     reproject_directory(args.input_dir, args.output_dir)
     vrt_path = pathlib.Path(args.output_dir, args.output_name)
-    vrt_from_dir(args.input_dir, str(vrt_path), bandList=args.bandList)
+    vrt_from_dir(args.output_dir, str(vrt_path), bandList=args.bandList)
     if args.tile:
-        tiles(vrt_path, args.output_dir)
+        tiles(vrt_path, args.output_dir, args.zoomLevels)

@@ -104,9 +104,8 @@ def pred_patch():
     data = Dict(bottle.request.json)
 
     # Load the input data sources for the given tile
-    extent = data.extent
     name_list = [item["name"] for item in data["classes"]]
-    loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
+    loaded_query = DATASET["data_loader"].get_data_from_extent(data.extent)
 
     # Run a model on the input data and warp to EPSG:3857
     x, y_hat = model.run(loaded_query["src_img"])

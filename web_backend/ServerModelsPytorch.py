@@ -38,7 +38,6 @@ class PytorchUNet(BackendModel):
         stats = json.load(open(stats_path, "r"))
         means = np.array(stats["means"])
         stds = np.array(stats["stds"])
-
         return infer_conv(img, self.model, channels, means, stds)
 
     def run_model_on_batch(self, batch_data, batch_size=32, predict_central_pixel_only=False):

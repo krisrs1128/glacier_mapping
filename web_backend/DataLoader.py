@@ -212,7 +212,6 @@ class DataLoaderGlacier(DataLoader):
         extent = shapely.geometry.shape(extent)
 
         # extract that subwindow from the overall tiff
-        bounds = extent.bounds
         window = from_bounds(
             left=extent.bounds[0],
             bottom=extent.bounds[1],
@@ -224,7 +223,7 @@ class DataLoaderGlacier(DataLoader):
         return {
             "src_img": source_img.read(window=window),
             "src_crs": img_crs,
-            "src_bounds": bounds,
+            "src_bounds": extent.bounds,
             "src_transform": source_img.transform,
         }
 

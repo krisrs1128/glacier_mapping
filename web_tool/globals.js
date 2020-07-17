@@ -17,9 +17,9 @@ d3.select("#root")
   .append("div")
   .attr("id", (d) => d);
 
-d3.select("#map")
-  .style("height", "500px")
-  .style("width", "700px");
+// d3.select("#map")
+//   .style("height", "100px")
+//   .style("width", "100px");
 
 let tiles = {
   "ESRI": L.tileLayer(

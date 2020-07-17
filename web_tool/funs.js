@@ -46,7 +46,7 @@ function predictionExtent(latlng) {
  * that has access to the box in its scope.
  */
 function extentMoved(event) {
-  let box_coords = getPolyAround(event.latlng, 10000);
+  let box_coords = getPolyAround(event.latlng, 9000);
   state.box.setLatLngs(box_coords);
 }
 
@@ -54,7 +54,6 @@ function removePatch(event) {
   if (event.originalEvent.key == "Escape") {
     state.box.remove();
     map.off("click", predPatch);
-    console.log("removing clicks");
   }
 }
 

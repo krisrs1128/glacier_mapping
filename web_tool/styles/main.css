@@ -16,7 +16,7 @@ body {
   margin: 0;
 }
 html, body, #map {
-  height: 100%;
+  height: calc(100% - 14px); /* minus navbar incl. border */
   width: 100%;
 }
 

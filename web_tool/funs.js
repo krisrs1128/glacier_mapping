@@ -14,8 +14,8 @@ export function initializeMap() {
   });
 
   // add svg overlay
-  L.svg({clickable:true}).addTo(map)
-  const overlay = d3.select(map.getPanes().overlayPane)
+  L.svg({clickable:true}).addTo(map);
+  const overlay = d3.select(map.getPanes().overlayPane);
   overlay.select('svg')
     .attrs({
       "pointer-events": "auto",
@@ -28,6 +28,15 @@ export function initializeMap() {
     }
   });
 
+  map.on("keyup", function(event) {
+    if (event.originalEvent.key == "Shift") {
+      predictionExtent(event.latlng, "add");
+    }
+  });
+}
+
+function removeListeners() {
+  map.removeListeners();
 }
 
 function predictionExtent(latlng) {
@@ -48,7 +57,7 @@ function predictionExtent(latlng) {
  */
 function extentMoved(box) {
   return function(event) {
-    let box_coords = getPolyAround(event.latlng, 5000);
+    let box_coords = getPolyAround(event.latlng, 10000);
     box.setLatLngs(box_coords);
   };
 }
@@ -83,7 +92,6 @@ function predPatch(box) {
         models: models["benjamins_unet"]
       }),
       success: function(response){
-        console.log(response)
         displayPred(response);
       },
     });
@@ -94,7 +102,7 @@ function decode_img(img_str) {
   return "data:image/jpeg;base64," + img_str;
 }
 
-function displayPred(data, show_pixel_map=true) {
+function displayPred(data, show_pixel_map=false) {
   let coords = [[data.extent.ymin, data.extent.xmin],
                 [data.extent.ymax, data.extent.xmax]];
   if (show_pixel_map) {

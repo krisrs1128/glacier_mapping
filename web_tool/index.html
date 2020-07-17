@@ -4,40 +4,25 @@
         <script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
         <link rel="stylesheet" type="text/css" href="./node_modules/leaflet/dist/leaflet.css">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+        <link rel="stylesheet" type="text/css" href="./styles/geoman.css"/>
+        <link rel="stylesheet" type="text/css" href="styles/main.css">
         <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
         <script src="https://d3js.org/d3-array.v2.min.js"></script>
-
-        <link rel="stylesheet" type="text/css" href="styles/main.css">
-
+        <script type="module" src="../conf/models.js"></script>
         <title>Glacier Mapping</title>
     </head>
     <body>
-        
-
         <div class="topnav">
             <a class="active" href="#home">Home</a>
             <a href="#help">Help</a>
             <a href="#about">About</a>
             <a class ="title">Glacier Mapping</a>
-
         </div>
-
         <div id="map"/>
-
     </body>
-    <script type="text/javascript">
-     $.ajax({
-         type: 'POST',
-         crossDomain:'true',
-         url: "http://test.westus2.cloudapp.azure.com:8080/test",
-         data: "test",
-         success: function(response){console.log(response)},
-         dataType: "json",
-         error: function(response){console.log(response)},
-     });
-    </script>
     <script type ="module" src = "index.js"></script>
     <!-- <script src="./dist/output.js"></script> -->
 </html>

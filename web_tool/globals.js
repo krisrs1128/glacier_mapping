@@ -6,7 +6,8 @@ export const state = {
   source_images: [],
   pred_images: [],
   focus: null,
-  mode: "create"
+  mode: "create",
+  box: null
 }
 
 // needed to initiate the map
@@ -17,21 +18,17 @@ d3.select("#root")
   .append("div")
   .attr("id", (d) => d);
 
-// d3.select("#map")
-//   .style("height", "100px")
-//   .style("width", "100px");
-
 let tiles = {
   "ESRI": L.tileLayer(
     layerInfo.ESRI.url,
     {attribution: ""}
   ),
-  "2-4-5": L.tileLayer(
-    dataset.basemapLayer.url,
-    {tms: true}
-  ),
   "prediction": L.tileLayer(
     dataset.predictionLayer.url,
+    {tms: true}
+  ),
+  "2-4-5": L.tileLayer(
+    dataset.basemapLayer.url,
     {tms: true}
   ),
 };

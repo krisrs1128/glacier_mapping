@@ -84,9 +84,8 @@ def encode_rgb(x):
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 
 
-def convert_to_geojson(y_hat, bounds, threshold=0.55107):
+def convert_to_geojson(y_hat, bounds, threshold=0.4):
     y_hat = 1 - y_hat
-    threshold = np.quantile(y_hat, 0.9)
     contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
 
     for i in range(len(contours)):
@@ -212,7 +211,6 @@ class DataLoaderGlacier(DataLoader):
         extent = shapely.geometry.shape(extent)
 
         # extract that subwindow from the overall tiff
-        bounds = extent.bounds
         window = from_bounds(
             left=extent.bounds[0],
             bottom=extent.bounds[1],
@@ -224,7 +222,7 @@ class DataLoaderGlacier(DataLoader):
         return {
             "src_img": source_img.read(window=window),
             "src_crs": img_crs,
-            "src_bounds": bounds,
+            "src_bounds": extent.bounds,
             "src_transform": source_img.transform,
         }
 

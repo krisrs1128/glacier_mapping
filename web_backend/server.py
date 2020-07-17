@@ -48,7 +48,6 @@ def enable_cors():
     '''From https://gist.github.com/richard-flosi/3789163
     This globally enables Cross-Origin Resource Sharing (CORS) headers for every response from this server.
     '''
-    print("enabling cors")
     bottle.response.headers['Access-Control-Allow-Origin'] = '*'
     bottle.response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
     bottle.response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
@@ -104,9 +103,8 @@ def pred_patch():
     data = Dict(bottle.request.json)
 
     # Load the input data sources for the given tile
-    extent = data.extent
     name_list = [item["name"] for item in data["classes"]]
-    loaded_query = DATASET["data_loader"].get_data_from_extent(extent)
+    loaded_query = DATASET["data_loader"].get_data_from_extent(data.extent)
 
     # Run a model on the input data and warp to EPSG:3857
     x, y_hat = model.run(loaded_query["src_img"])

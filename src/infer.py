@@ -75,7 +75,11 @@ def inference(img, model, process_conf, overlap=0, infer_size=1024):
     size_ = img.shape
     img = pad_to_valid(img)
     img = np.transpose(img, (1, 2, 0))
-    slice_size = (infer_size, infer_size, img.shape[2])
+    slice_size = (
+        min(img.shape[0], infer_size),
+        min(img.shape[1], infer_size),
+        img.shape[2]
+    )
     slice_imgs = view_as_windows(img, slice_size, step=slice_size[0] - overlap)
 
     I, J, _, _, _, _ = slice_imgs.shape
@@ -304,11 +308,13 @@ if __name__ == "__main__":
     model.load_state_dict(state_dict)
     print("making predictions")
     x, y_hat = inference(img, model, args.process_conf)
+
+    # write geotiff
     output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
     write_geotiff(y_hat, imgf.meta, output_dir / append_name("geo", args, "tiff"))
 
     # convert input to png
-    output_dir.mkdir(parents=True, exist_ok=True)
     plt.imsave(
         output_dir / append_name("input", args),
         squash(img[args.channels].transpose(1, 2, 0)),

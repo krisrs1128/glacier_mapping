@@ -14,8 +14,8 @@ export function initializeMap() {
   });
 
   // add svg overlay
-  L.svg({clickable:true}).addTo(map)
-  const overlay = d3.select(map.getPanes().overlayPane)
+  L.svg({clickable:true}).addTo(map);
+  const overlay = d3.select(map.getPanes().overlayPane);
   overlay.select('svg')
     .attrs({
       "pointer-events": "auto",
@@ -27,15 +27,14 @@ export function initializeMap() {
       predictionExtent(event.latlng, "add");
     }
   });
-
 }
 
 function predictionExtent(latlng) {
-  let box = L.polygon([[0, 0], [0, 0]], {"id": "predictionBox"});
-  box.addTo(map);
-  map.addEventListener("mousemove", extentMoved(box));
-  map.addEventListener("keydown", removePatch(box));
-  map.addEventListener("click", predPatch(box));
+  state.box = L.polygon([[0, 0], [0, 0]], {"id": "predictionBox"});
+  state.box.addTo(map);
+  map.on("mousemove", extentMoved);
+  map.on("keydown", removePatch);
+  map.on("click", predPatch);
 }
 
 /*
@@ -46,55 +45,50 @@ function predictionExtent(latlng) {
  * refer to a previously instantiated extent / box. So, we return a function
  * that has access to the box in its scope.
  */
-function extentMoved(box) {
-  return function(event) {
-    let box_coords = getPolyAround(event.latlng, 5000);
-    box.setLatLngs(box_coords);
-  };
+function extentMoved(event) {
+  let box_coords = getPolyAround(event.latlng, 10000);
+  state.box.setLatLngs(box_coords);
 }
 
-function removePatch(box) {
-  return function(event) {
-    if (event.originalEvent.key == "Escape") {
-      box.remove();
-    }
-  };
+function removePatch(event) {
+  if (event.originalEvent.key == "Escape") {
+    state.box.remove();
+    map.off("click", predPatch);
+    console.log("removing clicks");
+  }
 }
 
-function predPatch(box) {
-  return function(event) {
-    const coords = box.getBounds();
+function predPatch(event) {
+  const coords = state.box.getBounds();
 
-    $.ajax({
-      type: 'POST',
-      url: "http://test.westus2.cloudapp.azure.com:8080/predPatch",
-      contentType: "application/json",
-      crossDomain:'true',
-      dataType: "json",
-      data: JSON.stringify({
-        extent: {
-          xmin: coords._southWest.lng,
-          xmax: coords._northEast.lng,
-          ymin: coords._southWest.lat,
-          ymax: coords._northEast.lat,
-          crs: 3857
-        },
-        classes: dataset["classes"],
-        models: models["benjamins_unet"]
-      }),
-      success: function(response){
-        console.log(response)
-        displayPred(response);
+  $.ajax({
+    type: 'POST',
+    url: "http://test.westus2.cloudapp.azure.com:8080/predPatch",
+    contentType: "application/json",
+    crossDomain:'true',
+    dataType: "json",
+    data: JSON.stringify({
+      extent: {
+        xmin: coords._southWest.lng,
+        xmax: coords._northEast.lng,
+        ymin: coords._southWest.lat,
+        ymax: coords._northEast.lat,
+        crs: 3857
       },
-    });
-  };
+      classes: dataset["classes"],
+      models: models["benjamins_unet"]
+    }),
+    success: function(response){
+      displayPred(response);
+    },
+  });
 }
 
 function decode_img(img_str) {
   return "data:image/jpeg;base64," + img_str;
 }
 
-function displayPred(data, show_pixel_map=true) {
+function displayPred(data, show_pixel_map=false) {
   let coords = [[data.extent.ymin, data.extent.xmin],
                 [data.extent.ymax, data.extent.xmax]];
   if (show_pixel_map) {

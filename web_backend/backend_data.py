@@ -17,7 +17,7 @@ def reproject_directory(input_dir, output_dir, dst_epsg=4326):
     """
     Warp all Tiffs from one directory to 4326
     """
-    inputs = pathlib.Path(input_dir).glob("*.tif")
+    inputs = pathlib.Path(input_dir).glob("*.tif*")
     for im_path in inputs:
         print(f"reprojecting {str(im_path)}")
         loaded_im = rasterio.open(im_path)

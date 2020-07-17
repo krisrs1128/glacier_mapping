@@ -6,7 +6,8 @@ export const state = {
   source_images: [],
   pred_images: [],
   focus: null,
-  mode: "create"
+  mode: "create",
+  box: null
 }
 
 // needed to initiate the map

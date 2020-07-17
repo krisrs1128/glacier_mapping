@@ -39,7 +39,6 @@ with open("conf/models.json", "r") as f:
 def do_options():
     '''This method is necessary for CORS to work (I think --Caleb)
     '''
-    print("entering do-options")
     bottle.response.status = 204
     return
 

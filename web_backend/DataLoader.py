@@ -84,7 +84,7 @@ def encode_rgb(x):
     return base64.b64encode(x_im.tostring()).decode("utf-8")
 
 
-def convert_to_geojson(y_hat, bounds, threshold=0.4):
+def convert_to_geojson(y_hat, bounds, threshold=0.8):
     y_hat = 1 - y_hat
     contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
 

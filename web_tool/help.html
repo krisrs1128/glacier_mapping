@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="styles/main.css">
+    </head>
+    <body>
+        <div class="topnav">
+            <a href="index.html">Home</a>
+            <a class="active" href="#home">Help</a>
+            <a href="help.html">Help</a>
+            <a href="#about">About</a>
+            <a class ="title">Glacier Mapping</a>
+        </div>
+
+        <h2>Directions</h2>
+        <ul>
+            <li> Layers: To toggle between landsat channels (5-4-2),
+                high-resolution ESRI imagery, and overall model predictions, use the
+                tile icon on the top right of the map display.
+            </li>
+            <li> Predictions: Press the <i>Shift</i> key to create a box within
+                which to make predictions. When you click, the model will run,
+                and the results will appear as a geojson layer. Press the
+                <i>ESC</i> key to remove the box and exit prediction mode.
+            </li>
+            <li> Editing: To edit predicted polygons, click the <i>Edit
+                layers</i> button (vertex next to a mouse icon). Click and drag a
+                purple square to change its position. Click and drag a green square
+                to indroduce a new vertex at that position. To stop editing, click
+                the edit button again.
+            </li>
+            <li> Adding / deleting polygons: To create a new polygon, trace out
+                its shape after pressing the <i>New Polygon</i> button (triangle at
+                the top left). To delete a layer, select the eraser icon on the left
+                and click the layer to remove.
+            </li>
+            <li> Pan and zoom: Clicking and dragging pans, double clicking
+                zooms, and thead +/- symbol zooms in and out, like in google maps.
+            </li>
+        </ul>
+
+    </body>
+</html>

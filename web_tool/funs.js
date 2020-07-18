@@ -3,14 +3,16 @@ import dataset from '../conf/dataset.js';
 import models from '../conf/models.js';
 
 
-
 export function initializeMap() {
   map.pm.addControls({
+    deleteLayer: true,
+    drawCircle: false,
+    drawCircleMarker: false,
     drawMarker: false,
     drawPolygon: true,
-    editPolygon: true,
     drawPolyline: false,
-    deleteLayer: true,
+    drawRectangle: false,
+    editPolygon: true
   });
 
   // add svg overlay
@@ -37,6 +39,18 @@ function predictionExtent(latlng) {
   map.on("click", predPatch);
 }
 
+function get_radius(z) {
+  switch (z) {
+    case 8: return 90000;
+    case 9: return 70000;
+    case 10: return 50000;
+    case 11: return 15000;
+    case 12: return 6000;
+    case 13: return 4000;
+    case 14: return 3000;
+  };
+}
+
 /*
  * Associate a Listener with an Extent
  *
@@ -46,7 +60,8 @@ function predictionExtent(latlng) {
  * that has access to the box in its scope.
  */
 function extentMoved(event) {
-  let box_coords = getPolyAround(event.latlng, 9000);
+  let r = get_radius(map.getZoom());
+  let box_coords = getPolyAround(event.latlng, r);
   state.box.setLatLngs(box_coords);
 }
 
@@ -78,9 +93,7 @@ function predPatch(event) {
       models: models["benjamins_unet"]
     }),
     success: function(response){
-      displayPred(response);
-    },
-  });
+      displayPred(response);},});
 }
 
 function decode_img(img_str) {
@@ -94,9 +107,8 @@ function displayPred(data, show_pixel_map=false) {
     L.imageOverlay(decode_img(data["output_soft"]), coords).addTo(map);
   }
 
-  L.geoJSON(data["y_geo"], {
-    pmIgnore: false
-  }).addTo(map);
+  state.polygons.push(L.geoJSON(data["y_geo"], {pmIgnore: false}));
+  L.layerGroup(state.polygons).addTo(map).on("zoomend", (e) => { map.fire("viewreset"); return; });
 }
 
 function getPolyAround(latlng, radius){
@@ -119,12 +131,4 @@ function getPolyAround(latlng, radius){
           [topleft.lat, bottomright.lng],
           [bottomright.lat, bottomright.lng],
           [bottomright.lat, topleft.lng]];
-}
-
-
-export function geomanControls() {
-  map.pm.addControls({
-    position: 'topleft',
-    drawCircle: false,
-  });
 }

@@ -94,8 +94,8 @@ def convert_to_geojson(y_hat, bounds, threshold=0.8):
         contours[i][:, 0] = bounds[0] + (bounds[2] - bounds[0]) * contours[i][:, 0] / y_hat.shape[0]
         contours[i][:, 1] = bounds[1] + (bounds[3] - bounds[1]) * contours[i][:, 1] / y_hat.shape[1]
 
-    contours = [a for a in contours if len(a) > 100]
-    polys = unary_union([shapely.geometry.Polygon(a) for a in contours])
+    polys = [shapely.geometry.Polygon(a) for a in contours]
+    polys = unary_union([p for p in polys if p.area > 4e-6])
     mpoly = shapely.geometry.multipolygon.MultiPolygon(polys)
     mpoly = mpoly.simplify(tolerance=0.0005)
     return gpd.GeoSeries(mpoly).__geo_interface__

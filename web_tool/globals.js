@@ -3,10 +3,6 @@ import dataset from '../conf/dataset.js';
 
 export const state = {
   polygons: [],
-  source_images: [],
-  pred_images: [],
-  focus: null,
-  mode: "create",
   box: null
 }
 
@@ -38,8 +34,15 @@ export let map = L.map("map", {
   crs: L.CRS.EPSG3857, // this is the projection CRS (EPSG:3857), but it is different than the data CRS (EPSG:4326). See https://gis.stackexchange.com/questions/225765/leaflet-map-crs-is-3857-but-coordinates-4326/225786.
   center: dataset.basemapLayer.initialLocation,
   zoom: dataset.basemapLayer.initialZoom,
+  minZoom: dataset.basemapLayer.args.minZoom,
+  maxZoom: dataset.basemapLayer.args.maxZoom,
+  fadeAnimation: false,
   layers: Object.values(tiles)
 });
 
 L.control.layers(tiles).addTo(map);
 export let backendUrl = "http://localhost:4446/";
+
+map.on("drag", function() {
+  map.fire("viewreset");
+});

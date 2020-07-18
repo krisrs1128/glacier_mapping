@@ -26,17 +26,17 @@ export default {
   "basemapLayer": {
     "bounds": null,
     "args": {
-      "minZoom": 10,
-      "maxZoom": 10,
+      "minZoom": 8,
+      "maxZoom": 14,
       "maxNativeZoom": 10,
       "attribution": "Georeferenced Image"
     },
     "initialLocation": [
-      30.3090779,
+      30.4290779,
       82.8789515
     ],
     "url": "outputs/tiles/{z}/{x}/{-y}.png",
-    "initialZoom": 10
+    "initialZoom": 11
   },
   "predictionLayer": {
     "bounds": null,

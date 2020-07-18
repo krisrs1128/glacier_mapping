@@ -42,6 +42,11 @@ html, body, #map {
 li {
     font-family: 'Lato', sans-serif;
     font-size: 17px;
+    margin: 15px 15px 15px 15px;
+}
+
+iframe {
+    margin-left: 10%;
 }
 
 h2 {

@@ -148,18 +148,17 @@
 .marker-icon,
 .marker-icon:focus {
     background-color: #ffffff;
-    border: 1px solid #3388ff;
+    border: 2px solid #9d4cba;
     border-radius: 5%;
-    margin: -8px 0 0 -8px !important;
     width: 4px !important;
     height: 4px !important;
-    outline: 0;
     transition: opacity ease 0.3s;
 }
 
 .marker-icon-middle,
 .marker-icon-middle:focus {
-    opacity: 0.7;
+    border: 1px solid #83cfbb;
+    opacity: 0.8;
     margin: -6px 0 0 -6px !important;
     width: 4px !important;
     height: 4px !important;

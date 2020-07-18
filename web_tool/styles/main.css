@@ -4,6 +4,8 @@
 /* class="container" - Sets some margins around the element so it is spaced
                        from the top, bottom, and sides of the window. */
 
+@import url('https://fonts.googleapis.com/css2?family=Lato&family=Raleway:wght@600&display=swap');
+
 .container {
   padding: 40px 10px;
   max-width: 800px;
@@ -33,7 +35,17 @@ html, body, #map {
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
+  font-family: 'Lato', sans-serif;
   font-size: 17px;
+}
+
+li {
+    font-family: 'Lato', sans-serif;
+    font-size: 17px;
+}
+
+h2 {
+    font-family: 'Raleway', sans-serif;
 }
 
 /* Change the color of links on hover */
@@ -54,3 +66,4 @@ html, body, #map {
   color: white;
   float: left;
 }
+

@@ -46,7 +46,3 @@ export let backendUrl = "http://localhost:4446/";
 map.on("drag", function() {
   map.fire("viewreset");
 });
-
-map.on("zoomstart", function() {
-  map.fire("viewreset");
-});

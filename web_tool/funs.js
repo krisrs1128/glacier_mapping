@@ -25,7 +25,6 @@ export function initializeMap() {
     });
 
   // add sweeping and prediction controls
-  L.control.sideBySide(tiles["5-4-2"], tiles["prediction"]).addTo(map);
   map.on("keydown", function(event) {
     if (event.originalEvent.key == "Shift") {
       predictionExtent(event.latlng, "add");

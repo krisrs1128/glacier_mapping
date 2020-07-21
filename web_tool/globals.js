@@ -28,9 +28,10 @@ export let map = L.map("map", {
   minZoom: dataset.basemapLayer.args.minZoom,
   maxZoom: dataset.basemapLayer.args.maxZoom,
   fadeAnimation: false,
-  layers: Object.values(tiles)
+  layers: [tiles["prediction"], tiles["5-4-2"]]
 });
 
-L.control.layers(tiles).addTo(map);
+L.control.sideBySide(tiles["prediction"], tiles["5-4-2"]).addTo(map);
+// L.control.layers(tiles).addTo(map);
 export let backendUrl = "http://localhost:4446/";
 

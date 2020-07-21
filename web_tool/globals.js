@@ -6,16 +6,28 @@ export const state = {
   box: null
 }
 
-let tiles = {
-  "ESRI": L.tileLayer(
+export const tiles = {
+  "ESRI_left": L.tileLayer(
     layerInfo.ESRI.url,
     {attribution: ""}
   ),
-  "prediction": L.tileLayer(
+  "prediction_left": L.tileLayer(
     dataset.predictionLayer.url,
     {tms: true}
   ),
-  "5-4-2": L.tileLayer(
+  "5-4-2_left": L.tileLayer(
+    dataset.basemapLayer.url,
+    {tms: true}
+  ),
+  "ESRI_right": L.tileLayer(
+    layerInfo.ESRI.url,
+    {attribution: ""}
+  ),
+  "prediction_right": L.tileLayer(
+    dataset.predictionLayer.url,
+    {tms: true}
+  ),
+  "5-4-2_right": L.tileLayer(
     dataset.basemapLayer.url,
     {tms: true}
   ),
@@ -28,9 +40,7 @@ export let map = L.map("map", {
   minZoom: dataset.basemapLayer.args.minZoom,
   maxZoom: dataset.basemapLayer.args.maxZoom,
   fadeAnimation: false,
-  layers: Object.values(tiles)
+  layers: [tiles["5-4-2_left"], tiles["5-4-2_right"]]
 });
 
-L.control.layers(tiles).addTo(map);
 export let backendUrl = "http://localhost:4446/";
-

@@ -1,4 +1,4 @@
-import { state, map, backendUrl } from './globals.js';
+import { state, tiles, map, backendUrl } from './globals.js';
 import dataset from '../conf/dataset.js';
 import models from '../conf/models.js';
 
@@ -24,6 +24,8 @@ export function initializeMap() {
       "id": "mapOverlay"
     });
 
+  // add sweeping and prediction controls
+  L.control.sideBySide(tiles["5-4-2"], tiles["prediction"]).addTo(map);
   map.on("keydown", function(event) {
     if (event.originalEvent.key == "Shift") {
       predictionExtent(event.latlng, "add");

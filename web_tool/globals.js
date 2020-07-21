@@ -6,7 +6,7 @@ export const state = {
   box: null
 }
 
-let tiles = {
+export const tiles = {
   "ESRI": L.tileLayer(
     layerInfo.ESRI.url,
     {attribution: ""}

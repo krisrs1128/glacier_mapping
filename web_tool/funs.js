@@ -2,6 +2,7 @@ import { state, tiles, map, backendUrl } from './globals.js';
 import dataset from '../conf/dataset.js';
 import models from '../conf/models.js';
 
+let sideBySide = null;
 
 export function initializeMap() {
   map.pm.addControls({
@@ -25,11 +26,48 @@ export function initializeMap() {
     });
 
   // add sweeping and prediction controls
+  sideBySide = L.control.sideBySide(tiles["5-4-2_left"], tiles["5-4-2_right"]).addTo(map);
   map.on("keydown", function(event) {
     if (event.originalEvent.key == "Shift") {
       predictionExtent(event.latlng, "add");
     }
   });
+}
+
+export function initializeSelect() {
+  let layers = ["#layerLeft", "#layerRight"];
+  for (let i in layers) {
+    d3.select(layers[i])
+      .on("change", switchLayers);
+
+    d3.select(layers[i])
+      .selectAll("option")
+      .data(["5-4-2", "ESRI", "prediction"]).enter()
+      .append("option")
+      .attr("value", (d) => d)
+      .text((d) => d);
+  }
+}
+
+function switchLayers() {
+  let newValues = [
+    d3.select("#layerLeft").property('value') + "_left",
+    d3.select("#layerRight").property('value') + "_right"
+  ];
+
+  // for (const i in tiles) {
+  //   map.removeLayer(tiles[i]);
+  // }
+
+  map.eachLayer(function(layer) {
+    if( layer instanceof L.TileLayer )
+      map.removeLayer(layer);
+  });
+
+  map.addLayer(tiles[newValues[0]]);
+  map.addLayer(tiles[newValues[1]]);
+  sideBySide.setLeftLayers(tiles[newValues[0]]);
+  sideBySide.setRightLayers(tiles[newValues[1]]);
 }
 
 function predictionExtent(latlng) {

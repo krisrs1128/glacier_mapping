@@ -55,10 +55,6 @@ function switchLayers() {
     d3.select("#layerRight").property('value') + "_right"
   ];
 
-  // for (const i in tiles) {
-  //   map.removeLayer(tiles[i]);
-  // }
-
   map.eachLayer(function(layer) {
     if( layer instanceof L.TileLayer )
       map.removeLayer(layer);

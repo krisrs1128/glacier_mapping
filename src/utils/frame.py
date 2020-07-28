@@ -22,7 +22,7 @@ class Framework:
     """
 
     def __init__(self, loss_fn=None, model_opts=None, optimizer_opts=None,
-                 metrics_opts=None, reg_opts=None,):
+                 reg_opts=None,):
         """
         Set Class Attrributes
         """
@@ -44,7 +44,6 @@ class Framework:
         self.lrscheduler = ReduceLROnPlateau(self.optimizer, "min",
                                              verbose=True, patience=500,
                                              min_lr=1e-6)
-        self.metrics_opts = metrics_opts
         self.reg_opts = reg_opts
 
 
@@ -92,6 +91,8 @@ class Framework:
         """
         Compute loss given a prediction
         """
+        y_hat = y_hat.to(self.device)
+        y = y.to(self.device)
         loss = self.loss_fn(y_hat, y)
         for reg_type in self.reg_opts.keys():
             reg_fun = getattr(src.utils.reg, reg_type)
@@ -105,7 +106,7 @@ class Framework:
         return loss
 
 
-    def calculate_metrics(self, y_hat, y):
+    def metrics(self, y_hat, y, metrics_opts):
         """
         Loop over metrics in train.yaml
         """
@@ -113,7 +114,7 @@ class Framework:
         y_hat = y_hat.to(self.device)
 
         results = []
-        for k, metric in self.metrics_opts.items():
+        for k, metric in metrics_opts.items():
             b_metric = []
             for b_ix in range(y_hat.shape[0]): # loop over batches
                 c_metric = []

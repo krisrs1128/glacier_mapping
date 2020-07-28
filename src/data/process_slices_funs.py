@@ -9,7 +9,6 @@ import os
 import random
 import sys
 import numpy as np
-from joblib import Parallel, delayed
 
 
 def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
@@ -53,11 +52,9 @@ def reshuffle(split_ids, output_dir="output/", n_cpu=3):
         path = Path(output_dir, split_type)
         os.makedirs(path, exist_ok=True)
 
-    target_locs = {}
+    target_locs = {k: [] for k in split_ids}
     for split_type in split_ids:
-        n_ids = len(split_ids[split_type])
-
-        def wrapper(i):
+        for i in range(len(split_ids[split_type])):
             cur_locs = {}
             for im_type in ["img", "mask"]:
                 print(f"shuffling image {i} - {im_type}")
@@ -68,12 +65,7 @@ def reshuffle(split_ids, output_dir="output/", n_cpu=3):
                 copyfile(source, target)
                 cur_locs[im_type] = target
 
-            return cur_locs
-
-        para = Parallel(n_jobs=n_cpu)
-        target_locs[split_type] = para(delayed(wrapper)(i) for i in range(n_ids))
-        target_locs[split_type] = sum([], target_locs[split_type])
-
+            target_locs[split_type].append(cur_locs)
     return target_locs
 
 

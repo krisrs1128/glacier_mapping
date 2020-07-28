@@ -4,7 +4,7 @@ Training/Validation Pipeline:
     1- Initialize loaders (train & validation)
         1.1-Pass all params onto both loaders
     2- Initialize the framework
-    3- Train Loop e epochs
+    3- Train Loop args.e epochs
         3.1 Pass entire data loader through epoch
         3.2 Iterate over dataloader with specific batch
     4- Log Epoch level train loss, test loss, metrices, image prediction each s step.
@@ -13,32 +13,23 @@ Training/Validation Pipeline:
     6- models are saved in path/models/name_of_the_run
     7- tensorboard is saved in path/runs/name_of_the_run
 """
-from addict import Dict
 from pathlib import Path
-from src.data.data import GlacierDataset
-from src.utils.frame import Framework
-from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
 import argparse
 import json
-import math
-import numpy as np
 import os
+import numpy as np
+import pandas as pd
+from addict import Dict
+from src.data.data import fetch_loaders
+from src.utils.frame import Framework
+from torch.utils.tensorboard import SummaryWriter
+from torchvision.utils import make_grid
 import torch
-import torchvision
 import yaml
-
 np.random.seed(7)
 
 
-def get_num_params(model):
-    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
-    params = sum([np.prod(p.size()) for p in model_parameters])
-    return int(params)
-
-
 def get_args():
-
     parser = argparse.ArgumentParser(
         description="Train the UNet on images and target masks",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -84,162 +75,88 @@ def get_args():
     return parser.parse_args()
 
 
+def log_batch(epoch, n_epochs, i, n, loss, batch_size):
+    print(
+        f"Epoch {epoch}/{n_epochs}, Training batch {i+1} of {int(n) // batch_size}, Loss = {loss/batch_size:.5f}",
+        end="\r",
+        flush=True,
+    )
+
+
+def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
+    metrics = dict(pd.DataFrame(metrics).mean())
+    writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
+    for k, v in metrics.items():
+        writer.add_scalar(f"{stage}/{str(k)}", v, epoch)
+
+
+def log_images(writer, frame, batch, epoch, stage="train"):
+    pm = lambda x: x.permute(0, 3, 2, 1)
+    squash = lambda x: (x - x.min()) / (x.max() - x.min())
+
+    x, y = batch
+    y_hat = torch.sigmoid(frame.infer(x))
+    if epoch == 0:
+        writer.add_image(f"{stage}/x", make_grid(pm(squash(x))), epoch)
+        writer.add_image(f"{stage}/y", make_grid(pm(y)), epoch)
+
+    writer.add_image(f"{stage}/y_hat", make_grid(pm(y_hat)), epoch)
+
+
 if __name__ == "__main__":
     args = get_args()
     data_dir = Path(os.environ["DATA_DIR"])
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
     processed_dir = data_dir / "processed"
 
-    train_dataset = GlacierDataset(processed_dir / "train")
-    val_dataset = GlacierDataset(processed_dir / "dev")
-
-    train_loader = DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=8
-    )
-    val_loader = DataLoader(
-        val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=3
-    )
+    loaders = fetch_loaders(processed_dir, args.batch_size)
     frame = Framework(
         model_opts=conf.model_opts,
         optimizer_opts=conf.optim_opts,
-        metrics_opts=conf.metrics_opts,
         reg_opts=conf.reg_opts
     )
 
-    # Tensorboard path
+    # Setup logging
     writer = SummaryWriter(f"{data_dir}/runs/{args.run_name}/logs/")
     writer.add_text("Arguments", json.dumps(vars(args)))
     writer.add_text("Configuration Parameters", json.dumps(conf))
 
-    # Prepare image grid train/val, x,y to write in tensorboard
-    _sample_train_images, _sample_train_labels = iter(train_loader).next()
-    _sample_val_images, _sample_val_labels = iter(val_loader).next()
+    for epoch in range(args.epochs):
 
-    # Write image to tensorboard
-    _view_x_train = _sample_train_images[:, :, :, [2, 1, 0]]
-    _view_x_train = _view_x_train.permute(0, 3, 1, 2)
-    _view_x_train = (_view_x_train - _view_x_train.min()) / (
-        _view_x_train.max() - _view_x_train.min()
-    )
-    train_img_grid = torchvision.utils.make_grid(_view_x_train, nrow=4)
-    _labels = _sample_train_labels.permute(0, 3, 1, 2)
-    train_label_grid = torchvision.utils.make_grid(_labels, nrow=4)
-    writer.add_image("Train/image", train_img_grid)
-    writer.add_image("Train/labels", train_label_grid)
-
-    _view_x_val = _sample_val_images[:, :, :, [2, 1, 0]]
-    _view_x_val = _view_x_val.permute(0, 3, 1, 2)
-    _view_x_val = (_view_x_val - _view_x_val.min()) / (
-        _view_x_val.max() - _view_x_val.min()
-    )
-    val_img_grid = torchvision.utils.make_grid(_view_x_val, nrow=4)
-    _labels = _sample_val_labels.permute(0, 3, 1, 2)
-    val_label_grid = torchvision.utils.make_grid(_labels, nrow=4)
-    writer.add_image("Validation/image", val_img_grid)
-    writer.add_image("Validation/labels", val_label_grid)
-
-    # Saving json model file for the tool
-    num_params = get_num_params(frame.model)
-
-    tool_dict = {
-        str(args.run_name): {
-            "metadata": {"displayName": str(args.run_name)},
-            "model": {
-                "type": "pytorch",
-                "numParameters": num_params,
-                "name": conf.model_opts.name,
-                "args": conf.model_opts.args,
-                "inputShape": (512, 512, int(conf.model_opts.args.inchannels)),
-                "fn": str(
-                    Path(
-                        f"{data_dir}/runs/{args.run_name}/models/", f"model_{args.epochs}.pt"
-                    )
-                ),
-                "fineTuneLayer": 0,
-                "process": "conf/postprocess.yaml",
-            },
-        }
-    }
-
-    tool_json = json.dumps(tool_dict, indent=4)
-
-    tool_dir = f"{data_dir}/runs/{args.run_name}/tool_files/"
-    if not os.path.exists(tool_dir):
-        os.makedirs(tool_dir)
-    with open(tool_dir + "model.json", "w") as model_tool:
-        model_tool.write(tool_json)
-
-    # Calculate number of batches once
-    n_batches = int(math.ceil(len(train_dataset) / args.batch_size))
-
-    for epoch in range(1, args.epochs + 1):
-        ## Training loop
-        loss = 0
-        for i, (x, y) in enumerate(train_loader):
+        # train loop
+        loss, metrics, loss_d = 0, [], {}
+        N = len(loaders["train"].dataset)
+        for i, (x, y) in enumerate(loaders["train"]):
             y_hat, _loss = frame.optimize(x, y)
-            print(
-                f"Epoch {epoch}/{args.epochs}, Training batch {i+1} of {n_batches}, Loss= {_loss/args.batch_size:.5f}",
-                end="\r",
-                flush=True,
-            )
             loss += _loss
-            if i == 0:
-                metrics = frame.calculate_metrics(y_hat, y)
-            else:
-                metrics += frame.calculate_metrics(y_hat, y)
 
-        # Print and write scalars to tensorboard
-        epoch_train_loss = loss / len(train_dataset)
-        print(f"\nT_Loss: {epoch_train_loss:.5f}", end=" ")
-        for i, k in enumerate(conf.metrics_opts):
-            print(f", {k}: {metrics[i]/len(train_dataset):.3f}", end=" ")
-        writer.add_scalar("Loss/train", epoch_train_loss, epoch)
-        for i, k in enumerate(conf.metrics_opts):
-            writer.add_scalar("Train/" + str(k), metrics[i] / len(train_dataset), epoch)
-        # Write Images to tensorboard
-        if epoch % args.save_every == 0:
-            y_hat = frame.infer(_sample_train_images.to(frame.device))
             y_hat = torch.sigmoid(y_hat)
-            _preds = y_hat.permute(0, 3, 2, 1)
-            pred_grid = torchvision.utils.make_grid(_preds, nrow=4)
-            writer.add_image("Train/predictions", pred_grid, epoch)
+            metrics_ = frame.metrics(y_hat, y, conf.metrics_opts)
+            metrics.append(metrics_)
+            log_batch(epoch, args.epochs, i, N, _loss, args.batch_size)
 
-        ## Validation loop
-        loss = 0
-        for i, (x, y) in enumerate(val_loader):
-            y_hat = frame.infer(x.to(frame.device))
-            _loss = frame.calc_loss(y_hat.to(frame.device), y.to(frame.device)).item()
-            loss += _loss
-            if i == 0:
-                metrics = frame.calculate_metrics(y_hat, y)
-            else:
-                metrics += frame.calculate_metrics(y_hat, y)
-        epoch_val_loss = loss / len(val_dataset)
-        frame.val_operations(epoch_val_loss)
-        # Print and write scalars to tensorboard
-        print(f"\nV_Loss: {epoch_val_loss:.5f}", end=" ")
-        for i, k in enumerate(conf.metrics_opts):
-            print(f", {k}: {metrics[i]/len(val_dataset):.3f}", end=" ")
-        writer.add_scalar("Loss/val", epoch_val_loss, epoch)
-        for i, k in enumerate(conf.metrics_opts):
-            writer.add_scalar(
-                "Validation/" + str(k), metrics[i] / len(val_dataset), epoch
-            )
-        # Write images to tensorboard
-        if epoch % args.save_every == 0:
-            y_hat = frame.infer(_sample_val_images.to(frame.device))
+        loss_d["train"] = loss / N
+        log_metrics(writer, metrics, loss_d["train"], epoch)
+        log_images(writer, frame, next(iter(loaders["train"])), epoch)
+
+        # validation loop
+        loss, metrics = 0, []
+        for x, y in loaders["val"]:
+            y_hat = frame.infer(x)
+            loss += frame.calc_loss(y_hat, y).item()
+
             y_hat = torch.sigmoid(y_hat)
-            _preds = y_hat.permute(0, 3, 2, 1)
-            val_pred_grid = torchvision.utils.make_grid(_preds, nrow=4)
-            writer.add_image("Validation/predictions", val_pred_grid, epoch)
-        # Write combined loss graph to tensorboard
-        writer.add_scalars(
-            "Loss", {"train": epoch_train_loss, "val": epoch_val_loss}, epoch
-        )
-        print("\n")
+            metrics_ = frame.metrics(y_hat, y, conf.metrics_opts)
+            metrics.append(metrics_)
+
+        loss_d["val"] = loss / len(loaders["val"].dataset)
+        log_metrics(writer, metrics, loss_d["val"], epoch, "val")
+        log_images(writer, frame, next(iter(loaders["val"])), epoch, "val")
+
         # Save model
+        writer.add_scalars("Loss", loss_d, epoch)
         if epoch % args.save_every == 0:
-            out_dir=f"{data_dir}/runs/{args.run_name}/models/"
+            out_dir = f"{data_dir}/runs/{args.run_name}/models/"
             frame.save(out_dir, epoch)
 
     writer.close()

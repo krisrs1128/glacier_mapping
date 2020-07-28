@@ -4,9 +4,18 @@ Custom Dataset for Training
 #!/usr/bin/env python
 import glob
 import os
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import torch
+
+def fetch_loaders(processed_dir, batch_size=32):
+    train_dataset = GlacierDataset(processed_dir / "train")
+    val_dataset = GlacierDataset(processed_dir / "dev")
+
+    return {
+        "train": DataLoader(train_dataset, batch_size=batch_size, num_workers=8),
+        "val": DataLoader(val_dataset, batch_size=batch_size, num_workers=3)
+    }
 
 
 class GlacierDataset(Dataset):

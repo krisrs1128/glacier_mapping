@@ -1,6 +1,6 @@
 model_opts:
   name: "UnetDropout"
-  args: 
+  args:
     inchannels: 3
     outchannels: 1
     net_depth: 5
@@ -8,7 +8,7 @@ model_opts:
     spatial: True
 optim_opts:
   name: "Adam"
-  args: 
+  args:
     lr: 0.0001
 metrics_opts:
   IoU:
@@ -21,4 +21,3 @@ metrics_opts:
     threshold: 0.4
 reg_opts:
   l1_reg: 0.0005
-  # l2_reg: 0.001

@@ -13,7 +13,6 @@ from pathlib import Path
 import os
 import yaml
 from addict import Dict
-from joblib import Parallel, delayed
 import geopandas as gpd
 import numpy as np
 import src.data.process_slices_funs as pf
@@ -42,7 +41,7 @@ if __name__ == "__main__":
         "-m",
         "--slice_meta",
         type=str,
-        default=processed_dir / "slices/slices_0-100.geojson",
+        default=processed_dir / "slices/slices.geojson",
         help="path to the slices metadata",
     )
     parser.add_argument(
@@ -80,9 +79,8 @@ if __name__ == "__main__":
 
     # global statistics: get the means and variances in the train split
     print("getting stats")
-    conf.process_funs.normalize.stats_path = Path(
-        conf.process_funs.normalize.stats_path
-    )
+    conf.process_funs.normalize.stats_path = processed_dir / \
+        Path(conf.process_funs.normalize.stats_path)
 
     stats = pf.generate_stats(
         [p["img"] for p in target_locs["train"]],
@@ -93,11 +91,7 @@ if __name__ == "__main__":
     # postprocess individual images (all the splits)
     for split_type in target_locs:
         print(f"postprocessing {split_type}...")
-
-        def wrapper(i):
-            """
-            Process an individual img / mask pair
-            """
+        for i in range(len(target_locs[split_type])):
             img, mask = pf.postprocess(
                 target_locs[split_type][i]["img"],
                 target_locs[split_type][i]["mask"],
@@ -106,6 +100,3 @@ if __name__ == "__main__":
 
             np.save(target_locs[split_type][i]["img"], img)
             np.save(target_locs[split_type][i]["mask"], mask)
-
-        para = Parallel(n_jobs=args.n_cpu)
-        para(delayed(wrapper)(i) for i in range(len(target_locs[split_type])))

@@ -1,8 +1,0 @@
-model:
-  name: "UNet"
-  args:
-    depth: 4
-optimizer:
-  name: "Adam"
-  args:
-    lr: 1e-6

@@ -22,7 +22,7 @@ class Framework:
     """
 
     def __init__(self, loss_fn=None, model_opts=None, optimizer_opts=None,
-                 metrics_opts=None, reg_opts=None,):
+                 reg_opts=None,):
         """
         Set Class Attrributes
         """
@@ -44,7 +44,6 @@ class Framework:
         self.lrscheduler = ReduceLROnPlateau(self.optimizer, "min",
                                              verbose=True, patience=500,
                                              min_lr=1e-6)
-        self.metrics_opts = metrics_opts
         self.reg_opts = reg_opts
 
 
@@ -60,7 +59,7 @@ class Framework:
         loss = self.calc_loss(y_hat, y)
         loss.backward()
         self.optimizer.step()
-        return y_hat, loss.item()
+        return y_hat.permute(0, 2, 3, 1), loss.item()
 
     def val_operations(self, val_loss):
         """
@@ -86,12 +85,14 @@ class Framework:
         """
         x = x.permute(0, 3, 1, 2).to(self.device)
         with torch.no_grad():
-            return self.model(x).permute(0, 3, 2, 1)
+            return self.model(x).permute(0, 2, 3, 1)
 
     def calc_loss(self, y_hat, y):
         """
         Compute loss given a prediction
         """
+        y_hat = y_hat.to(self.device)
+        y = y.to(self.device)
         loss = self.loss_fn(y_hat, y)
         for reg_type in self.reg_opts.keys():
             reg_fun = getattr(src.utils.reg, reg_type)
@@ -105,31 +106,16 @@ class Framework:
         return loss
 
 
-    def calculate_metrics(self, y_hat, y):
+    def metrics(self, y_hat, y, metrics_opts):
         """
         Loop over metrics in train.yaml
         """
-        y = y.to(self.device)
-        y_hat = y_hat.to(self.device)
+        results = {}
+        for k, metric in metrics_opts.items():
+            if "threshold" in metric.keys():
+                y_hat = y_hat > metric["threshold"]
 
-        results = []
-        for k, metric in self.metrics_opts.items():
-            b_metric = []
-            for b_ix in range(y_hat.shape[0]): # loop over batches
-                c_metric = []
-
-                for c_ix in range(y_hat.shape[1]): # loop over channels
-                    y_bc = y[b_ix, c_ix]
-                    y_hat_bc = y_hat[b_ix, c_ix]
-
-                    if "threshold" in metric.keys():
-                        y_hat_bc = torch.sigmoid(y_hat_bc) > metric["threshold"]
-                        y_bc = y_bc.bool()
-
-                    metric_fun = getattr(src.utils.metrics, k)
-                    metric_value = metric_fun(y_hat, y)
-                    c_metric.append(metric_value)
-
-                b_metric.append(np.mean(np.asarray(c_metric)))
-            results.append(np.sum(np.asarray(b_metric)))
-        return np.array(results)
+                metric_fun = getattr(src.utils.metrics, k)
+                metric_value = metric_fun(y_hat, y)
+            results[k] = np.mean(np.asarray(metric_value))
+        return results

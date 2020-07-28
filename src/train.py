@@ -77,7 +77,7 @@ def get_args():
 
 def log_batch(epoch, n_epochs, i, n, loss, batch_size):
     print(
-        f"Epoch {epoch}/{n_epochs}, Training batch {i+1} of {int(n) // batch_size}, Loss= {loss/batch_size:.5f}",
+        f"Epoch {epoch}/{n_epochs}, Training batch {i+1} of {int(n) // batch_size}, Loss = {loss/batch_size:.5f}",
         end="\r",
         flush=True,
     )

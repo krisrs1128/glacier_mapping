@@ -59,7 +59,7 @@ class Framework:
         loss = self.calc_loss(y_hat, y)
         loss.backward()
         self.optimizer.step()
-        return y_hat, loss.item()
+        return y_hat.permute(0, 2, 3, 1), loss.item()
 
     def val_operations(self, val_loss):
         """
@@ -85,7 +85,7 @@ class Framework:
         """
         x = x.permute(0, 3, 1, 2).to(self.device)
         with torch.no_grad():
-            return self.model(x).permute(0, 3, 2, 1)
+            return self.model(x).permute(0, 2, 3, 1)
 
     def calc_loss(self, y_hat, y):
         """
@@ -110,12 +110,12 @@ class Framework:
         """
         Loop over metrics in train.yaml
         """
-        results = []
+        results = {}
         for k, metric in metrics_opts.items():
             if "threshold" in metric.keys():
                 y_hat = y_hat > metric["threshold"]
 
                 metric_fun = getattr(src.utils.metrics, k)
                 metric_value = metric_fun(y_hat, y)
-            results.append(np.sum(np.asarray(metric_value)))
-        return np.array(results)
+            results[k] = np.mean(np.asarray(metric_value))
+        return results

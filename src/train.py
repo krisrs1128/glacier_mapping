@@ -85,7 +85,6 @@ def log_batch(epoch, n_epochs, i, n, loss, batch_size):
 
 def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
     metrics = dict(pd.DataFrame(metrics).mean())
-
     writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
     for k, v in metrics.items():
         writer.add_scalar(f"{stage}/{str(k)}", v, epoch)
@@ -126,7 +125,7 @@ if __name__ == "__main__":
             loss += _loss
 
             y_hat = torch.sigmoid(y_hat)
-            metrics_ = frame.metrics(y_hat, y.to(frame.device), conf.metrics_opts)
+            metrics_ = frame.metrics(y_hat, y, conf.metrics_opts)
             metrics.append(metrics_)
             log_batch(epoch, args.epochs, i, N, _loss, args.batch_size)
 
@@ -137,11 +136,11 @@ if __name__ == "__main__":
         # validation loop
         loss, metrics = 0, []
         for x, y in loaders["val"]:
-            y_hat = frame.infer(x.to(frame.device))
+            y_hat = frame.infer(x)
             loss += frame.calc_loss(y_hat, y).item()
 
             y_hat = torch.sigmoid(y_hat)
-            metrics_ = frame.metrics(y_hat, y.to(frame.device), conf.metrics_opts)
+            metrics_ = frame.metrics(y_hat, y, conf.metrics_opts)
             metrics.append(metrics_)
 
         loss_d["val"] = loss / len(loaders["val"].dataset)

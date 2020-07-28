@@ -7,10 +7,9 @@ Convert Large Tiff and Mask files to Slices (512 x 512 subtiles)
 from pathlib import Path
 import argparse
 import os
-from geopandas.geodataframe import GeoDataFrame
-from joblib import Parallel, delayed
-from skimage.util.shape import view_as_windows
 import numpy as np
+from geopandas.geodataframe import GeoDataFrame
+from skimage.util.shape import view_as_windows
 import pandas as pd
 import rasterio
 import shapely.geometry
@@ -126,20 +125,6 @@ if __name__ == "__main__":
         default=processed_dir / "slices/",
     )
     parser.add_argument(
-        "-s",
-        "--start_line",
-        type=int,
-        default=0,
-        help="start line in the metadata, from which to start processing",
-    )
-    parser.add_argument(
-        "-e",
-        "--end_line",
-        type=int,
-        default=100,
-        help="end line in the metadata, at which to stop processing",
-    )
-    parser.add_argument(
         "-b",
         "--out_base",
         type=str,
@@ -150,22 +135,20 @@ if __name__ == "__main__":
         "-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=5
     )
     args = parser.parse_args()
-    paths = pd.read_csv(args.mask_metadata)[args.start_line : args.end_line]
-
-    def wrapper(row):
-        """Slicing all the Tiffs in input csv file into specified output directory"""
-        img_path = paths.iloc[row]["img"]
-        mask_path = paths.iloc[row]["mask"]
-        print(f"## Slicing tiff {row +1}/{len(paths)} ...")
-        return write_pair_slices(
-            img_path, mask_path, args.output_dir, f"slice_{paths.index[row]}"
-        )
-
+    paths = pd.read_csv(args.mask_metadata)
     Path(args.output_dir).mkdir(parents=True)
-    para = Parallel(n_jobs=args.n_cpu)
-    metadata = para(delayed(wrapper)(k) for k in range(len(paths)))
+
+    metadata = []
+    for row in range(len(paths)):
+        print(f"## Slicing tiff {row +1}/{len(paths)} ...")
+        metadata_ = write_pair_slices(
+            paths.iloc[row]["img"],
+            paths.iloc[row]["mask"],
+            args.output_dir,
+            f"slice_{paths.index[row]}"
+        )
+        metadata.append(metadata_)
+
     metadata = pd.concat(metadata, axis=0)
-    out_path = Path(
-        args.output_dir, f"slices_{args.start_line}-{args.end_line}.geojson"
-    )
+    out_path = Path(args.output_dir, "slices.geojson")
     metadata.to_file(out_path, index=False, driver="GeoJSON")

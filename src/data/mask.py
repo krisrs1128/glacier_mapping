@@ -5,12 +5,11 @@ import argparse
 import os
 import pathlib
 import warnings
-from joblib import Parallel, delayed
+import numpy as np
 from rasterio.features import rasterize
 from shapely.geometry import box, Polygon
 from shapely.ops import cascaded_union
 import geopandas as gpd
-import numpy as np
 import pandas as pd
 import rasterio
 import yaml
@@ -45,9 +44,9 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None, n_jo
     else:
         raise ValueError(f"Cannot overwrite {metadata_path}.")
 
-    def wrapper(k):
+    for k, img_path in enumerate(img_paths):
         print(f"working on image {k + 1} / {len(img_paths)}")
-        img, shps = rasterio.open(img_paths[k]), []
+        img, shps = rasterio.open(img_path), []
         for path in shps_paths[k]:
             gdf = gpd.read_file(path)
             gdf_crs = rasterio.crs.CRS.from_string(gdf.crs.to_string())
@@ -60,9 +59,8 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None, n_jo
         mask = generate_mask(img.meta, shps)
         out_path = pathlib.Path(out_dir, f"{output_base}_{k:02}")
         np.save(str(out_path), mask)
-        pd.DataFrame(
-            {
-                "img_path": img_paths[k],
+        pd.DataFrame({
+                "img_path": img_path,
                 "mask": str(out_path) + ".npy",
                 "width": img.meta["width"],
                 "height": img.meta["height"],
@@ -71,9 +69,6 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None, n_jo
             },
             index=[k],
         ).to_csv(metadata_path, header=False, mode="a")
-
-    para = Parallel(n_jobs=n_jobs)
-    para(delayed(wrapper)(k) for k in range(len(img_paths)))
 
 
 def check_crs(crs_a, crs_b):

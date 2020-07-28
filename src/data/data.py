@@ -13,12 +13,8 @@ def fetch_loaders(processed_dir, batch_size=32):
     val_dataset = GlacierDataset(processed_dir / "dev")
 
     return {
-        "train": DataLoader(
-            train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=8
-        ),
-        "val": DataLoader(
-            val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=3
-        )
+        "train": DataLoader(train_dataset, batch_size=batch_size, num_workers=8),
+        "val": DataLoader(val_dataset, batch_size=batch_size, num_workers=3)
     }
 
 

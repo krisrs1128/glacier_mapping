@@ -174,4 +174,4 @@ if __name__ == "__main__":
     masking_paths = yaml.safe_load(open(args.masking_conf, "r"))
     img_paths = [p["img_path"] for p in masking_paths.values()]
     mask_paths = [p["mask_paths"] for p in masking_paths.values()]
-    generate_masks(img_paths, mask_paths, n_jobs=1)
+    generate_masks(img_paths, mask_paths)

@@ -4,7 +4,7 @@ Training/Validation Pipeline:
     1- Initialize loaders (train & validation)
         1.1-Pass all params onto both loaders
     2- Initialize the framework
-    3- Train Loop e epochs
+    3- Train Loop args.e epochs
         3.1 Pass entire data loader through epoch
         3.2 Iterate over dataloader with specific batch
     4- Log Epoch level train loss, test loss, metrices, image prediction each s step.
@@ -91,10 +91,16 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
 
 
 def log_images(writer, frame, batch, epoch, stage="train"):
-    x, _ = batch
-    y_hat = frame.infer(x)
-    y_hat = torch.sigmoid(y_hat).permute(0, 3, 2, 1)
-    writer.add_image(f"{stage}/predictions", make_grid(y_hat), epoch)
+    pm = lambda x: x.permute(0, 3, 2, 1)
+    squash = lambda x: (x - x.min()) / (x.max() - x.min())
+
+    x, y = batch
+    y_hat = torch.sigmoid(frame.infer(x))
+    if epoch == 0:
+        writer.add_image(f"{stage}/x", make_grid(pm(squash(x))), epoch)
+        writer.add_image(f"{stage}/y", make_grid(pm(y)), epoch)
+
+    writer.add_image(f"{stage}/y_hat", make_grid(pm(y_hat)), epoch)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,6 @@ import os
 import random
 import sys
 import numpy as np
-from joblib import Parallel, delayed
 
 
 def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):

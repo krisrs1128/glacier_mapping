@@ -15,9 +15,8 @@ Training/Validation Pipeline:
 """
 from addict import Dict
 from pathlib import Path
-from src.data.data import GlacierDataset
+from src.data.data import fetch_loaders
 from src.utils.frame import Framework
-from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import argparse
 import json
@@ -29,12 +28,6 @@ import torchvision
 import yaml
 
 np.random.seed(7)
-
-
-def get_num_params(model):
-    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
-    params = sum([np.prod(p.size()) for p in model_parameters])
-    return int(params)
 
 
 def get_args():
@@ -83,6 +76,22 @@ def get_args():
 
     return parser.parse_args()
 
+def log_epoch(epoch, n_epochs, i, n, loss, batch_size):
+    print(
+        f"Epoch {epoch}/{n_epochs}, Training batch {i+1} of {int(len(train_dataset) // batch_size)}, Loss= {loss/batch_size:.5f}",
+        end="\r",
+        flush=True,
+    )
+
+def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
+    print(f"\nT_Loss: {avg_loss:.5f}", end=" ")
+    for k, v in metrics.items():
+        print(f", {k}: v:.3f}", end=" ")
+        writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
+    for k, v in metrics.items():
+        writer.add_scalar(f"{stage}/{str(k)}", v, epoch)
+
+
 
 if __name__ == "__main__":
     args = get_args()
@@ -90,15 +99,7 @@ if __name__ == "__main__":
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
     processed_dir = data_dir / "processed"
 
-    train_dataset = GlacierDataset(processed_dir / "train")
-    val_dataset = GlacierDataset(processed_dir / "dev")
-
-    train_loader = DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=8
-    )
-    val_loader = DataLoader(
-        val_dataset, batch_size=args.batch_size, shuffle=True, num_workers=3
-    )
+    loaders = fetch_loaders(processed_dir, batch_size)
     frame = Framework(
         model_opts=conf.model_opts,
         optimizer_opts=conf.optim_opts,
@@ -111,85 +112,23 @@ if __name__ == "__main__":
     writer.add_text("Arguments", json.dumps(vars(args)))
     writer.add_text("Configuration Parameters", json.dumps(conf))
 
-    # Prepare image grid train/val, x,y to write in tensorboard
-    _sample_train_images, _sample_train_labels = iter(train_loader).next()
-    _sample_val_images, _sample_val_labels = iter(val_loader).next()
+    for epoch in range(args.epochs):
+        loss, metrics = 0, []
 
-    # Write image to tensorboard
-    _view_x_train = _sample_train_images[:, :, :, [2, 1, 0]]
-    _view_x_train = _view_x_train.permute(0, 3, 1, 2)
-    _view_x_train = (_view_x_train - _view_x_train.min()) / (
-        _view_x_train.max() - _view_x_train.min()
-    )
-    train_img_grid = torchvision.utils.make_grid(_view_x_train, nrow=4)
-    _labels = _sample_train_labels.permute(0, 3, 1, 2)
-    train_label_grid = torchvision.utils.make_grid(_labels, nrow=4)
-    writer.add_image("Train/image", train_img_grid)
-    writer.add_image("Train/labels", train_label_grid)
-
-    _view_x_val = _sample_val_images[:, :, :, [2, 1, 0]]
-    _view_x_val = _view_x_val.permute(0, 3, 1, 2)
-    _view_x_val = (_view_x_val - _view_x_val.min()) / (
-        _view_x_val.max() - _view_x_val.min()
-    )
-    val_img_grid = torchvision.utils.make_grid(_view_x_val, nrow=4)
-    _labels = _sample_val_labels.permute(0, 3, 1, 2)
-    val_label_grid = torchvision.utils.make_grid(_labels, nrow=4)
-    writer.add_image("Validation/image", val_img_grid)
-    writer.add_image("Validation/labels", val_label_grid)
-
-    # Saving json model file for the tool
-    num_params = get_num_params(frame.model)
-
-    tool_dict = {
-        str(args.run_name): {
-            "metadata": {"displayName": str(args.run_name)},
-            "model": {
-                "type": "pytorch",
-                "numParameters": num_params,
-                "name": conf.model_opts.name,
-                "args": conf.model_opts.args,
-                "inputShape": (512, 512, int(conf.model_opts.args.inchannels)),
-                "fn": str(
-                    Path(
-                        f"{data_dir}/runs/{args.run_name}/models/", f"model_{args.epochs}.pt"
-                    )
-                ),
-                "fineTuneLayer": 0,
-                "process": "conf/postprocess.yaml",
-            },
-        }
-    }
-
-    tool_json = json.dumps(tool_dict, indent=4)
-
-    tool_dir = f"{data_dir}/runs/{args.run_name}/tool_files/"
-    if not os.path.exists(tool_dir):
-        os.makedirs(tool_dir)
-    with open(tool_dir + "model.json", "w") as model_tool:
-        model_tool.write(tool_json)
-
-    # Calculate number of batches once
-    n_batches = int(math.ceil(len(train_dataset) / args.batch_size))
-
-    for epoch in range(1, args.epochs + 1):
-        ## Training loop
-        loss = 0
-        for i, (x, y) in enumerate(train_loader):
+        for i, (x, y) in enumerate(loader["train"]):
             y_hat, _loss = frame.optimize(x, y)
-            print(
-                f"Epoch {epoch}/{args.epochs}, Training batch {i+1} of {n_batches}, Loss= {_loss/args.batch_size:.5f}",
-                end="\r",
-                flush=True,
-            )
+            log_epoch(epoch, args.epochs, i, len(loader["train"].dataset), _loss, args.batch_size)
             loss += _loss
-            if i == 0:
-                metrics = frame.calculate_metrics(y_hat, y)
-            else:
-                metrics += frame.calculate_metrics(y_hat, y)
+            metrics.append(frame.calculate_metrics(y_hat, y))
 
-        # Print and write scalars to tensorboard
-        epoch_train_loss = loss / len(train_dataset)
+        # log training stuff
+        log_metrics(writer, metrics, loss / len(train_dataset), epoch)
+
+        # log validation stuff
+
+        # save model
+
+
         print(f"\nT_Loss: {epoch_train_loss:.5f}", end=" ")
         for i, k in enumerate(conf.metrics_opts):
             print(f", {k}: {metrics[i]/len(train_dataset):.3f}", end=" ")

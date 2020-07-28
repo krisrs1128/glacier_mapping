@@ -3,8 +3,3 @@ mask_1:
   mask_paths:
     - /mnt/blobfuse/glaciers/pipeline_demo/demo_data/vector_data/2005/nepal/data/debris.shp
     - /mnt/blobfuse/glaciers/pipeline_demo/demo_data/vector_data/2005/nepal/data/clean.shp
-# mask_2:
-#   img_path: data/raw/img_data/2010/nepal/Nepal_140041_20091108.tif
-#   mask_paths:
-#     - data/raw/vector_data/2005/hkh/debris.shp
-#     - data/raw/vector_data/2005/hkh/clean.shp

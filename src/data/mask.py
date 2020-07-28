@@ -17,7 +17,7 @@ import yaml
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None, n_jobs=4):
+def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
     """
     A wrapper of generate_mask, to make labels for each input
 

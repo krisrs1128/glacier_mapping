@@ -124,8 +124,11 @@ if __name__ == "__main__":
         for i, (x, y) in enumerate(loaders["train"]):
             y_hat, _loss = frame.optimize(x, y)
             loss += _loss
-            metrics.append(frame.metrics(y_hat, y, conf.metrics_opts))
-            log_batch(epoch, args.epochs, i, N, loss, args.batch_size)
+
+            y_hat = torch.sigmoid(y_hat)
+            metrics_ = frame.metrics(y_hat, y.to(frame.device), conf.metrics_opts)
+            metrics.append(metrics_)
+            log_batch(epoch, args.epochs, i, N, _loss, args.batch_size)
 
         loss_d["train"] = loss / N
         log_metrics(writer, metrics, loss_d["train"], epoch)
@@ -136,7 +139,10 @@ if __name__ == "__main__":
         for x, y in loaders["val"]:
             y_hat = frame.infer(x.to(frame.device))
             loss += frame.calc_loss(y_hat, y).item()
-            metrics.append(frame.metrics(y_hat, y, conf.metrics_opts))
+
+            y_hat = torch.sigmoid(y_hat)
+            metrics_ = frame.metrics(y_hat, y.to(frame.device), conf.metrics_opts)
+            metrics.append(metrics_)
 
         loss_d["val"] = loss / len(loaders["val"].dataset)
         log_metrics(writer, metrics, loss_d["val"], epoch, "val")

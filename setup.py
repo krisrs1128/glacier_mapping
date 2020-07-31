@@ -1,6 +1,6 @@
 import setuptools
 
-with open('glacier_mapping/requirements.txt') as f:
+with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setuptools.setup(

@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name='glmap',
+    name='glacier_mapping',
     version='0.1.0',
     description='Glacier mapping',
     author='Various',

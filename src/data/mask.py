@@ -32,8 +32,7 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
     :param out_dir: The directory to which to save all the results.
     """
     if not out_dir:
-        data_dir = os.environ["DATA_DIR"]
-        out_dir = pathlib.Path(data_dir, "processed", "masks")
+        out_dir = pathlib.Path("processed", "masks")
 
     pathlib.Path(out_dir).mkdir(parents=True)
     cols = ["id", "img", "mask", "img_width", "img_height", "mask_width", "mask_height"]

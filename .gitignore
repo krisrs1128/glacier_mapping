@@ -8,9 +8,7 @@
 *pycache*
 .vscode
 backup_data/
-glacier_mapping/data/
 images/
-models/
 notebooks/
 output/
 outputs/

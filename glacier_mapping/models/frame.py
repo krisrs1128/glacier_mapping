@@ -10,10 +10,10 @@ import os
 import torch
 import numpy as np
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import metrics
-import reg
-import unet
-import unet_dropout
+import .metrics
+import .reg
+import .unet
+import .unet_dropout
 
 
 class Framework:

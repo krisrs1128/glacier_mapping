@@ -108,6 +108,9 @@ class Framework:
         """
         Loop over metrics in train.yaml
         """
+        y_hat = y_hat.to(self.device)
+        y = y.to(self.device)
+
         results = {}
         for k, metric in metrics_opts.items():
             if "threshold" in metric.keys():

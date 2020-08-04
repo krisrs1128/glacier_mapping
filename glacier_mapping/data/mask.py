@@ -73,6 +73,10 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
 def check_crs(crs_a, crs_b):
     """
     Verify that two CRS objects Match
+
+    :param crs_a: The first CRS to compare.
+    :param crs_b: The second CRS to compare.
+    :side-effects: Raises an error if the CRS's don't agree
     """
     if rasterio.crs.CRS.from_string(crs_a.to_string()) != rasterio.crs.CRS.from_string(
             crs_b.to_string()

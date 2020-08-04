@@ -27,6 +27,11 @@ def append_name(s, args, filetype="png"):
 
 
 def write_geotiff(y_hat, meta, output_path, n_channel=3):
+    """
+    Write predictions to geotiff
+
+    :param: y_hat A numpy array of predictions.
+    """
     # create empty raster with write geographic information
     dst_file = rasterio.open(
         output_path, 'w',
@@ -56,7 +61,7 @@ def merge_patches(patches, overlap):
     return result
 
 
-def inference(img, model, process_conf, overlap=0, infer_size=1024):
+def inference(img, model, process_conf, overlap=0, infer_size=1024, device=None):
     """
     inference(tile) -> mask
 
@@ -69,6 +74,8 @@ def inference(img, model, process_conf, overlap=0, infer_size=1024):
     """
     process_opts = Dict(yaml.safe_load(open(process_conf, "r")))
     channels = process_opts.process_funs.extract_channel.img_channels
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # reshape, pad, and slice the input
     size_ = img.shape
@@ -93,6 +100,7 @@ def inference(img, model, process_conf, overlap=0, infer_size=1024):
             patch = torch.from_numpy(patch).float().unsqueeze(0)
 
             with torch.no_grad():
+                patch = patch.to(device)
                 y_hat = model(patch).numpy()
                 y_hat = 1 / (1 + np.exp(-y_hat))
                 predictions[i, j, 0] = np.transpose(y_hat, (0, 2, 3, 1))

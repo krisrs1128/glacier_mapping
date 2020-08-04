@@ -2,9 +2,9 @@
 from addict import Dict
 from pathlib import Path
 from skimage.util.shape import view_as_windows
-from src.utils.frame import Framework
-from src.models.unet import Unet
-from src.data.process_slices_funs import postprocess_tile
+from .models.frame import Framework
+from .models.unet import Unet
+from .data.process_slices_funs import postprocess_tile
 from torchvision.utils import save_image
 import argparse
 import geopandas as gpd
@@ -14,7 +14,6 @@ import numpy as np
 import os
 import pandas as pd
 import rasterio
-import src.data.mask
 import torch
 import yaml
 
@@ -114,22 +113,6 @@ def pad_to_valid(img):
 
     pad_shape = (int(out_rows - size_[1]), int(out_cols - size_[2]))
     return np.pad(img, ((0, 0), (0, pad_shape[0]), (0, pad_shape[1])))
-
-def sigmoid(x):
-    return np.exp(x) / (1 + np.exp(x))
-
-def infer_conv(img, model, channels=[2, 4, 5], mean=0, std=1):
-    size_ = img.shape
-    img = (img[channels, :, :] - mean[channels][:, None, None]) / std[channels][:, None, None]
-    img = pad_to_valid(img)
-    patch = torch.from_numpy(img).float().unsqueeze(0)
-    with torch.no_grad():
-        y_hat = model(patch).numpy()
-
-    # crop y_hat, after removing batch dimension
-    y_hat = y_hat[0, :, :size_[1], :size_[2]]
-    y_hat = sigmoid(y_hat)
-    return np.transpose(img, (1, 2, 0)), np.transpose(y_hat, (1, 2, 0))
 
 
 def get_hist(img, mask):

@@ -15,7 +15,7 @@ import yaml
 from addict import Dict
 import geopandas as gpd
 import numpy as np
-import src.data.process_slices_funs as pf
+import process_slices_funs as pf
 
 
 if __name__ == "__main__":

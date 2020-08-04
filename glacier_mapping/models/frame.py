@@ -10,10 +10,10 @@ import os
 import torch
 import numpy as np
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import src.utils.metrics
-import src.utils.reg
-import src.models.unet
-import src.models.unet_dropout
+from .metrics import *
+from .reg import *
+from .unet import *
+from .unet_dropout import *
 
 
 class Framework:
@@ -31,10 +31,8 @@ class Framework:
             loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
 
-        if model_opts.name == "Unet":
-            model_def = getattr(src.models.unet, model_opts.name)
-        elif model_opts.name == "UnetDropout":
-            model_def = getattr(src.models.unet_dropout, model_opts.name)
+        if model_opts.name in ["Unet", "UnetDropout"]:
+            model_def = globals()[model_opts.name]
         else:
             raise ValueError("Unknown model name")
 
@@ -95,7 +93,7 @@ class Framework:
         y = y.to(self.device)
         loss = self.loss_fn(y_hat, y)
         for reg_type in self.reg_opts.keys():
-            reg_fun = getattr(src.utils.reg, reg_type)
+            reg_fun = globals()[reg_type]
             penalty = reg_fun(
                 self.model.parameters(),
                 self.reg_opts[reg_type],
@@ -115,7 +113,7 @@ class Framework:
             if "threshold" in metric.keys():
                 y_hat = y_hat > metric["threshold"]
 
-                metric_fun = getattr(src.utils.metrics, k)
+                metric_fun = globals()[k]
                 metric_value = metric_fun(y_hat, y)
             results[k] = np.mean(np.asarray(metric_value))
         return results

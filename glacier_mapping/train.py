@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from addict import Dict
 from .data.data import fetch_loaders
-from models.frame import Framework
+from .models.frame import Framework
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
 import torch

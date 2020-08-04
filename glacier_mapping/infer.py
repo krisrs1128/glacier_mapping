@@ -2,9 +2,9 @@
 from addict import Dict
 from pathlib import Path
 from skimage.util.shape import view_as_windows
-from src.utils.frame import Framework
-from src.models.unet import Unet
-from src.data.process_slices_funs import postprocess_tile
+from .models.frame import Framework
+from .models.unet import Unet
+from .data.process_slices_funs import postprocess_tile
 from torchvision.utils import save_image
 import argparse
 import geopandas as gpd

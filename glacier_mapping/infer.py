@@ -101,7 +101,7 @@ def inference(img, model, process_conf, overlap=0, infer_size=1024, device=None)
 
             with torch.no_grad():
                 patch = patch.to(device)
-                y_hat = model(patch).numpy()
+                y_hat = model(patch).cpu().numpy()
                 y_hat = 1 / (1 + np.exp(-y_hat))
                 predictions[i, j, 0] = np.transpose(y_hat, (0, 2, 3, 1))
 

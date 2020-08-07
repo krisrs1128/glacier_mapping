@@ -1,5 +1,5 @@
 mask_1:
-  img_path: /mnt/blobfuse/glaciers/pipeline_demo/demo_data/data/2005/nepal/LE07_139041_20051208.tif
+  img_path: /mnt/blobfuse/glaciers/pipeline_demo/demo_data/data/2005/nepal/demo_ICIMOD_2005_train_2-0000000000-0000008960.tif
   mask_paths:
     - /mnt/blobfuse/glaciers/pipeline_demo/demo_data/vector_data/2005/nepal/data/debris.shp
     - /mnt/blobfuse/glaciers/pipeline_demo/demo_data/vector_data/2005/nepal/data/clean.shp

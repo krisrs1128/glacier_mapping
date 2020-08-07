@@ -67,6 +67,20 @@
 <dt id="glacier_mapping.train.log_images">
 <code class="sig-prename descclassname">glacier_mapping.train.</code><code class="sig-name descname">log_images</code><span class="sig-paren">(</span><em class="sig-param">writer</em>, <em class="sig-param">frame</em>, <em class="sig-param">batch</em>, <em class="sig-param">epoch</em>, <em class="sig-param">stage='train'</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.train.log_images" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log images for tensorboard</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>writer</strong> (<em>Tensorboard writer</em>) – Class to write images</p></li>
+<li><p><strong>frame</strong> – Image frame to log</p></li>
+<li><p><strong>batch</strong> – Image batch to log</p></li>
+<li><p><strong>epoch</strong> – Number of epochs</p></li>
+<li><p><strong>stage</strong> – specified pipeline stage</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Images Logged onto tensorboard</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -118,6 +132,19 @@ binary mask</p>
 <dt id="glacier_mapping.data.process_slices_funs.extract_channel">
 <code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">extract_channel</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">mask_channels=None</em>, <em class="sig-param">img_channels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.extract_channel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subset specific channels from raster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – Image to extract</p></li>
+<li><p><strong>mask</strong> – Mask to extract</p></li>
+<li><p><strong>mask_channels</strong> – Mask channels to extract</p></li>
+<li><p><strong>img_channels</strong> – Image channels to extract</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Image and corresponding mask with specified channels</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -127,10 +154,12 @@ binary mask</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filter_perc</strong> – The minimum percentage 1’s in the filter_channel needed
-to pass the filter.</p></li>
-<li><p><strong>filter_channel</strong> – The channel to do the filtering on.</p></li>
+<li><p><strong>filter_perc</strong> (<em>float</em>) – The minimum percentage 1’s in the filter_channel needed to pass the filter.</p></li>
+<li><p><strong>filter_channel</strong> (<em>int</em>) – The channel to do the filtering on.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>img and mask</p>
 </dd>
 </dl>
 </dd></dl>
@@ -143,24 +172,50 @@ to pass the filter.</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image_paths</strong> – List of Paths to images in directory</p></li>
-<li><p><strong>sample_size</strong> – int giving the size of the sample from which to compute the statistics</p></li>
-<li><p><strong>outpath</strong> – str The path to the output json file containing computed statistics</p></li>
+<li><p><strong>sample_size</strong> (<em>int</em>) – integer giving the size of the sample from which to compute the statistics</p></li>
+<li><p><strong>outpath</strong> (<em>str</em>) – The path to the output json file containing computed statistics</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with keys for means and stds across the channels in input images</p>
+</dd>
 </dl>
-<p>:return Dictionary with keys for means and stds across the channels in input images</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="glacier_mapping.data.process_slices_funs.impute">
 <code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">impute</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">value=0</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.impute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace NAs with value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – image to impute</p></li>
+<li><p><strong>mask</strong> – mask to impute</p></li>
+<li><p><strong>value</strong> – imputation value</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>image and corresponding mask after imputation</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="glacier_mapping.data.process_slices_funs.normalize">
 <code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">normalize</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">stats_path</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.normalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>wrapper for postprocess</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – image to normalize</p></li>
+<li><p><strong>mask</strong> – mask</p></li>
+<li><p><strong>stats_path</strong> – path to dataset statistics</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Normalized image and corresponding mask</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -174,8 +229,11 @@ to pass the filter.</p></li>
 <li><p><strong>stds</strong> – Computed standard deviation of the input channels</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return img</dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Normalized img</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>img</p>
 </dd>
 </dl>
 </dd></dl>
@@ -184,32 +242,87 @@ to pass the filter.</p></li>
 <dt id="glacier_mapping.data.process_slices_funs.postprocess">
 <code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess</code><span class="sig-paren">(</span><em class="sig-param">img_path</em>, <em class="sig-param">mask_path</em>, <em class="sig-param">process_funs</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>process a single image / mask pair</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_path</strong> (<em>str</em>) – Path to single image</p></li>
+<li><p><strong>mask_path</strong> (<em>str</em>) – Path to single mask</p></li>
+<li><p><strong>process_funs</strong> – Specified process functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Postprocess image, mask and postprocess function</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="glacier_mapping.data.process_slices_funs.postprocess_">
 <code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess_</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">process_funs</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal helper for postprocess_tile</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – Image to postprocess</p></li>
+<li><p><strong>mask</strong> – Mask to postprocess</p></li>
+<li><p><strong>process_funs</strong> – Specified post process functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Post processed images and masks</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="glacier_mapping.data.process_slices_funs.postprocess_tile">
 <code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess_tile</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">process_funs</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess_tile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply a list of processing functions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> – Image to postprocess</p></li>
+<li><p><strong>process_funs</strong> – Specified process functions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Image, mask and specified process functions</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="glacier_mapping.data.process_slices_funs.random_split">
 <code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">random_split</code><span class="sig-paren">(</span><em class="sig-param">ids</em>, <em class="sig-param">split_ratio</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.random_split" title="Permalink to this definition">¶</a></dt>
 <dd><p>Randomly split a list of paths into train / dev / test</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> (<em>int</em>) – IDs of data to split</p></li>
+<li><p><strong>split_ratio</strong> – Ratio of split among train:dev:test</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Train/Test/Dev splits</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="glacier_mapping.data.process_slices_funs.reshuffle">
 <code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">reshuffle</code><span class="sig-paren">(</span><em class="sig-param">split_ids</em>, <em class="sig-param">output_dir='output/'</em>, <em class="sig-param">n_cpu=3</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.reshuffle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reshuffle Data for Training</p>
-<p>Given a dictionary specifying train / dev / test split, copy into train /
-dev / test folders.</p>
+<dd><p>Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>split_ids</strong> (<em>int</em>) – IDs of files to split</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – Directory to place the split dataset</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Target locations</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

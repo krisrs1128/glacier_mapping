@@ -51,8 +51,7 @@ def random_split(ids, split_ratio, **kwargs):
 
 
 def reshuffle(split_ids, output_dir="output/", n_cpu=3):
-    """ Reshuffle Data for Training
-    Given a dictionary specifying train / dev / test split, copy into train / dev / test folders.
+    """ Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.
     
     Args:
         split_ids(int): IDs of files to split

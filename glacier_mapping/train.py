@@ -108,8 +108,17 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
 
 
 def log_images(writer, frame, batch, epoch, stage="train"):
-    """
-    Log images for tensorboard
+    """ Log images for tensorboard
+    
+    Args:
+        writer (Tensorboard writer): Class to write images 
+        frame: Image frame to log
+        batch: Image batch to log
+        epoch: Number of epochs
+        stage: specified pipeline stage
+
+    Return:
+        Images Logged onto tensorboard
     """
     pm = lambda x: x.permute(0, 3, 2, 1)
     squash = lambda x: (x - x.min()) / (x.max() - x.min())

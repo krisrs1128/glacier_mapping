@@ -132,6 +132,9 @@ class Framework:
             y: Labels
             metrics_opts: Metrics specified in the train.yaml
 
+        Return: 
+            results
+
         """
         y_hat = y_hat.to(self.device)
         y = y.to(self.device)

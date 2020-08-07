@@ -1,5 +1,0 @@
-mask_1:
-  img_path: /content/demo_data/LE07_141040_20051104.tif
-  mask_paths:
-    - /content/demo_data/debris.shp
-    - /content/demo_data/clean.shp

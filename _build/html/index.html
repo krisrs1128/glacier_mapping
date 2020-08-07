@@ -99,13 +99,16 @@ binary mask</p>
 <dl class="function">
 <dt id="glacier_mapping.data.data.fetch_loaders">
 <code class="sig-prename descclassname">glacier_mapping.data.data.</code><code class="sig-name descname">fetch_loaders</code><span class="sig-paren">(</span><em class="sig-param">processed_dir</em>, <em class="sig-param">batch_size=32</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.data.fetch_loaders" title="Permalink to this definition">¶</a></dt>
-<dd><p>DataLoaders for the Training / Validation</p>
+<dd><p>Function to fetch dataLoaders for the Training / Validation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>processed_dir</strong> – Directory with the processed data</p></li>
-<li><p><strong>batch_size</strong> – The size of each batch during training. Defaults to 32.</p></li>
+<li><p><strong>processed_dir</strong> (<em>str</em>) – Directory with the processed data</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – The size of each batch during training. Defaults to 32.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns train and val dataloaders</p>
 </dd>
 </dl>
 </dd></dl>

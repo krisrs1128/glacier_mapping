@@ -9,11 +9,14 @@ import numpy as np
 import torch
 
 def fetch_loaders(processed_dir, batch_size=32):
-    """
-    DataLoaders for Training / Validation
+    """ Function to fetch dataLoaders for the Training / Validation
 
-    :param processed_dir: Directory with the processed data
-    :param batch_size: The size of each batch during training. Defaults to 32.
+    Args:
+    processed_dir(str): Directory with the processed data
+    batch_size(int): The size of each batch during training. Defaults to 32.
+    
+    Return:
+    
     """
     train_dataset = GlacierDataset(processed_dir / "train")
     val_dataset = GlacierDataset(processed_dir / "dev")

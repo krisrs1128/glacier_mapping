@@ -77,8 +77,16 @@ def slice_pair(img, mask, **kwargs):
 
 def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
                       **kwargs):
-    """
-    Write sliced images and masks to numpy arrays
+    """ Write sliced images and masks to numpy arrays
+    
+ Args:
+    img_path(List): A list of Strings of the paths to the raw images
+    mask_path(List): A list of Strings of the paths to the masks
+    output_base(String): The basenames for all the output numpy files
+    out_dir(String): The directory to which all the results will be stored
+ Returns:
+       Writes a csv to metadata path
+
     """
     imgf = rasterio.open(img_path)
     img = imgf.read().transpose(1, 2, 0)

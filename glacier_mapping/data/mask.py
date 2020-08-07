@@ -18,18 +18,16 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
-    """
-    A wrapper of generate_mask, to make labels for each input
+    """ A wrapper of generate_mask, to make labels for each input
+    
+    Args:
+        image_paths(List): A list of Strings of the paths to the raw images
+        shps_paths(List): A list of Strings of the paths to the raw polygons
+        output_base(String): The basenames for all the output numpy files
+        out_dir(String): The directory to which all the results are saved
+    Returns:
+        Writes a csv to metadata path
 
-    :param img_meta: The metadata field associated with a geotiff. Expected to
-      contain transform (coordinate system), height, and width fields.
-    :param img_bounds: A list of coordinates specifying the bounding box of the
-      input img.
-    :param shps_paths: A list of lists of paths to shapefiles. The k^th element
-      is a list of paths, each of which will become a channel in the k^th
-      resulting mask.
-    :param output_base: The basename for all the output numpy files
-    :param out_dir: The directory to which to save all the results.
     """
     if not out_dir:
         out_dir = pathlib.Path("processed", "masks")

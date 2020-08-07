@@ -19,6 +19,9 @@ Welcome to Glacier Mapping's documentation!
 .. automodule:: glacier_mapping.data.mask
    :members:
 
+.. automodule:: glacier_mapping.data.slice
+   :members:
+
 .. automodule:: glacier_mapping.data.data
    :members:
 

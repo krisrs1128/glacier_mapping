@@ -89,8 +89,17 @@ def log_batch(epoch, n_epochs, i, n, loss, batch_size):
 
 
 def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
-    """
-    Log metrics for tensorboard
+    """ Log metrics for tensorboard
+
+    A function that logs metrics from training and testing to tensorboard
+
+    Args:
+        writer(SummaryWriter): The tensorboard summary object
+        metrics(Dict): Dictionary of metrics to record 
+        avg_loss(float): The average loss across all epochs
+        epoch(int): Total number of training cycles
+        stage(String): Train/Val  
+
     """
     metrics = dict(pd.DataFrame(metrics).mean())
     writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)

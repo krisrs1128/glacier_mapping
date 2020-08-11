@@ -14,6 +14,7 @@ import pandas as pd
 import rasterio
 import shapely.geometry
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 def squash(x):

@@ -6,8 +6,6 @@ normalization_sample_size: 100
 process_funs:
   normalize:
     stats_path: "/content/processed/slices/stats_train.json"
-  impute:
-    value: 0
   extract_channel:
     mask_channels: [1]
     img_channels: [5, 4, 2]

@@ -26,7 +26,7 @@ def append_name(s, args, filetype="png"):
     return f"{s}_{Path(args.input).stem}-{Path(args.model).stem}-{Path(args.process_conf).stem}.{filetype}"
 
 
-def write_geotiff(y_hat, meta, output_path, n_channel=3):
+def write_geotiff(y_hat, meta, output_path):
     """
     Write predictions to geotiff
 

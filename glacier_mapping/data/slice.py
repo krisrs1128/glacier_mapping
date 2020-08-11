@@ -78,15 +78,14 @@ def slice_pair(img, mask, **kwargs):
 def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
                       **kwargs):
     """ Write sliced images and masks to numpy arrays
-    
- Args:
-    img_path(List): A list of Strings of the paths to the raw images
-    mask_path(List): A list of Strings of the paths to the masks
-    output_base(String): The basenames for all the output numpy files
-    out_dir(String): The directory to which all the results will be stored
- Returns:
-       Writes a csv to metadata path
 
+    Args:
+        img_path(List): A list of Strings of the paths to the raw images
+        mask_path(List): A list of Strings of the paths to the masks
+        output_base(String): The basenames for all the output numpy files
+        out_dir(String): The directory to which all the results will be stored
+    Returns:
+        Writes a csv to metadata path
     """
     imgf = rasterio.open(img_path)
     img = imgf.read().transpose(1, 2, 0)
@@ -104,7 +103,7 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
         # update metadata
         stats = {"img_slice": str(img_slice_path), "mask_slice": str(mask_slice_path)}
-        img_slice_mean = np.nan_to_num(img_slices[k].mean())
+        img_slice_mean = np.nan_to_num(img_slices[k]).mean()
         mask_mean = mask_slices[k].mean(axis=(0, 1))
         stats.update({f"mask_mean_{i}": v for i, v in enumerate(mask_mean)})
         stats.update({"img_mean": img_slice_mean})

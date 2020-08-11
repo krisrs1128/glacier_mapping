@@ -13,14 +13,14 @@ import numpy as np
 
 def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
     """ Return Paths for Pairs passing Filter Criteria
-    
+
     Args:
         filter_perc(float): The minimum percentage 1's in the filter_channel needed to pass the filter.
         filter_channel(int): The channel to do the filtering on.
 
     Return:
         img and mask
-    
+
     """
     slice_meta = slice_meta[slice_meta[f"mask_mean_{filter_channel}"] > filter_perc]
     slice_meta = slice_meta[slice_meta["img_mean"] > 0]
@@ -32,11 +32,11 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
 
 def random_split(ids, split_ratio, **kwargs):
     """ Randomly split a list of paths into train / dev / test
-    
+
     Args:
         ids(int): IDs of data to split
         split_ratio: Ratio of split among train:dev:test
-    
+
     Return:
         Train/Test/Dev splits
     """
@@ -52,7 +52,7 @@ def random_split(ids, split_ratio, **kwargs):
 
 def reshuffle(split_ids, output_dir="output/", n_cpu=3):
     """ Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.
-    
+
     Args:
         split_ids(int): IDs of files to split
         output_dir(str): Directory to place the split dataset
@@ -127,10 +127,10 @@ def normalize_(img, means, stds):
 
 def normalize(img, mask, stats_path):
     """wrapper for postprocess
-    
+
     Args:
         img: image to normalize
-        mask: mask 
+        mask: mask
         stats_path: path to dataset statistics
 
     Return:
@@ -143,7 +143,7 @@ def normalize(img, mask, stats_path):
 
 def impute(img, mask, value=0):
     """Replace NAs with value
-    
+
     Args:
         img: image to impute
         mask: mask to impute
@@ -158,7 +158,7 @@ def impute(img, mask, value=0):
 
 def extract_channel(img, mask, mask_channels=None, img_channels=None):
     """Subset specific channels from raster
-    
+
     Args:
         img: Image to extract
         mask:  Mask to extract
@@ -179,11 +179,11 @@ def extract_channel(img, mask, mask_channels=None, img_channels=None):
 
 def postprocess_tile(img, process_funs):
     """Apply a list of processing functions
-    
+
     Args:
         img: Image to postprocess
         process_funs: Specified process functions
-    
+
     Return:
         Image, mask and specified process functions
     """
@@ -196,14 +196,14 @@ def postprocess_tile(img, process_funs):
 
 def postprocess_(img, mask, process_funs):
     """Internal helper for postprocess_tile
-    
+
     Args:
         img: Image to postprocess
         mask: Mask to postprocess
-        process_funs: Specified post process functions 
-    
-    Return: 
-        Post processed images and masks        
+        process_funs: Specified post process functions
+
+    Return:
+        Post processed images and masks
     """
     for fun_name, fun_args in process_funs.items():
         f = getattr(sys.modules[__name__], fun_name)
@@ -214,14 +214,14 @@ def postprocess_(img, mask, process_funs):
 
 def postprocess(img_path, mask_path, process_funs):
     """process a single image / mask pair
-    
+
     Args:
         img_path(str): Path to single image
         mask_path(str): Path to single mask
         process_funs: Specified process functions
 
     Return:
-        Postprocess image, mask and postprocess function    
+        Postprocess image, mask and postprocess function
 
     """
     img, mask = np.load(img_path), np.load(mask_path)

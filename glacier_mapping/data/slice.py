@@ -16,6 +16,10 @@ import shapely.geometry
 from tqdm import tqdm
 
 
+def squash(x):
+    return (x - x.min()) / x.ptp()
+
+
 def slice_tile(img, size=(512, 512), overlap=6):
     """Slice an image into overlapping patches
     Args:
@@ -111,6 +115,28 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
     slice_stats = pd.DataFrame(slice_stats)
     return pd.concat([metadata, slice_stats], axis=1)
+
+
+def plot_slices(slice_dir, processed=False, n_cols=3, div=3000, n_examples=5):
+    """
+    Helper to plot slices in a directory
+    """
+    files = list(Path(slice_dir).glob("*img*npy"))
+    _, ax = plt.subplots(n_examples, n_cols, figsize=(15,15))
+    for i in range(n_examples):
+        index = np.random.randint(0, len(files))
+        img = np.load(files[index])
+        mask = np.load(str(files[index]).replace("img", "mask"))
+
+        if not processed:
+            ax[i, 0].imshow(np.nan_to_num(img[:, :, [0, 1, 2]]) / div)
+        else:
+            ax[i, 0].imshow(squash(img))
+
+        for j in range(mask.shape[2]):
+            ax[i, j + 1].imshow(mask[:, :, j])
+
+    return ax
 
 
 if __name__ == "__main__":

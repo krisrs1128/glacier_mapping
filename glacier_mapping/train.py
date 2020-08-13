@@ -85,7 +85,7 @@ def train_epoch(loader, frame, metrics_opts, logging_data):
             y_hat = torch.sigmoid(y_hat)
             metrics_ = frame.metrics(y_hat, y, metrics_opts)
             metrics.append(metrics_)
-            log_batch(epoch, logging_data.epochs, i, N, _loss, logging_data.batch_size)
+            log_batch(logging_data.epoch, logging_data.epochs, i, N, _loss, logging_data.batch_size)
 
         return loss / N, metrics
 

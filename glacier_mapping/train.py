@@ -90,7 +90,7 @@ def train_epoch(loader, frame, metrics_opts, logging_data):
         return loss / N, metrics
 
 
-def validate(loader, frame, metrics_opts, logging_data):
+def validate(loader, frame, metrics_opts):
     loss, metrics = 0, []
     for x, y in loader:
         y_hat = frame.infer(x)

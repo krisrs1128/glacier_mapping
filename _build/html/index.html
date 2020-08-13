@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Glacier Mapping’s documentation! &#8212; Glacier Mapping  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -34,103 +35,107 @@
 <h1>Welcome to Glacier Mapping’s documentation!<a class="headerlink" href="#welcome-to-glacier-mapping-s-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<span class="target" id="module-glacier_mapping.train"></span><dl>
-<dt>Training/Validation Pipeline:</dt><dd><dl class="simple">
-<dt>1- Initialize loaders (train &amp; validation)</dt><dd><p>1.1-Pass all params onto both loaders</p>
-</dd>
-</dl>
-<p>2- Initialize the framework
-3- Train Loop args.e epochs</p>
-<blockquote>
-<div><p>3.1 Pass entire data loader through epoch
-3.2 Iterate over dataloader with specific batch</p>
-</div></blockquote>
-<p>4- Log Epoch level train loss, test loss, metrices, image prediction each s step.
-5- Save checkpoints after 5 epochs
-6- -n is the required parameter (name_of_the_run)
-6- models are saved in path/models/name_of_the_run
-7- tensorboard is saved in path/runs/name_of_the_run</p>
-</dd>
-</dl>
-<dl class="function">
-<dt id="glacier_mapping.train.log_batch">
-<code class="sig-prename descclassname">glacier_mapping.train.</code><code class="sig-name descname">log_batch</code><span class="sig-paren">(</span><em class="sig-param">epoch</em>, <em class="sig-param">n_epochs</em>, <em class="sig-param">i</em>, <em class="sig-param">n</em>, <em class="sig-param">loss</em>, <em class="sig-param">batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.train.log_batch" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper to log a training batch</p>
+<span class="target" id="module-glacier_mapping.data.mask"></span><p>Generate Masks from Tiffs / Shapefiles</p>
+<dl class="py function">
+<dt id="glacier_mapping.data.mask.channel_mask">
+<code class="sig-prename descclassname">glacier_mapping.data.mask.</code><code class="sig-name descname">channel_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_meta</span></em>, <em class="sig-param"><span class="n">shp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.mask.channel_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate 1-Channel Label Mask over Raster Image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> – Current epoch</p>
+<dd class="field-odd"><p><strong>shp</strong> – A geopandas shapefile, used to build the mask.</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="glacier_mapping.train.log_images">
-<code class="sig-prename descclassname">glacier_mapping.train.</code><code class="sig-name descname">log_images</code><span class="sig-paren">(</span><em class="sig-param">writer</em>, <em class="sig-param">frame</em>, <em class="sig-param">batch</em>, <em class="sig-param">epoch</em>, <em class="sig-param">stage='train'</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.train.log_images" title="Permalink to this definition">¶</a></dt>
-<dd><p>Log images for tensorboard</p>
+<dl class="py function">
+<dt id="glacier_mapping.data.mask.check_crs">
+<code class="sig-prename descclassname">glacier_mapping.data.mask.</code><code class="sig-name descname">check_crs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">crs_a</span></em>, <em class="sig-param"><span class="n">crs_b</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.mask.check_crs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify that two CRS objects Match</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>writer</strong> (<em>Tensorboard writer</em>) – Class to write images</p></li>
-<li><p><strong>frame</strong> – Image frame to log</p></li>
-<li><p><strong>batch</strong> – Image batch to log</p></li>
-<li><p><strong>epoch</strong> – Number of epochs</p></li>
-<li><p><strong>stage</strong> – specified pipeline stage</p></li>
+<li><p><strong>crs_a</strong> – The first CRS to compare.</p></li>
+<li><p><strong>crs_b</strong> – The second CRS to compare.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Side-effects</dt>
+<dd class="field-even"><p>Raises an error if the CRS’s don’t agree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="glacier_mapping.data.mask.clip_shapefile">
+<code class="sig-prename descclassname">glacier_mapping.data.mask.</code><code class="sig-name descname">clip_shapefile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_bounds</span></em>, <em class="sig-param"><span class="n">img_meta</span></em>, <em class="sig-param"><span class="n">shps</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.mask.clip_shapefile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clip Shapefile Extents to Image Bounding Box</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_bounds</strong> – The rectangular lat/long bounding box associated with a
+raster tiff.</p></li>
+<li><p><strong>img_meta</strong> – The metadata field associated with a geotiff. Expected to
+contain transform (coordinate system), height, and width fields.</p></li>
+<li><p><strong>shps</strong> – A list of K geopandas shapefiles, used to build the mask.
+Assumed to be in the same coordinate system as img_data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return result</dt>
+<dd class="field-even"><p>The same shapefiles as shps, but with polygons that don’t
+overlap the img bounding box removed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="glacier_mapping.data.mask.generate_mask">
+<code class="sig-prename descclassname">glacier_mapping.data.mask.</code><code class="sig-name descname">generate_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_meta</span></em>, <em class="sig-param"><span class="n">shps</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.mask.generate_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate K-Channel Label Masks over Raster Image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_meta</strong> – The metadata field associated with a geotiff. Expected to
+contain transform (coordinate system), height, and width fields.</p></li>
+<li><p><strong>shps</strong> – A list of K geopandas shapefiles, used to build the mask.
+Assumed to be in the same coordinate system as img_data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return mask</dt>
+<dd class="field-even"><p>A K channel binary numpy array. The k^th channel gives the
+binary mask for the k^th input shapefile.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="glacier_mapping.data.mask.generate_masks">
+<code class="sig-prename descclassname">glacier_mapping.data.mask.</code><code class="sig-name descname">generate_masks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_paths</span></em>, <em class="sig-param"><span class="n">shps_paths</span></em>, <em class="sig-param"><span class="n">output_base</span><span class="o">=</span><span class="default_value">'mask'</span></em>, <em class="sig-param"><span class="n">out_dir</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.mask.generate_masks" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper of generate_mask, to make labels for each input</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_paths</strong> (<em>List</em>) – A list of Strings of the paths to the raw images</p></li>
+<li><p><strong>shps_paths</strong> (<em>List</em>) – A list of Strings of the paths to the raw polygons</p></li>
+<li><p><strong>output_base</strong> (<em>String</em>) – The basenames for all the output numpy files</p></li>
+<li><p><strong>out_dir</strong> (<em>String</em>) – The directory to which all the results are saved</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Images Logged onto tensorboard</p>
+<dd class="field-even"><p>Writes a csv to metadata path</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="glacier_mapping.train.log_metrics">
-<code class="sig-prename descclassname">glacier_mapping.train.</code><code class="sig-name descname">log_metrics</code><span class="sig-paren">(</span><em class="sig-param">writer</em>, <em class="sig-param">metrics</em>, <em class="sig-param">avg_loss</em>, <em class="sig-param">epoch</em>, <em class="sig-param">stage='train'</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.train.log_metrics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Log metrics for tensorboard</p>
-<p>A function that logs metrics from training and testing to tensorboard</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>writer</strong> (<em>SummaryWriter</em>) – The tensorboard summary object</p></li>
-<li><p><strong>metrics</strong> (<em>Dict</em>) – Dictionary of metrics to record</p></li>
-<li><p><strong>avg_loss</strong> (<em>float</em>) – The average loss across all epochs</p></li>
-<li><p><strong>epoch</strong> (<em>int</em>) – Total number of training cycles</p></li>
-<li><p><strong>stage</strong> (<em>String</em>) – Train/Val</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<span class="target" id="module-glacier_mapping.data.data"></span><p>Custom Dataset for Training</p>
-<dl class="class">
-<dt id="glacier_mapping.data.data.GlacierDataset">
-<em class="property">class </em><code class="sig-prename descclassname">glacier_mapping.data.data.</code><code class="sig-name descname">GlacierDataset</code><span class="sig-paren">(</span><em class="sig-param">folder_path</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.data.GlacierDataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Custom Dataset for Glacier Data</p>
-<p>Indexing the i^th element returns the underlying image and the associated
-binary mask</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="glacier_mapping.data.data.fetch_loaders">
-<code class="sig-prename descclassname">glacier_mapping.data.data.</code><code class="sig-name descname">fetch_loaders</code><span class="sig-paren">(</span><em class="sig-param">processed_dir</em>, <em class="sig-param">batch_size=32</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.data.fetch_loaders" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function to fetch dataLoaders for the Training / Validation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>processed_dir</strong> (<em>str</em>) – Directory with the processed data</p></li>
-<li><p><strong>batch_size</strong> (<em>int</em>) – The size of each batch during training. Defaults to 32.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Returns train and val dataloaders</p>
-</dd>
-</dl>
+<dl class="py function">
+<dt id="glacier_mapping.data.mask.poly_from_coord">
+<code class="sig-prename descclassname">glacier_mapping.data.mask.</code><code class="sig-name descname">poly_from_coord</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">polygon</span></em>, <em class="sig-param"><span class="n">transform</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.mask.poly_from_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a transformed polygon
+<a class="reference external" href="https://lpsmlgeo.github.io/2019-09-22-binary_mask/">https://lpsmlgeo.github.io/2019-09-22-binary_mask/</a></p>
 </dd></dl>
 
 <span class="target" id="module-glacier_mapping.data.process_slices_funs"></span><p>Functions to support slice processing</p>
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.extract_channel">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">extract_channel</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">mask_channels=None</em>, <em class="sig-param">img_channels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.extract_channel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">extract_channel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">mask</span></em>, <em class="sig-param"><span class="n">mask_channels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">img_channels</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.extract_channel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subset specific channels from raster</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -147,9 +152,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.filter_directory">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">filter_directory</code><span class="sig-paren">(</span><em class="sig-param">slice_meta</em>, <em class="sig-param">filter_perc=0.2</em>, <em class="sig-param">filter_channel=1</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.filter_directory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">filter_directory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slice_meta</span></em>, <em class="sig-param"><span class="n">filter_perc</span><span class="o">=</span><span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">filter_channel</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.filter_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return Paths for Pairs passing Filter Criteria</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -164,9 +169,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.generate_stats">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">generate_stats</code><span class="sig-paren">(</span><em class="sig-param">image_paths</em>, <em class="sig-param">sample_size</em>, <em class="sig-param">outpath='stats.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.generate_stats" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">generate_stats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image_paths</span></em>, <em class="sig-param"><span class="n">sample_size</span></em>, <em class="sig-param"><span class="n">outpath</span><span class="o">=</span><span class="default_value">'stats.json'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.generate_stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to generate statistics of the input image channels</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -182,9 +187,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.impute">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">impute</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">value=0</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.impute" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">impute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">mask</span></em>, <em class="sig-param"><span class="n">value</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.impute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace NAs with value</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -200,9 +205,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.normalize">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">normalize</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">stats_path</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.normalize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">normalize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">mask</span></em>, <em class="sig-param"><span class="n">stats_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.normalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>wrapper for postprocess</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -218,9 +223,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.normalize_">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">normalize_</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">means</em>, <em class="sig-param">stds</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.normalize_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">normalize_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">means</span></em>, <em class="sig-param"><span class="n">stds</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.normalize_" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -238,9 +243,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.postprocess">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess</code><span class="sig-paren">(</span><em class="sig-param">img_path</em>, <em class="sig-param">mask_path</em>, <em class="sig-param">process_funs</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_path</span></em>, <em class="sig-param"><span class="n">mask_path</span></em>, <em class="sig-param"><span class="n">process_funs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>process a single image / mask pair</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -256,9 +261,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.postprocess_">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess_</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">process_funs</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">mask</span></em>, <em class="sig-param"><span class="n">process_funs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal helper for postprocess_tile</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -274,9 +279,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.postprocess_tile">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess_tile</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">process_funs</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess_tile" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">postprocess_tile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">process_funs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.postprocess_tile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply a list of processing functions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -291,9 +296,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.random_split">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">random_split</code><span class="sig-paren">(</span><em class="sig-param">ids</em>, <em class="sig-param">split_ratio</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.random_split" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">random_split</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ids</span></em>, <em class="sig-param"><span class="n">split_ratio</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.random_split" title="Permalink to this definition">¶</a></dt>
 <dd><p>Randomly split a list of paths into train / dev / test</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -308,9 +313,9 @@ binary mask</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="glacier_mapping.data.process_slices_funs.reshuffle">
-<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">reshuffle</code><span class="sig-paren">(</span><em class="sig-param">split_ids</em>, <em class="sig-param">output_dir='output/'</em>, <em class="sig-param">n_cpu=3</em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.reshuffle" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">glacier_mapping.data.process_slices_funs.</code><code class="sig-name descname">reshuffle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">split_ids</span></em>, <em class="sig-param"><span class="n">output_dir</span><span class="o">=</span><span class="default_value">'output/'</span></em>, <em class="sig-param"><span class="n">n_cpu</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#glacier_mapping.data.process_slices_funs.reshuffle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -369,7 +374,7 @@ binary mask</p>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -386,7 +391,7 @@ binary mask</p>
       &copy;2020, *.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

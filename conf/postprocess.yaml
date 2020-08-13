@@ -5,12 +5,10 @@ split_ratio: [0.7,0.1,0.2]
 normalization_sample_size: 100
 process_funs:
   normalize:
-    stats_path: "slices/stats_train.json"
-  impute:
-    value: 0
+    stats_path: "/content/processed/slices/stats_train.json"
   extract_channel:
     mask_channels: [1]
-    img_channels: [2, 4, 5]
+    img_channels: [5, 4, 2]
 slice:
   overlap: 6
   size: [512, 512]

@@ -76,6 +76,11 @@ def get_args():
 
 
 def log_batch(epoch, n_epochs, i, n, loss, batch_size):
+    """
+    Helper to log a training batch
+
+    :param epoch: Current epoch
+    """
     print(
         f"Epoch {epoch}/{n_epochs}, Training batch {i+1} of {int(n) // batch_size}, Loss = {loss/batch_size:.5f}",
         end="\r",
@@ -84,6 +89,18 @@ def log_batch(epoch, n_epochs, i, n, loss, batch_size):
 
 
 def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
+    """ Log metrics for tensorboard
+
+    A function that logs metrics from training and testing to tensorboard
+
+    Args:
+        writer(SummaryWriter): The tensorboard summary object
+        metrics(Dict): Dictionary of metrics to record 
+        avg_loss(float): The average loss across all epochs
+        epoch(int): Total number of training cycles
+        stage(String): Train/Val  
+
+    """
     metrics = dict(pd.DataFrame(metrics).mean())
     writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
     for k, v in metrics.items():
@@ -91,6 +108,18 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
 
 
 def log_images(writer, frame, batch, epoch, stage="train"):
+    """ Log images for tensorboard
+    
+    Args:
+        writer (Tensorboard writer): Class to write images 
+        frame: Image frame to log
+        batch: Image batch to log
+        epoch: Number of epochs
+        stage: specified pipeline stage
+
+    Return:
+        Images Logged onto tensorboard
+    """
     pm = lambda x: x.permute(0, 3, 2, 1)
     squash = lambda x: (x - x.min()) / (x.max() - x.min())
 

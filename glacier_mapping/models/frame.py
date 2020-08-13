@@ -18,7 +18,8 @@ from .unet_dropout import *
 
 class Framework:
     """
-    Class to Wrap Training Steps
+    Class to Wrap all the Training Steps
+    
     """
 
     def __init__(self, loss_fn=None, model_opts=None, optimizer_opts=None,
@@ -48,6 +49,12 @@ class Framework:
     def optimize(self, x, y):
         """
         Take a single gradient step
+        
+        Args: 
+            X: raw training data
+            y: labels
+        Return:
+            optimization
         """
         x = x.permute(0, 3, 1, 2).to(self.device)
         y = y.permute(0, 3, 1, 2).to(self.device)
@@ -78,16 +85,29 @@ class Framework:
         torch.save(self.optimizer.state_dict(), optim_path)
 
     def infer(self, x):
-        """
-        Make a prediction for a given x
+        """ Make a prediction for a given x
+        
+        Args: 
+            x: input x
+
+        Return:
+            Prediction
+
         """
         x = x.permute(0, 3, 1, 2).to(self.device)
         with torch.no_grad():
             return self.model(x).permute(0, 2, 3, 1)
 
     def calc_loss(self, y_hat, y):
-        """
-        Compute loss given a prediction
+        """ Compute loss given a prediction
+        
+        Args: 
+            y_hat: Prediction
+            y: Label
+
+        Return:
+            Loss values
+
         """
         y_hat = y_hat.to(self.device)
         y = y.to(self.device)
@@ -105,9 +125,20 @@ class Framework:
 
 
     def metrics(self, y_hat, y, metrics_opts):
+        """ Loop over metrics in train.yaml
+        
+        Args: 
+            y_hat: Predictions
+            y: Labels
+            metrics_opts: Metrics specified in the train.yaml
+
+        Return: 
+            results
+
         """
-        Loop over metrics in train.yaml
-        """
+        y_hat = y_hat.to(self.device)
+        y = y.to(self.device)
+
         results = {}
         for k, metric in metrics_opts.items():
             if "threshold" in metric.keys():

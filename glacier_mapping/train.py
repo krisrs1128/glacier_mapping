@@ -75,6 +75,34 @@ def get_args():
     return parser.parse_args()
 
 
+def train_epoch(loader, frame, metrics_opts, logging_data):
+        loss, metrics, loss_d = 0, [], {}
+        N = len(loader.dataset)
+        for i, (x, y) in enumerate(loader):
+            y_hat, _loss = frame.optimize(x, y)
+            loss += _loss
+
+            y_hat = torch.sigmoid(y_hat)
+            metrics_ = frame.metrics(y_hat, y, metrics_opts)
+            metrics.append(metrics_)
+            log_batch(epoch, logging_data.epochs, i, N, _loss, logging_data.batch_size)
+
+        return loss / N, metrics
+
+
+def validate(loader, frame, metrics_opts, logging_data):
+    loss, metrics = 0, []
+    for x, y in loader:
+        y_hat = frame.infer(x)
+        loss += frame.calc_loss(y_hat, y).item()
+
+        y_hat = torch.sigmoid(y_hat)
+        metrics_ = frame.metrics(y_hat, y, metrics_opts)
+        metrics.append(metrics_)
+
+    return loss / len(loader.dataset), metrics
+
+
 def log_batch(epoch, n_epochs, i, n, loss, batch_size):
     """
     Helper to log a training batch
@@ -95,10 +123,10 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
 
     Args:
         writer(SummaryWriter): The tensorboard summary object
-        metrics(Dict): Dictionary of metrics to record 
+        metrics(Dict): Dictionary of metrics to record
         avg_loss(float): The average loss across all epochs
         epoch(int): Total number of training cycles
-        stage(String): Train/Val  
+        stage(String): Train/Val
 
     """
     metrics = dict(pd.DataFrame(metrics).mean())
@@ -109,9 +137,9 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
 
 def log_images(writer, frame, batch, epoch, stage="train"):
     """ Log images for tensorboard
-    
+
     Args:
-        writer (Tensorboard writer): Class to write images 
+        writer (Tensorboard writer): Class to write images
         frame: Image frame to log
         batch: Image batch to log
         epoch: Number of epochs
@@ -150,35 +178,17 @@ if __name__ == "__main__":
     writer.add_text("Arguments", json.dumps(vars(args)))
     writer.add_text("Configuration Parameters", json.dumps(conf))
 
+    logging_data = Dict({"epochs": args.epochs, "batch_size": args.batch_size})
     for epoch in range(args.epochs):
+        logging_data["epoch"] = epoch,
 
         # train loop
-        loss, metrics, loss_d = 0, [], {}
-        N = len(loaders["train"].dataset)
-        for i, (x, y) in enumerate(loaders["train"]):
-            y_hat, _loss = frame.optimize(x, y)
-            loss += _loss
-
-            y_hat = torch.sigmoid(y_hat)
-            metrics_ = frame.metrics(y_hat, y, conf.metrics_opts)
-            metrics.append(metrics_)
-            log_batch(epoch, args.epochs, i, N, _loss, args.batch_size)
-
-        loss_d["train"] = loss / N
+        loss_d["train"], metrics = train_epoch(loaders["train"], frame, conf.metrics_opts, logging_data)
         log_metrics(writer, metrics, loss_d["train"], epoch)
         log_images(writer, frame, next(iter(loaders["train"])), epoch)
 
         # validation loop
-        loss, metrics = 0, []
-        for x, y in loaders["val"]:
-            y_hat = frame.infer(x)
-            loss += frame.calc_loss(y_hat, y).item()
-
-            y_hat = torch.sigmoid(y_hat)
-            metrics_ = frame.metrics(y_hat, y, conf.metrics_opts)
-            metrics.append(metrics_)
-
-        loss_d["val"] = loss / len(loaders["val"].dataset)
+        loss_d["val"], metrics = validate(loaders["val"], frame, conf.metrics_opts, logging_data)
         log_metrics(writer, metrics, loss_d["val"], epoch, "val")
         log_images(writer, frame, next(iter(loaders["val"])), epoch, "val")
 

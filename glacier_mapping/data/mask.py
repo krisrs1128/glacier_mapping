@@ -154,25 +154,3 @@ def clip_shapefile(img_bounds, img_meta, shps):
         check_crs(img_meta["crs"], shp.crs)
         result.append(shp.loc[shp.intersects(bbox_poly["geometry"][0])])
     return result
-
-
-if __name__ == "__main__":
-    root_dir = pathlib.Path(os.environ["ROOT_DIR"])
-    masking_conf = root_dir / "conf" / "masking_paths.yaml"
-
-    parser = argparse.ArgumentParser(
-        description="Defining label masks from tiff + shapefile pairs"
-    )
-    parser.add_argument(
-        "-m",
-        "--masking_conf",
-        default=masking_conf,
-        help="""yaml file specifying which shapefiles to burn onto tiffs. See
-        conf/masking_paths.yaml for an example.""",
-    )
-    args = parser.parse_args()
-
-    masking_paths = yaml.safe_load(open(args.masking_conf, "r"))
-    img_paths = [p["img_path"] for p in masking_paths.values()]
-    mask_paths = [p["mask_paths"] for p in masking_paths.values()]
-    generate_masks(img_paths, mask_paths)

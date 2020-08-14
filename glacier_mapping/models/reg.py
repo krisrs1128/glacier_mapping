@@ -2,7 +2,6 @@
 """
 Helpers for Regularizing Models
 """
-import numpy as np
 import torch
 
 def l1_reg(params, lambda_reg, device):

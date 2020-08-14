@@ -19,7 +19,7 @@ from .unet_dropout import *
 class Framework:
     """
     Class to Wrap all the Training Steps
-    
+
     """
 
     def __init__(self, loss_fn=None, model_opts=None, optimizer_opts=None,
@@ -49,8 +49,8 @@ class Framework:
     def optimize(self, x, y):
         """
         Take a single gradient step
-        
-        Args: 
+
+        Args:
             X: raw training data
             y: labels
         Return:
@@ -86,8 +86,8 @@ class Framework:
 
     def infer(self, x):
         """ Make a prediction for a given x
-        
-        Args: 
+
+        Args:
             x: input x
 
         Return:
@@ -100,8 +100,8 @@ class Framework:
 
     def calc_loss(self, y_hat, y):
         """ Compute loss given a prediction
-        
-        Args: 
+
+        Args:
             y_hat: Prediction
             y: Label
 
@@ -126,13 +126,13 @@ class Framework:
 
     def metrics(self, y_hat, y, metrics_opts):
         """ Loop over metrics in train.yaml
-        
-        Args: 
+
+        Args:
             y_hat: Predictions
             y: Labels
             metrics_opts: Metrics specified in the train.yaml
 
-        Return: 
+        Return:
             results
 
         """

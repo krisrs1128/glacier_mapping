@@ -15,17 +15,11 @@ Training/Validation Pipeline:
 """
 from pathlib import Path
 import argparse
-import json
 import os
 import numpy as np
 import pandas as pd
-from addict import Dict
-from .data.data import fetch_loaders
-from .models.frame import Framework
-from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
 import torch
-import yaml
 np.random.seed(7)
 
 
@@ -75,22 +69,51 @@ def get_args():
     return parser.parse_args()
 
 
-def train_epoch(loader, frame, metrics_opts, logging_data):
-        loss, metrics, loss_d = 0, [], {}
-        N = len(loader.dataset)
-        for i, (x, y) in enumerate(loader):
-            y_hat, _loss = frame.optimize(x, y)
-            loss += _loss
+def train_epoch(loader, frame, metrics_opts):
+    """
+    Train model for One Epoch
 
-            y_hat = torch.sigmoid(y_hat)
-            metrics_ = frame.metrics(y_hat, y, metrics_opts)
-            metrics.append(metrics_)
-            log_batch(logging_data.epoch, logging_data.epochs, i, N, _loss, logging_data.batch_size)
+    This makes one pass through a dataloader and updates the model in the
+    associated frame.
 
-        return loss / N, metrics
+    :param loader (DataLoader): A pytorch DataLoader containing x,y pairs
+      with which to train the model.
+    :param frame (Framework): A Framework object wrapping both the model and the
+      optimization setup.
+    :param metrics_opts (dict): A dictionary whose keys specify which metrics to
+      compute on the predictions from the model.
+    :return: A tuple containing the average epoch loss and the metrics on the
+      training set.
+    """
+    loss, metrics = 0, []
+    for x, y in loader:
+        y_hat, _loss = frame.optimize(x, y)
+        loss += _loss
+
+        y_hat = torch.sigmoid(y_hat)
+        metrics_ = frame.metrics(y_hat, y, metrics_opts)
+        metrics.append(metrics_)
+
+    return loss / len(loader.dataset), metrics
 
 
 def validate(loader, frame, metrics_opts):
+    """
+    Compute Metrics on a Validation Loader
+
+    To honestly evaluate a model, we should compute its metrics on a validation
+    dataset. This runs the model in frame over the data in loader, compute all
+    the metrics specified in metrics_opts.
+
+    :param loader (DataLoader): A pytorch DataLoader containing x,y pairs
+      with which to validate the model.
+    :param frame (Framework): A Framework object wrapping both the model and the
+      optimization setup.
+    :param metrics_opts (dict): A dictionary whose keys specify which metrics to
+      compute on the predictions from the model.
+    :return: A tuple containing the average validation loss and the metrics on the
+      validation set.
+    """
     loss, metrics = 0, []
     for x, y in loader:
         y_hat = frame.infer(x)

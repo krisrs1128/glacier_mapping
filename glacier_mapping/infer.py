@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""
+Inference Module
+
+This module contains functions for drawing predictions from an already trained
+model, writing the results to file, and extracting corresponding geojsons.
+"""
 from pathlib import Path
 from addict import Dict
 import numpy as np
@@ -25,7 +31,8 @@ def write_geotiff(y_hat, meta, output_path):
     """
     Write predictions to geotiff
 
-    :param: y_hat A numpy array of predictions.
+    :param y_hat: A numpy array of predictions.
+    :type y_hat: np.ndarray
     """
     # create empty raster with write geographic information
     dst_file = rasterio.open(
@@ -57,15 +64,25 @@ def merge_patches(patches, overlap):
 
 
 def inference(img, model, process_conf, overlap=0, infer_size=1024, device=None):
-    """
-    inference(tile) -> mask
+    """Make predictions on an unprocessed tiff
 
     :param img: A (unprocessed) numpy array on which to do inference.
+    :type img: np.array
     :param model: A pytorch model on which to perform inference. We assume it
       can accept images of size specified in process_conf.slice.size.
+    :type model: pytorch.nn.Module
     :param process_conf: The path to a yaml file giving the postprocessing
       options. Used to convert the raw tile into the tensor used for inference.
+    :type process_conf: string
+    :param overlap: The number of overlapping pixels when splitting the patches
+      on which to apply the model.
+    :type overlap: int
+    :param infer_size: The size of the square on which to perform inference.
+    :type infer_size: int
+    :param device: The device (gpu or cpu) on which to run inference.
+    :type device: torch.device
     :return prediction: A segmentation mask of the same width and height as img.
+    :type prediction: np.array
     """
     process_opts = Dict(yaml.safe_load(open(process_conf, "r")))
     channels = process_opts.process_funs.extract_channel.img_channels
@@ -119,17 +136,18 @@ def pad_to_valid(img):
 
 
 def convert_to_geojson(y_hat, bounds, threshold=0.8):
-    """
-    Convert a Probability Mask to Geojson
+    """Convert a probability mask to geojson
 
-    :param y_hat (array): A three dimensional numpy array of mask
-      probabilities.
-    :param bounds (tuple): The latitude / longitude bounding box of the region
+    :param y_hat: A three dimensional numpy array of mask probabilities.
+    :type y_hat: np.array
+    :param bounds: The latitude / longitude bounding box of the region
       to write as geojson.
-    :param threshold (float): The probability above which an object is
+    :type bounds: tuple
+    :param threshold: The probability above which an object is
       segmented into the geojson.
-    :return A tuple giving the geojson and geopandas data frame corresponding
-      to the thresholded y_hat.
+    :type threshold: float
+    :return (geo_interface, geo_df) (tuple): tuple giving the geojson and
+      geopandas data frame corresponding to the thresholded y_hat.
     """
     contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
 

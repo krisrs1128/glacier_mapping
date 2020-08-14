@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 """
-Training/Validation Pipeline:
-    1- Initialize loaders (train & validation)
-        1.1-Pass all params onto both loaders
-    2- Initialize the framework
-    3- Train Loop args.e epochs
-        3.1 Pass entire data loader through epoch
-        3.2 Iterate over dataloader with specific batch
-    4- Log Epoch level train loss, test loss, metrices, image prediction each s step.
-    5- Save checkpoints after 5 epochs
-    6- -n is the required parameter (name_of_the_run)
-    6- models are saved in path/models/name_of_the_run
-    7- tensorboard is saved in path/runs/name_of_the_run
+Training/Validation Module
+
+The overall training and validation pipeline has the following structure,
+
+* Initialize loaders (train & validation)
+* Initialize the framework
+* Train Loop args.e epochs
+* Log Epoch level train loss, test loss, metrices, image prediction each s step.
+* Save checkpoints after save_every epochs
+* models are saved in path/models/name_of_the_run
+* tensorboard is saved in path/runs/name_of_the_run
 """
 from pathlib import Path
 import argparse
@@ -20,70 +19,25 @@ import numpy as np
 import pandas as pd
 from torchvision.utils import make_grid
 import torch
-np.random.seed(7)
-
-
-def get_args():
-    parser = argparse.ArgumentParser(
-        description="Train the UNet on images and target masks",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-    parser.add_argument(
-        "-n", "--name", type=str, help="Name of run", dest="run_name", required=True
-    )
-    parser.add_argument(
-        "-e",
-        "--epochs",
-        type=int,
-        default=500,
-        help="Number of epochs (Default 500)",
-        dest="epochs",
-    )
-    parser.add_argument(
-        "-b",
-        "--batch_size",
-        type=int,
-        default=16,
-        help="Batch size (Default 16)",
-        dest="batch_size",
-    )
-    parser.add_argument(
-        "-s",
-        "--save_every",
-        type=int,
-        default=5,
-        help="Save every n epoch (Default 5)",
-        dest="save_every",
-    )
-
-    conf_dir = Path(os.environ["ROOT_DIR"], "conf")
-    parser.add_argument(
-        "-c",
-        "--conf",
-        type=str,
-        default=str(conf_dir / "train.yaml"),
-        help="Configuration File for training",
-        dest="conf",
-    )
-
-    return parser.parse_args()
 
 
 def train_epoch(loader, frame, metrics_opts):
-    """
-    Train model for One Epoch
+    """Train model for one epoch
 
     This makes one pass through a dataloader and updates the model in the
     associated frame.
 
-    :param loader (DataLoader): A pytorch DataLoader containing x,y pairs
+    :param loader: A pytorch DataLoader containing x,y pairs
       with which to train the model.
-    :param frame (Framework): A Framework object wrapping both the model and the
+    :type loader: torch.data.utils.DataLoader
+    :param frame: A Framework object wrapping both the model and the
       optimization setup.
-    :param metrics_opts (dict): A dictionary whose keys specify which metrics to
+    :type frame: Framework
+    :param metrics_opts: A dictionary whose keys specify which metrics to
       compute on the predictions from the model.
-    :return: A tuple containing the average epoch loss and the metrics on the
-      training set.
+    :type metrics_opts: dict
+    :return (train_loss, metrics): A tuple containing the average epoch loss
+      and the metrics on the training set.
     """
     loss, metrics = 0, []
     for x, y in loader:
@@ -98,21 +52,23 @@ def train_epoch(loader, frame, metrics_opts):
 
 
 def validate(loader, frame, metrics_opts):
-    """
-    Compute Metrics on a Validation Loader
+    """Compute Metrics on a Validation Loader
 
     To honestly evaluate a model, we should compute its metrics on a validation
     dataset. This runs the model in frame over the data in loader, compute all
     the metrics specified in metrics_opts.
 
-    :param loader (DataLoader): A pytorch DataLoader containing x,y pairs
-      with which to validate the model.
-    :param frame (Framework): A Framework object wrapping both the model and the
+    :param loader: A DataLoader containing x,y pairs with which to validate the
+      model.
+    :type loader: torch.utils.data.DataLoader
+    :param frame: A Framework object wrapping both the model and the
       optimization setup.
-    :param metrics_opts (dict): A dictionary whose keys specify which metrics to
+    :type frame: Framework
+    :param metrics_opts: A dictionary whose keys specify which metrics to
       compute on the predictions from the model.
-    :return: A tuple containing the average validation loss and the metrics on the
-      validation set.
+    :type metrics_opts: dict
+    :return (val_loss, metrics): A tuple containing the average validation loss
+      and the metrics on the validation set.
     """
     loss, metrics = 0, []
     for x, y in loader:
@@ -127,10 +83,20 @@ def validate(loader, frame, metrics_opts):
 
 
 def log_batch(epoch, n_epochs, i, n, loss, batch_size):
-    """
-    Helper to log a training batch
+    """Helper to log a training batch
 
     :param epoch: Current epoch
+    :type epoch: int
+    :param n_epochs: Total number of epochs
+    :type n_epochs: int
+    :param i: Current batch index
+    :type i: int
+    :param n: total number of samples
+    :type n: int
+    :param loss: current epoch loss
+    :type loss: float
+    :param batch_size: training batch size
+    :type batch_size: int
     """
     print(
         f"Epoch {epoch}/{n_epochs}, Training batch {i+1} of {int(n) // batch_size}, Loss = {loss/batch_size:.5f}",
@@ -140,7 +106,7 @@ def log_batch(epoch, n_epochs, i, n, loss, batch_size):
 
 
 def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
-    """ Log metrics for tensorboard
+    """Log metrics for tensorboard
 
     A function that logs metrics from training and testing to tensorboard
 
@@ -150,7 +116,6 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
         avg_loss(float): The average loss across all epochs
         epoch(int): Total number of training cycles
         stage(String): Train/Val
-
     """
     metrics = dict(pd.DataFrame(metrics).mean())
     writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
@@ -159,14 +124,14 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
 
 
 def log_images(writer, frame, batch, epoch, stage="train"):
-    """ Log images for tensorboard
+    """Log images for tensorboard
 
     Args:
-        writer (Tensorboard writer): Class to write images
-        frame: Image frame to log
-        batch: Image batch to log
-        epoch: Number of epochs
-        stage: specified pipeline stage
+        writer (SummaryWriter): The tensorboard summary object
+        frame (Framework): The model to use for inference
+        batch (tensor): The batch of samples on which to make predictions
+        epoch (int): Current epoch number
+        stage (string): specified pipeline stage
 
     Return:
         Images Logged onto tensorboard

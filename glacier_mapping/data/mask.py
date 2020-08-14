@@ -1,5 +1,8 @@
 """
 Generate Masks from Tiffs / Shapefiles
+
+This module has utilities for converting raw geotiffs into numpy arrays that
+can be used for subsequent training.
 """
 import argparse
 import os
@@ -18,7 +21,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
-    """ A wrapper of generate_mask, to make labels for each input
+    """A wrapper of generate_mask, to make labels for each input
 
     Args:
         image_paths(List): A list of Strings of the paths to the raw images
@@ -27,7 +30,6 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
         out_dir(String): The directory to which all the results are saved
     Returns:
         Writes a csv to metadata path
-
     """
     if not out_dir:
         out_dir = pathlib.Path("processed", "masks")
@@ -69,11 +71,12 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
 
 
 def check_crs(crs_a, crs_b):
-    """
-    Verify that two CRS objects Match
+    """Verify that two CRS objects Match
 
     :param crs_a: The first CRS to compare.
+    :type crs_a: rasterio.crs
     :param crs_b: The second CRS to compare.
+    :type crs_b: rasterio.crs
     :side-effects: Raises an error if the CRS's don't agree
     """
     if rasterio.crs.CRS.from_string(crs_a.to_string()) != rasterio.crs.CRS.from_string(
@@ -83,13 +86,14 @@ def check_crs(crs_a, crs_b):
 
 
 def generate_mask(img_meta, shps):
-    """
-    Generate K-Channel Label Masks over Raster Image
+    """Generate K-Channel Label Masks over Raster Image
 
     :param img_meta: The metadata field associated with a geotiff. Expected to
       contain transform (coordinate system), height, and width fields.
+    :type img_meta: rasterio.metadata
     :param shps: A list of K geopandas shapefiles, used to build the mask.
       Assumed to be in the same coordinate system as img_data.
+    :type: [gpd.GeoDataFrame]
     :return mask: A K channel binary numpy array. The k^th channel gives the
       binary mask for the k^th input shapefile.
     """
@@ -102,10 +106,12 @@ def generate_mask(img_meta, shps):
 
 
 def channel_mask(img_meta, shp):
-    """
-    Generate 1-Channel Label Mask over Raster Image
+    """Generate 1-channel label mask over raster Image
 
-    :param shp: A geopandas shapefile, used to build the mask.
+    Args:
+      img_meta (rasterio.metadata): The metadata associated with the location
+        on which to build the mask.
+      shp (gpd.GeoDataFrame): A geopandas shapefile, used to build the mask.
     """
     poly_shp = []
     for _, row in shp.iterrows():
@@ -121,8 +127,7 @@ def channel_mask(img_meta, shp):
 
 
 def poly_from_coord(polygon, transform):
-    """
-    Get a transformed polygon
+    """Get a transformed polygon
     https://lpsmlgeo.github.io/2019-09-22-binary_mask/
     """
     poly_pts = []
@@ -133,15 +138,17 @@ def poly_from_coord(polygon, transform):
 
 
 def clip_shapefile(img_bounds, img_meta, shps):
-    """
-    Clip Shapefile Extents to Image Bounding Box
+    """Clip Shapefile Extents to Image Bounding Box
 
     :param img_bounds: The rectangular lat/long bounding box associated with a
       raster tiff.
+    :type img_bounds: Tuple
     :param img_meta: The metadata field associated with a geotiff. Expected to
       contain transform (coordinate system), height, and width fields.
+    :type img_meta: rasterio.metadata
     :param shps: A list of K geopandas shapefiles, used to build the mask.
       Assumed to be in the same coordinate system as img_data.
+    :type: [gpd.GeoDataFrame]
     :return result: The same shapefiles as shps, but with polygons that don't
       overlap the img bounding box removed.
     """

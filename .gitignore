@@ -17,3 +17,6 @@ wandb/
 web-tool/compiled
 web-tool/node_modules
 web-tool/package-lock.json
+_build/
+_static/
+_templates/

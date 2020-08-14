@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
 project = 'Glacier Mapping'
-copyright = '2020, *'
-author = '*'
+copyright = '2020'
+author = "B. Akera, B. Aryal, S. Baraka, A. Ortiz, K. Sankaran"
 
 
 # -- General configuration ---------------------------------------------------

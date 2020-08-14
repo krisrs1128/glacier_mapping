@@ -1,21 +1,22 @@
 #!/usr/bin/env python
-from addict import Dict
+"""
+Inference Module
+
+This module contains functions for drawing predictions from an already trained
+model, writing the results to file, and extracting corresponding geojsons.
+"""
 from pathlib import Path
-from skimage.util.shape import view_as_windows
-from .models.frame import Framework
-from .models.unet import Unet
-from .data.process_slices_funs import postprocess_tile
-from torchvision.utils import save_image
-import argparse
-import geopandas as gpd
-import matplotlib
-import matplotlib.pyplot as plt
+from addict import Dict
 import numpy as np
-import os
-import pandas as pd
 import rasterio
 import torch
 import yaml
+import geopandas as gpd
+import shapely.geometry
+from shapely.ops import unary_union
+import skimage.measure
+from skimage.util.shape import view_as_windows
+from .data.process_slices_funs import postprocess_tile
 
 
 def squash(x):
@@ -30,7 +31,8 @@ def write_geotiff(y_hat, meta, output_path):
     """
     Write predictions to geotiff
 
-    :param: y_hat A numpy array of predictions.
+    :param y_hat: A numpy array of predictions.
+    :type y_hat: np.ndarray
     """
     # create empty raster with write geographic information
     dst_file = rasterio.open(
@@ -62,15 +64,25 @@ def merge_patches(patches, overlap):
 
 
 def inference(img, model, process_conf, overlap=0, infer_size=1024, device=None):
-    """
-    inference(tile) -> mask
+    """Make predictions on an unprocessed tiff
 
     :param img: A (unprocessed) numpy array on which to do inference.
+    :type img: np.array
     :param model: A pytorch model on which to perform inference. We assume it
       can accept images of size specified in process_conf.slice.size.
+    :type model: pytorch.nn.Module
     :param process_conf: The path to a yaml file giving the postprocessing
       options. Used to convert the raw tile into the tensor used for inference.
+    :type process_conf: string
+    :param overlap: The number of overlapping pixels when splitting the patches
+      on which to apply the model.
+    :type overlap: int
+    :param infer_size: The size of the square on which to perform inference.
+    :type infer_size: int
+    :param device: The device (gpu or cpu) on which to run inference.
+    :type device: torch.device
     :return prediction: A segmentation mask of the same width and height as img.
+    :type prediction: np.array
     """
     process_opts = Dict(yaml.safe_load(open(process_conf, "r")))
     channels = process_opts.process_funs.extract_channel.img_channels
@@ -123,198 +135,32 @@ def pad_to_valid(img):
     return np.pad(img, ((0, 0), (0, pad_shape[0]), (0, pad_shape[1])))
 
 
-def get_hist(img, mask):
+def convert_to_geojson(y_hat, bounds, threshold=0.8):
+    """Convert a probability mask to geojson
+
+    :param y_hat: A three dimensional numpy array of mask probabilities.
+    :type y_hat: np.array
+    :param bounds: The latitude / longitude bounding box of the region
+      to write as geojson.
+    :type bounds: tuple
+    :param threshold: The probability above which an object is
+      segmented into the geojson.
+    :type threshold: float
+    :return (geo_interface, geo_df) (tuple): tuple giving the geojson and
+      geopandas data frame corresponding to the thresholded y_hat.
     """
-    Defined:
-        max number of points in csv for each label(n_points)
-    Input:
-        raster image, (expected raster image)
-        mask (expected numpy array)
-    Output:
-        pandas dataframe
-        graph
-    """
-    n_points = 1000
-    df = pd.DataFrame(
-        columns=[
-            "B1",
-            "B2",
-            "B3",
-            "B4",
-            "B5",
-            "B6_VCID_1",
-            "B6_VCID_2",
-            "B7",
-            "B8",
-            "BQA",
-            "elevation",
-            "slope",
-            "label",
-        ]
-    )
+    contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
 
-    # prepare the canvas
-    x = np.arange(0.40, 2.40, 0.01)
-    y = np.arange(0.40, 2.40, 0.01)
-    x_values = np.array((0.49, 0.56, 0.67, 0.84, 1.66, 2.22))
-    fig, ax = plt.subplots()
-    ax.axvspan(0.45, 0.52, alpha=0.2, color="blue")
-    ax.axvspan(0.52, 0.60, alpha=0.2, color="green")
-    ax.axvspan(0.63, 0.69, alpha=0.2, color="red")
-    ax.axvspan(0.77, 0.90, alpha=0.2, color="grey")
-    ax.axvspan(1.55, 1.75, alpha=0.2, color="grey")
-    ax.axvspan(2.08, 2.35, alpha=0.2, color="grey")
-    ax.set_xticks(x_values, minor=False)
-    ax.set_xticklabels(
-        ["B1", "B2", "B3", "B4", "B5", "B6_VCID_2"], fontdict=None, minor=False
-    )
-    plt.xlabel("Wavelength μm")
-    plt.ylabel("Intensity")
+    for i in range(len(contours)):
+        contours[i] = contours[i][:, [1, 0]]
+        contours[i][:, 1] = y_hat.shape[1] - contours[i][:, 1]
+        contours[i][:, 0] = bounds[0] + (bounds[2] - bounds[0]) * contours[i][:, 0] / y_hat.shape[0]
+        contours[i][:, 1] = bounds[1] + (bounds[3] - bounds[1]) * contours[i][:, 1] / y_hat.shape[1]
 
-    # read image
-    img_np = img.read()
-    img_np = np.transpose(img_np, (1, 2, 0))
-
-    clean_index = np.argwhere(mask == 0)
-    debris_index = np.argwhere(mask == 1)
-    background_index = np.argwhere(mask == 2)
-    np.random.shuffle(clean_index)
-    np.random.shuffle(debris_index)
-    np.random.shuffle(background_index)
-
-    clean_index = clean_index[:n_points].tolist()
-    debris_index = debris_index[:n_points].tolist()
-    background_index = background_index[:n_points].tolist()
-
-    clean_value = []
-    debris_value = []
-    background_value = []
-    for index in clean_index:
-        clean_value.append(img_np[index[0], index[1], :])
-        row = pd.Series(
-            list(np.append(img_np[index[0], index[1], :], "Clean Ice")),
-            index=df.columns,
-        )
-        df = df.append(row, ignore_index=True)
-    for index in debris_index:
-        debris_value.append(img_np[index[0], index[1], :])
-        row = pd.Series(
-            list(np.append(img_np[index[0], index[1], :], "Debris")), index=df.columns
-        )
-        df = df.append(row, ignore_index=True)
-    for index in background_index:
-        background_value.append(img_np[index[0], index[1], :])
-        row = pd.Series(
-            list(np.append(img_np[index[0], index[1], :], "Background")),
-            index=df.columns,
-        )
-        df = df.append(row, ignore_index=True)
-
-    clean_value = np.asarray(clean_value)
-    clean_mean = clean_value.mean(axis=0)
-    clean_std = clean_value.std(axis=0)
-    clean_mean = np.append(clean_mean[0:5], clean_mean[5])
-    debris_value = np.asarray(debris_value)
-    debris_mean = debris_value.mean(axis=0)
-    debris_std = debris_value.std(axis=0)
-    debris_mean = np.append(debris_mean[0:5], debris_mean[5])
-    background_value = np.asarray(background_value)
-    background_mean = background_value.mean(axis=0)
-    background_std = background_value.std(axis=0)
-    background_mean = np.append(background_mean[0:5], background_mean[5])
-
-    for (x, y) in zip(x_values, clean_mean):
-        ax.plot(x, y, "bo")
-
-    for (x, y) in zip(x_values, debris_mean):
-        ax.plot(x, y, "ro")
-
-    for (x, y) in zip(x_values, background_mean):
-        ax.plot(x, y, "go")
-
-    plt.plot(x_values, clean_mean, color="blue", label="Clean Glaciers")
-    plt.plot(x_values, debris_mean, color="red", label="Debris Glaciers")
-    plt.plot(x_values, background_mean, color="green", label="Background")
-    plt.title("Wavelength vs Normalized intensity")
-    ax.legend(bbox_to_anchor=(0.65, 1), loc="upper left", borderaxespad=0.0)
-
-    return df, plt
-
-
-if __name__ == "__main__":
-    data_dir = Path(os.environ["DATA_DIR"])
-    root_dir = Path(os.environ["ROOT_DIR"])
-
-    parser = argparse.ArgumentParser(description="Draw inferences from a raw tiff")
-    parser.add_argument(
-        "-m",
-        "--model",
-        default=data_dir / "runs/minimal_run/models/model_260.pt",
-        help="path to the model to use for predictions",
-    )
-    parser.add_argument(
-        "-i",
-        "--input",
-        default=data_dir / "raw/img_data/2010/nepal/Nepal_139041_20111225.tif",
-        help="path to tiff file to draw inference on",
-    )
-    parser.add_argument(
-        "-t",
-        "--train_conf",
-        default=root_dir / "conf/train.yaml",
-        help="path to the configuration file used for training (to fetch model initialization parameters)",
-    )
-    parser.add_argument(
-        "-p",
-        "--process_conf",
-        default=root_dir / "conf/postprocess.yaml",
-        help="path to the mean and variances of channels"
-    )
-    parser.add_argument(
-        "-c", "--channels", default=[2, 4, 5], help="input channels to save for png"
-    )
-    parser.add_argument(
-        "-o",
-        "--output_dir",
-        default=data_dir / "outputs",
-        help="input channels to save for png",
-    )
-    args = parser.parse_args()
-
-    print("loading raster")
-    imgf = rasterio.open(args.input)
-    img = imgf.read()
-    train_conf = Dict(yaml.safe_load(open(args.train_conf, "r")))
-    process_conf = Dict(yaml.safe_load(open(args.process_conf, "r")))
-
-    model = Framework(
-        model_opts=train_conf.model_opts, optimizer_opts=train_conf.optim_opts
-    ).model
-
-    if torch.cuda.is_available():
-        state_dict = torch.load(args.model)
-    else:
-        state_dict = torch.load(args.model, map_location="cpu")
-
-    model.load_state_dict(state_dict)
-    print("making predictions")
-    x, y_hat = inference(img, model, args.process_conf)
-
-    # write geotiff
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    write_geotiff(y_hat, imgf.meta, output_dir / append_name("geo", args, "tiff"))
-
-    # convert input to png
-    plt.imsave(
-        output_dir / append_name("input", args),
-        squash(img[args.channels].transpose(1, 2, 0)),
-    )
-
-    plt.imsave(output_dir / append_name("x", args), squash(x[:, :, :3]))
-
-    # convert prediction to png
-    for j in range(y_hat.shape[2]):
-        plt.imsave(
-            output_dir / append_name(f"y_hat-prepred-{j}", args), squash(y_hat[:, :, j])
-        )
+    contours = [c for c in contours if len(c) > 2]
+    polys = [shapely.geometry.Polygon(a) for a in contours]
+    polys = unary_union([p for p in polys if p.area > 4e-6])
+    mpoly = shapely.geometry.multipolygon.MultiPolygon(polys)
+    mpoly = mpoly.simplify(tolerance=0.0005)
+    geo_df = gpd.GeoSeries(mpoly)
+    return geo_df.__geo_interface__, geo_df

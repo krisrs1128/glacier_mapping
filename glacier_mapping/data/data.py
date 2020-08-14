@@ -14,7 +14,7 @@ def fetch_loaders(processed_dir, batch_size=32):
     Args:
         processed_dir(str): Directory with the processed data
         batch_size(int): The size of each batch during training. Defaults to 32.
-        
+
     Return:
         Returns train and val dataloaders
 
@@ -33,15 +33,15 @@ class GlacierDataset(Dataset):
 
     Indexing the i^th element returns the underlying image and the associated
     binary mask
-    
+
     """
 
     def __init__(self, folder_path):
         """Initialize dataset.
-        
+
         Args:
             folder_path(str): A path to data directory
-        
+
         """
 
         self.img_files = glob.glob(os.path.join(folder_path, '*img*'))
@@ -50,12 +50,12 @@ class GlacierDataset(Dataset):
     def __getitem__(self, index):
 
         """ getitem method to retrieve a single instance of the dataset
-        
+
         Args:
-            index(int): Index identifier of the data instance 
+            index(int): Index identifier of the data instance
 
         Return:
-            data(x) and corresponding label(y)        
+            data(x) and corresponding label(y)
         """
 
         img_path = self.img_files[index]

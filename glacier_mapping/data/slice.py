@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """
 Convert Large Tiff and Mask files to Slices (512 x 512 subtiles)
-
-2020-02-26 10:36:48
 """
 from pathlib import Path
 import argparse
@@ -119,8 +117,7 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
 
 def plot_slices(slice_dir, processed=False, n_cols=3, div=3000, n_examples=5):
-    """
-    Helper to plot slices in a directory
+    """Helper to plot slices in a directory
     """
     files = list(Path(slice_dir).glob("*img*npy"))
     _, ax = plt.subplots(n_examples, n_cols, figsize=(15,15))
@@ -138,51 +135,3 @@ def plot_slices(slice_dir, processed=False, n_cols=3, div=3000, n_examples=5):
             ax[i, j + 1].imshow(mask[:, :, j])
 
     return ax
-
-
-if __name__ == "__main__":
-    processed_dir = Path(os.environ["DATA_DIR"], "processed")
-
-    parser = argparse.ArgumentParser(description="Slicing a single tiff / mask pair")
-    parser.add_argument(
-        "-m",
-        "--mask_metadata",
-        type=str,
-        help="csv file mapping tiffs to masks.",
-        default=processed_dir / "masks/mask_metadata.csv",
-    )
-    parser.add_argument(
-        "-o",
-        "--output_dir",
-        type=str,
-        help="directory to save all outputs",
-        default=processed_dir / "slices/",
-    )
-    parser.add_argument(
-        "-b",
-        "--out_base",
-        type=str,
-        help="Name to prepend to all the slices",
-        default="slice",
-    )
-    parser.add_argument(
-        "-c", "--n_cpu", type=int, help="number of CPU nodes to use", default=5
-    )
-    args = parser.parse_args()
-    paths = pd.read_csv(args.mask_metadata)
-    Path(args.output_dir).mkdir(parents=True)
-
-    metadata = []
-    for row in range(len(paths)):
-        print(f"## Slicing tiff {row +1}/{len(paths)} ...")
-        metadata_ = write_pair_slices(
-            paths.iloc[row]["img"],
-            paths.iloc[row]["mask"],
-            args.output_dir,
-            f"slice_{paths.index[row]}"
-        )
-        metadata.append(metadata_)
-
-    metadata = pd.concat(metadata, axis=0)
-    out_path = Path(args.output_dir, "slices.geojson")
-    metadata.to_file(out_path, index=False, driver="GeoJSON")

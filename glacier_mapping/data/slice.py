@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """
 Convert Large Tiff and Mask files to Slices (512 x 512 subtiles)
-
-2020-02-26 10:36:48
 """
 from pathlib import Path
 import argparse
@@ -119,8 +117,7 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
 
 
 def plot_slices(slice_dir, processed=False, n_cols=3, div=3000, n_examples=5):
-    """
-    Helper to plot slices in a directory
+    """Helper to plot slices in a directory
     """
     files = list(Path(slice_dir).glob("*img*npy"))
     _, ax = plt.subplots(n_examples, n_cols, figsize=(15,15))

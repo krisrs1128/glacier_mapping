@@ -1,25 +1,16 @@
 #!/usr/bin/env python
-from .data.process_slices_funs import postprocess_tile
-from .models.frame import Framework
-from .models.unet import Unet
-from addict import Dict
 from pathlib import Path
-from skimage.util.shape import view_as_windows
-from torchvision.utils import save_image
-import argparse
-import geopandas as gpd
-import geopandas as gpd
-import matplotlib
-import matplotlib.pyplot as plt
+from addict import Dict
 import numpy as np
-import os
-import pandas as pd
 import rasterio
+import torch
+import yaml
+import geopandas as gpd
 import shapely.geometry
 from shapely.ops import unary_union
 import skimage.measure
-import torch
-import yaml
+from skimage.util.shape import view_as_windows
+from .data.process_slices_funs import postprocess_tile
 
 
 def squash(x):
@@ -128,6 +119,18 @@ def pad_to_valid(img):
 
 
 def convert_to_geojson(y_hat, bounds, threshold=0.8):
+    """
+    Convert a Probability Mask to Geojson
+
+    :param y_hat (array): A three dimensional numpy array of mask
+      probabilities.
+    :param bounds (tuple): The latitude / longitude bounding box of the region
+      to write as geojson.
+    :param threshold (float): The probability above which an object is
+      segmented into the geojson.
+    :return A tuple giving the geojson and geopandas data frame corresponding
+      to the thresholded y_hat.
+    """
     contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
 
     for i in range(len(contours)):
@@ -141,4 +144,5 @@ def convert_to_geojson(y_hat, bounds, threshold=0.8):
     polys = unary_union([p for p in polys if p.area > 4e-6])
     mpoly = shapely.geometry.multipolygon.MultiPolygon(polys)
     mpoly = mpoly.simplify(tolerance=0.0005)
-    return gpd.GeoSeries(mpoly).__geo_interface__, gpd.GeoSeries(mpoly)
+    geo_df = gpd.GeoSeries(mpoly)
+    return geo_df.__geo_interface__, geo_df

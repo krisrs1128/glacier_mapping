@@ -16,6 +16,7 @@ import os
 import pandas as pd
 import rasterio
 import shapely.geometry
+from shapely.ops import unary_union
 import skimage.measure
 import torch
 import yaml
@@ -126,8 +127,7 @@ def pad_to_valid(img):
     return np.pad(img, ((0, 0), (0, pad_shape[0]), (0, pad_shape[1])))
 
 
-def convert_to_geojson(y_hat, bounds, threshold=0.8, tolerance=0.0005):
-    y_hat = 1 - y_hat
+def convert_to_geojson(y_hat, bounds, threshold=0.8):
     contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
 
     for i in range(len(contours)):
@@ -136,8 +136,9 @@ def convert_to_geojson(y_hat, bounds, threshold=0.8, tolerance=0.0005):
         contours[i][:, 0] = bounds[0] + (bounds[2] - bounds[0]) * contours[i][:, 0] / y_hat.shape[0]
         contours[i][:, 1] = bounds[1] + (bounds[3] - bounds[1]) * contours[i][:, 1] / y_hat.shape[1]
 
+    contours = [c for c in contours if len(c) > 2]
     polys = [shapely.geometry.Polygon(a) for a in contours]
     polys = unary_union([p for p in polys if p.area > 4e-6])
     mpoly = shapely.geometry.multipolygon.MultiPolygon(polys)
-    mpoly = mpoly.simplify(tolerance=tolerance)
-    return gpd.GeoSeries(mpoly).__geo_interface__
+    mpoly = mpoly.simplify(tolerance=0.0005)
+    return gpd.GeoSeries(mpoly).__geo_interface__, gpd.GeoSeries(mpoly)

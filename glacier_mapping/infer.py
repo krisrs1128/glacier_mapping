@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+from .data.process_slices_funs import postprocess_tile
+from .models.frame import Framework
+from .models.unet import Unet
 from addict import Dict
 from pathlib import Path
 from skimage.util.shape import view_as_windows
-from .models.frame import Framework
-from .models.unet import Unet
-from .data.process_slices_funs import postprocess_tile
 from torchvision.utils import save_image
 import argparse
+import geopandas as gpd
 import geopandas as gpd
 import matplotlib
 import matplotlib.pyplot as plt
@@ -14,6 +15,8 @@ import numpy as np
 import os
 import pandas as pd
 import rasterio
+import shapely.geometry
+import skimage.measure
 import torch
 import yaml
 
@@ -123,8 +126,7 @@ def pad_to_valid(img):
     return np.pad(img, ((0, 0), (0, pad_shape[0]), (0, pad_shape[1])))
 
 
-
-def convert_to_geojson(y_hat, bounds, threshold=0.8):
+def convert_to_geojson(y_hat, bounds, threshold=0.8, tolerance=0.0005):
     y_hat = 1 - y_hat
     contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
 
@@ -137,5 +139,5 @@ def convert_to_geojson(y_hat, bounds, threshold=0.8):
     polys = [shapely.geometry.Polygon(a) for a in contours]
     polys = unary_union([p for p in polys if p.area > 4e-6])
     mpoly = shapely.geometry.multipolygon.MultiPolygon(polys)
-    mpoly = mpoly.simplify(tolerance=0.0005)
+    mpoly = mpoly.simplify(tolerance=tolerance)
     return gpd.GeoSeries(mpoly).__geo_interface__

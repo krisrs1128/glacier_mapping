@@ -41,7 +41,7 @@ At each step, the following intermediate files are created,
 * `python3 -m src.process_slices` --> copies slices*npy from previous step into train/, dev/, test/ folders, and writes mean and standard deviations to path specified in postprocess.yaml
 * `python3 -m src.train` --> creates data/runs/run_name folder, containing logs/ with tensorboard logs and models/ with all checkpoints
 
-![pipeline](pipeline.jpeg)
+![pipeline](imgs/pipeline.jpeg)
 ### Data Preprocessing:
 
 1. **Slicing**: We slice the 7000x7000 input tiffs into 512x512 tiles. The resulting tiles along with corresponding shapefile labels are stored. Metadata of the slices are stored in a geojson file" ```slicemetadata.geojson```
@@ -66,7 +66,7 @@ At each step, the following intermediate files are created,
     
     ```
  
-![Image-Mask Pair](image_mask.png)
+![Image-Mask Pair](imgs/image_mask.png)
 
 ### Model Training
 Model: Unet

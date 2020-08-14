@@ -122,3 +122,20 @@ def pad_to_valid(img):
     pad_shape = (int(out_rows - size_[1]), int(out_cols - size_[2]))
     return np.pad(img, ((0, 0), (0, pad_shape[0]), (0, pad_shape[1])))
 
+
+
+def convert_to_geojson(y_hat, bounds, threshold=0.8):
+    y_hat = 1 - y_hat
+    contours = skimage.measure.find_contours(y_hat, threshold, fully_connected="high")
+
+    for i in range(len(contours)):
+        contours[i] = contours[i][:, [1, 0]]
+        contours[i][:, 1] = y_hat.shape[1] - contours[i][:, 1]
+        contours[i][:, 0] = bounds[0] + (bounds[2] - bounds[0]) * contours[i][:, 0] / y_hat.shape[0]
+        contours[i][:, 1] = bounds[1] + (bounds[3] - bounds[1]) * contours[i][:, 1] / y_hat.shape[1]
+
+    polys = [shapely.geometry.Polygon(a) for a in contours]
+    polys = unary_union([p for p in polys if p.area > 4e-6])
+    mpoly = shapely.geometry.multipolygon.MultiPolygon(polys)
+    mpoly = mpoly.simplify(tolerance=0.0005)
+    return gpd.GeoSeries(mpoly).__geo_interface__

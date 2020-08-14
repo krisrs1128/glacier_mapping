@@ -19,7 +19,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
     """ A wrapper of generate_mask, to make labels for each input
-    
+
     Args:
         image_paths(List): A list of Strings of the paths to the raw images
         shps_paths(List): A list of Strings of the paths to the raw polygons

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from pathlib import Path
-from src.infer import infer_conv, inference
-from src.models.unet import Unet
-from web_backend.ServerModelsAbstract import BackendModel
+from glacier_mapping.infer import inference
+from glacier_mapping.models.unet_dropout import UnetDropout
+from web.backend.ServerModelsAbstract import BackendModel
 import numpy as np
 import os
 import sys
@@ -26,7 +26,7 @@ class PytorchUNet(BackendModel):
         else:
             state = torch.load(model_path, map_location=torch.device("cpu"))
 
-        self.model = Unet(**model_spec["args"])
+        self.model = UnetDropout(**model_spec["args"])
         self.model.load_state_dict(state)
         self.model.eval()
         self.verbose = verbose

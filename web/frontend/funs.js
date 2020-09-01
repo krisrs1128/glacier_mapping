@@ -1,6 +1,6 @@
 import { state, tiles, map, backendUrl } from './globals.js';
-import dataset from '../conf/dataset.js';
-import models from '../conf/models.js';
+import dataset from '../../conf/dataset.js';
+import models from '../../conf/models.js';
 
 let sideBySide = null;
 
@@ -112,7 +112,8 @@ function predPatch(event) {
 
   $.ajax({
     type: 'POST',
-    url: "http://test.westus2.cloudapp.azure.com:8080/predPatch",
+    // url: "http://test.westus2.cloudapp.azure.com:8080/predPatch",
+    url: "http://0.0.0.0:8080/predPatch",
     contentType: "application/json",
     crossDomain:'true',
     dataType: "json",
@@ -128,6 +129,8 @@ function predPatch(event) {
       models: models["benjamins_unet"]
     }),
     success: function(response){
+      console.log("got response")
+      console.log(response)
       displayPred(response);},});
 }
 

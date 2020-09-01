@@ -33,7 +33,7 @@ export default {
         512,
         3
       ],
-      "fn": "/mnt/blobfuse/glaciers/runs/minimal_run/models/model_305.pt",
+      "fn": "minimal_run/models/model_final.pt",
       "fineTuneLayer": 0,
       "process": "conf/postprocess.yaml"
     }

@@ -4,10 +4,15 @@
 *.pyc
 *.tar.gz
 *.txt
+*.vrt
 *.zip
 *pycache*
 .vscode
+_build/
+_static/
+_templates/
 backup_data/
+glaciers/
 images/
 notebooks/
 output/
@@ -17,6 +22,3 @@ wandb/
 web-tool/compiled
 web-tool/node_modules
 web-tool/package-lock.json
-_build/
-_static/
-_templates/

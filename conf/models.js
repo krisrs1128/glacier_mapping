@@ -33,7 +33,7 @@ export default {
         512,
         3
       ],
-      "fn": "minimal_run/models/model_final.pt",
+      "fn": "runs/minimal_run/models/model_final.pt",
       "fineTuneLayer": 0,
       "process": "conf/postprocess.yaml"
     }

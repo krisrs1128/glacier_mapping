@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
-# vim:fenc=utf-8
-# pylint: disable=E1137,E1136,E0110,E1101
 from web.backend.Datasets import load_dataset, get_area_from_geometry
 from addict import Dict
 from web.backend.log import setup_logging, LOGGER

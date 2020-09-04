@@ -16,6 +16,7 @@ import shapely.geometry
 from shapely.ops import unary_union
 import skimage.measure
 from skimage.util.shape import view_as_windows
+from rasterio.windows import Window
 from .data.process_slices_funs import postprocess_tile
 
 
@@ -49,6 +50,19 @@ def write_geotiff(y_hat, meta, output_path):
     y_hat = 255.0 * y_hat.astype(np.float32)
     for k in range(y_hat.shape[2]):
         dst_file.write(y_hat[:, :, k], k + 1)
+
+
+def predict_tiff(path, model, subset_size=(2048, 2048), conf_path="conf/postprocess.yaml"):
+    """
+    Load a raster and make predictions on a subwindow
+    """
+    imgf = rasterio.open(path)
+    if subset is not None:
+        img = imgf.read(window=Window(0, 0, subset_size[0], subset_size[1]))
+    else:
+        img = imgf.read()
+    x, y_hat = gmi.inference(img, model, conf_path)
+    return img, x, y_hat
 
 
 def merge_patches(patches, overlap):

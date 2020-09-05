@@ -18,6 +18,7 @@ import skimage.measure
 from skimage.util.shape import view_as_windows
 from rasterio.windows import Window
 from .data.process_slices_funs import postprocess_tile
+from .models.frame import Framework
 
 
 def squash(x):

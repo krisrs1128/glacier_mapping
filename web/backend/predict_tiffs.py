@@ -3,7 +3,9 @@ Output prediction tiffs on all tiffs in a directory
 
 python3 -m predict_tiffs ~/data/img_data/ ~/runs/model_final.pt
 """
-import glacier_mapping.inference as gmi
+import glacier_mapping.infer as gmi
+import argparse
+import pathlib
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Predict over tiles in a directory")

@@ -18,3 +18,4 @@ torchvision==0.7.0
 utm==0.5.0
 opencv-python>=4.4
 tornado>=6.0.4
+skbuild>=0.11.1

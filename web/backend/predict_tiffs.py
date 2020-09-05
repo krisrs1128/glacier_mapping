@@ -1,3 +1,8 @@
+"""
+Output prediction tiffs on all tiffs in a directory
+
+python3 -m predict_tiffs ~/data/img_data/ ~/runs/model_final.pt
+"""
 import glacier_mapping.inference as gmi
 
 if __name__ == "__main__":
@@ -5,15 +10,16 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--tile_dir", type=str)
     parser.add_argument("-o", "--model_path", type=str, default="./")
     parser.add_argument("-o", "--train_yaml", type=str, default="conf/train.yaml")
-    parser.add_argument("-n", "--output_dir", type=str, default="output.vrt")
+    parser.add_argument("-n", "--output_dir", type=str, default="output")
     args = parser.parse_args()
 
+    # load the model and setup the output directory
     output_dir = pathlib.Path(args.output_dir)
     output_dir.mkdir(exist_ok=True)
     model = gmi.load_model(args.train_yaml, args.model_path)
 
+    # loop over input tiles and make predictions
     input_tiles = list(pathlib.Path(args.tile_dir).glob("*.tiff"))
     for path in input_tiles:
         img, x, y_hat = gmi.predict_tiff(path, model)
-        gmi.write_geotiff(y_hat, img.meta, output_dir / path.basename)
-
+        gmi.write_geotiff(y_hat, img.meta, output_dir / path.stem + ".tiff")

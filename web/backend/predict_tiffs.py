@@ -10,9 +10,9 @@ import pathlib
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Predict over tiles in a directory")
     parser.add_argument("-d", "--tile_dir", type=str)
-    parser.add_argument("-o", "--model_path", type=str, default="./")
-    parser.add_argument("-o", "--train_yaml", type=str, default="conf/train.yaml")
-    parser.add_argument("-n", "--output_dir", type=str, default="output")
+    parser.add_argument("-m", "--model_path", type=str, default="./")
+    parser.add_argument("-c", "--train_yaml", type=str, default="conf/train.yaml")
+    parser.add_argument("-o", "--output_dir", type=str, default="output")
     args = parser.parse_args()
 
     # load the model and setup the output directory

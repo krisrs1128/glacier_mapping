@@ -52,7 +52,7 @@ def write_geotiff(y_hat, meta, output_path):
         dst_file.write(y_hat[:, :, k], k + 1)
 
 
-def predict_tiff(path, model, subset_size=(2048, 2048), conf_path="conf/postprocess.yaml"):
+def predict_tiff(path, model, subset_size=None, conf_path="conf/postprocess.yaml"):
     """
     Load a raster and make predictions on a subwindow
     """

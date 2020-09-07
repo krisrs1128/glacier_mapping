@@ -62,7 +62,7 @@ def predict_tiff(path, model, subset_size=None, conf_path="conf/postprocess.yaml
         img = imgf.read(window=Window(0, 0, subset_size[0], subset_size[1]))
     else:
         img = imgf.read()
-    x, y_hat = gmi.inference(img, model, conf_path)
+    x, y_hat = inference(img, model, conf_path)
     return img, x, y_hat
 
 

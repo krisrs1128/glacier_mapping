@@ -1,7 +1,7 @@
 """
 Output prediction tiffs on all tiffs in a directory
 
-python3 -m predict_tiffs -d $DATA_DIR/img_data/ -m $DATA_DIR/runs/model_final.pt
+python3 -m predict_tiffs -d $DATA_DIR/img_data/ -m $DATA_DIR/runs/minimal_run/models/model_final.pt -c ../../conf/train.yaml
 """
 from addict import Dict
 import argparse
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     model = gmi.load_model(args.train_yaml, args.model_path)
 
     # loop over input tiles and make predictions
-    input_tiles = list(pathlib.Path(args.tile_dir).glob("*.tiff"))
+    input_tiles = list(pathlib.Path(args.tile_dir).glob("*.tif*"))
     for path in input_tiles:
         img, x, y_hat = gmi.predict_tiff(path, model)
         gmi.write_geotiff(y_hat, img.meta, output_dir / path.stem + ".tiff")

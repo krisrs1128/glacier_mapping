@@ -189,7 +189,7 @@ def load_model(train_yaml, model_path):
     :return model: The model with checkpoint loaded.
     """
     # loads an empty model, without weights
-    train_conf = Dict(yaml.safe_load(open(args.train_yaml, "r")))
+    train_conf = Dict(yaml.safe_load(open(train_yaml, "r")))
     model = Framework(torch.nn.BCEWithLogitsLoss(), train_conf.model_opts, train_conf.optim_opts).model
 
     # if GPU is available, inference will be faster

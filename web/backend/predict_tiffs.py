@@ -1,7 +1,7 @@
 """
 Output prediction tiffs on all tiffs in a directory
 
-python3 -m predict_tiffs $DATA_DIR/img_data/ $DATA_DIR/runs/model_final.pt
+python3 -m predict_tiffs -d $DATA_DIR/img_data/ -m $DATA_DIR/runs/model_final.pt
 """
 from addict import Dict
 import argparse

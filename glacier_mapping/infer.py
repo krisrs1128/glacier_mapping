@@ -16,7 +16,9 @@ import shapely.geometry
 from shapely.ops import unary_union
 import skimage.measure
 from skimage.util.shape import view_as_windows
+from rasterio.windows import Window
 from .data.process_slices_funs import postprocess_tile
+from .models.frame import Framework
 
 
 def squash(x):
@@ -49,6 +51,19 @@ def write_geotiff(y_hat, meta, output_path):
     y_hat = 255.0 * y_hat.astype(np.float32)
     for k in range(y_hat.shape[2]):
         dst_file.write(y_hat[:, :, k], k + 1)
+
+
+def predict_tiff(path, model, subset_size=None, conf_path="conf/postprocess.yaml"):
+    """
+    Load a raster and make predictions on a subwindow
+    """
+    imgf = rasterio.open(path)
+    if subset_size is not None:
+        img = imgf.read(window=Window(0, 0, subset_size[0], subset_size[1]))
+    else:
+        img = imgf.read()
+    x, y_hat = inference(img, model, conf_path)
+    return img, x, y_hat
 
 
 def merge_patches(patches, overlap):
@@ -164,3 +179,24 @@ def convert_to_geojson(y_hat, bounds, threshold=0.8):
     mpoly = mpoly.simplify(tolerance=0.0005)
     geo_df = gpd.GeoSeries(mpoly)
     return geo_df.__geo_interface__, geo_df
+
+
+def load_model(train_yaml, model_path):
+    """
+    :param train_yaml: The path to the yaml file containing training options.
+    :param model_path: The path to the saved model checkpoint, from which to
+    load the state dict.
+    :return model: The model with checkpoint loaded.
+    """
+    # loads an empty model, without weights
+    train_conf = Dict(yaml.safe_load(open(train_yaml, "r")))
+    model = Framework(torch.nn.BCEWithLogitsLoss(), train_conf.model_opts, train_conf.optim_opts).model
+
+    # if GPU is available, inference will be faster
+    if torch.cuda.is_available():
+        state_dict = torch.load(model_path)
+    else:
+        state_dict = torch.load(model_path, map_location="cpu")
+
+    model.load_state_dict(state_dict)
+    return model

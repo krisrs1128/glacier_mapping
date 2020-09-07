@@ -55,7 +55,7 @@ export default {
   },
   "dataLayer": {
     "padding": 1100,
-    "path": "web_tool/outputs/tiles/output-full.vrt",
+    "path": "web/frontend/outputs/tiles/output-full.vrt",
     "type": "GLACIER"
   },
   "metadata": {

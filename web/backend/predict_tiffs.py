@@ -21,6 +21,8 @@ if __name__ == "__main__":
     output_dir = pathlib.Path(args.output_dir)
     output_dir.mkdir(exist_ok=True)
     model = gmi.load_model(args.train_yaml, args.model_path)
+    import pdb
+    pdb.set_trace()
 
     # loop over input tiles and make predictions
     input_tiles = list(pathlib.Path(args.tile_dir).glob("*.tif*"))

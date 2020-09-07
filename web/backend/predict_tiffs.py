@@ -1,7 +1,7 @@
 """
 Output prediction tiffs on all tiffs in a directory
 
-python3 -m predict_tiffs -d $DATA_DIR/img_data/ -m $DATA_DIR/runs/minimal_run/models/model_final.pt -c ../../conf/train.yaml
+python3 -m predict_tiffs -d $DATA_DIR/pipeline_demo/demo_data/data/2005/nepal/ -m $DATA_DIR/runs/minimal_run/models/model_final.pt -c ../../conf/train.yaml
 """
 from addict import Dict
 import argparse
@@ -21,8 +21,6 @@ if __name__ == "__main__":
     output_dir = pathlib.Path(args.output_dir)
     output_dir.mkdir(exist_ok=True)
     model = gmi.load_model(args.train_yaml, args.model_path)
-    import pdb
-    pdb.set_trace()
 
     # loop over input tiles and make predictions
     input_tiles = list(pathlib.Path(args.tile_dir).glob("*.tif*"))

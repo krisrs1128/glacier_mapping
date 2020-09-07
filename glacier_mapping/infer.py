@@ -58,7 +58,7 @@ def predict_tiff(path, model, subset_size=None, conf_path="conf/postprocess.yaml
     Load a raster and make predictions on a subwindow
     """
     imgf = rasterio.open(path)
-    if subset is not None:
+    if subset_size is not None:
         img = imgf.read(window=Window(0, 0, subset_size[0], subset_size[1]))
     else:
         img = imgf.read()

@@ -3,7 +3,7 @@ Beaker==1.11.0
 bottle==0.12.18
 cheroot==8.4.2
 fiona==1.8.13
-gdal==2.2.3
+gdal==2.2.2
 gdal2tiles==0.1.7
 geopandas==0.8.1
 joblib==0.16.0
@@ -16,7 +16,7 @@ scikit-image==0.16.2
 torch==1.6.0
 torchvision==0.7.0
 utm==0.5.0
-tornado>=6.0.4
+tornado==5.1.0
 pybind11
 scikit-build>=0.11.1
 cmake>=3.14.2

@@ -49,6 +49,24 @@ def random_split(ids, split_ratio, **kwargs):
         "test": ids[ix[1] : ix[2]],
     }
 
+def geographic_split(ids, split_ratio, geojsons, slice_meta, **kwargs):
+    """
+    Warning: Does not use the split ratio. Only refers to the geojsons for
+    defining the split.
+    """
+    splits = {"train": [], "test": []}
+
+    for slice_id in ids:
+        cur_meta = slice_meta.where(slice_meta.ids == slice_id) # get the row of the pandas with the current slice id
+        geo = cur_meta["geometry"]
+        if geojsons[0].contains(geo):
+            splits["train"].append(slice_id)
+        else:
+            if geojsons[1].contains(geo):
+                splits["test"].append(slice_id)
+
+    return splits
+
 
 def reshuffle(split_ids, output_dir="output/", n_cpu=3):
     """ Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.

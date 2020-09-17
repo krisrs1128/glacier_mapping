@@ -6,6 +6,7 @@ python3 -m experiment_helpers.preprocess -m conf/geo/mask.yaml -o $DATA_DIR/expe
 from addict import Dict
 from glacier_mapping.data.mask import generate_masks
 from glacier_mapping.data.slice import write_pair_slices
+import argparse
 import geopandas as gpd
 import glacier_mapping.data.process_slices_funs as pf
 import numpy as np

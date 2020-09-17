@@ -1,5 +1,9 @@
 """
 Helpers for Geographic Generalization Experiments
+
+export run_dir=$DATA_DIR/expers/geographic/splits/01/
+mkdir -p $run_dir
+#python3 -m experiment_helpers.geo -d $DATA_DIR/analysis_images/ -o $run_dir
 """
 import geopandas as gpd
 import pandas as pd

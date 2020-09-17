@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     generate_masks(img_paths, mask_paths, out_dir=output_dir / "masks/")
     paths = pd.read_csv(output_dir / "masks" / "mask_metadata.csv")
-    slice_dir = processed_dir / "slices"
+    slice_dir = output_dir_dir / "slices"
     slice_dir.mkdir(parents=True, exist_ok=True)
 
     metadata = []
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
     # global statistics: get the means and variances in the train split
     print("getting stats")
-    pconf.process_funs.normalize.stats_path = processed_dir / \
+    pconf.process_funs.normalize.stats_path = output_dir / \
         pathlib.Path(pconf.process_funs.normalize.stats_path)
 
     stats = pf.generate_stats(

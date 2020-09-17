@@ -1,0 +1,14 @@
+filter_channel: 1
+filter_percentage: 0.1
+split_method: random_split
+split_ratio: [0.7,0.1,0.2]
+normalization_sample_size: 100
+process_funs:
+  normalize:
+    stats_path: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/slices/stats_train.json"
+  extract_channel:
+    mask_channels: [1]
+    img_channels: [5, 4, 2]
+slice:
+  overlap: 6
+  size: [512, 512]

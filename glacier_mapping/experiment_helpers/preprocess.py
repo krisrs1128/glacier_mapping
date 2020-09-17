@@ -25,9 +25,9 @@ if __name__ == '__main__':
     masking_paths = yaml.load(open(args.masking_yaml))
     img_paths = [p["img_path"] for p in masking_paths.values()]
     mask_paths = [p["mask_paths"] for p in masking_paths.values()]
-    generate_masks(img_paths, mask_paths, out_dir=args.output_dir / "masks/")
-
     output_dir = pathlib.Path(args.output_dir)
+
+    generate_masks(img_paths, mask_paths, out_dir=output_dir / "masks/")
     paths = pd.read_csv(processed_dir / "masks" / "mask_metadata.csv")
     slice_dir = processed_dir / "slices"
     slice_dir.mkdir(parents=True, exist_ok=True)

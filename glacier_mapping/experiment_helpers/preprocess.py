@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Preprocessing script from colab notebook
 
-python3 -m experiment_helpers.preprocess -m ../conf/geo/mask.yaml -o $DATA_DIR/expers/geographic/splits/01/ -p ../conf/geo/postprocess.yaml
+python3 -m experiment_helpers.preprocess -m ../conf/geo/mask.yaml -o $DATA_DIR/expers/geographic/ -p ../conf/geo/postprocess.yaml
 """
 from addict import Dict
 from glacier_mapping.data.mask import generate_masks
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     masking_paths = yaml.load(open(args.masking_yaml))
     img_paths = [p["img_path"] for p in masking_paths.values()]
     mask_paths = [p["mask_paths"] for p in masking_paths.values()]
-    generate_masks(img_paths, mask_paths)
+    generate_masks(img_paths, mask_paths, out_dir=args.output_dir / "masks/")
 
     output_dir = pathlib.Path(args.output_dir)
     paths = pd.read_csv(processed_dir / "masks" / "mask_metadata.csv")

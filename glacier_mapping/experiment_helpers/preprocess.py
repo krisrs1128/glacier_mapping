@@ -28,7 +28,7 @@ if __name__ == '__main__':
     output_dir = pathlib.Path(args.output_dir)
 
     generate_masks(img_paths, mask_paths, out_dir=output_dir / "masks/")
-    paths = pd.read_csv(processed_dir / "masks" / "mask_metadata.csv")
+    paths = pd.read_csv(output_dir / "masks" / "mask_metadata.csv")
     slice_dir = processed_dir / "slices"
     slice_dir.mkdir(parents=True, exist_ok=True)
 

@@ -123,6 +123,7 @@ def channel_mask(img_meta, shp):
                 poly_shp += [poly_from_coord(geom, img_meta["transform"])]
 
     im_size = (img_meta["height"], img_meta["width"])
+    
     try:
         result = rasterize(shapes=poly_shp, out_shape=im_size)
     except ValueError as e:

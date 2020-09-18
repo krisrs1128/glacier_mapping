@@ -50,7 +50,7 @@ def random_split(ids, split_ratio, **kwargs):
     }
 
 
-def geographic_split(ids, split_ratio, geojsons, slice_meta, **kwargs):
+def geographic_split(ids, geojsons, slice_meta, **kwargs):
     """
     Warning: Does not use the split ratio. Only refers to the geojsons for
     defining the split.

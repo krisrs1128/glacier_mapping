@@ -89,8 +89,7 @@ def reproject_directory(input_dir, output_dir, dst_epsg=3857):
                          "-wo", "NUM_THREADS=ALL_CPUS", str(output_path)])
 
 def create_gdf(polygon, crs=3857):
-    gdf = gpd.GeoDataFrame({"id": [0], "geometry": [polygon]})
-    return gdf.set_crs(epsg=crs)
+    return gpd.GeoDataFrame(geometry=[polygon], crs=crs)
 
 
 if __name__ == "__main__":

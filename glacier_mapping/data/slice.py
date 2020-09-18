@@ -73,6 +73,12 @@ def slice_pair(img, mask, **kwargs):
     """
     Slice an image / mask pair
     """
+    # maskout areas with nans
+    nan_mask = np.isnan(img[:, :, 0])
+    nan_mask = np.expand_dims(nan_mask, axis=2)
+    nan_mask = np.repeat(nan_mask, mask.shape[-1], axis=2)
+    mask[nan_mask] = 0
+
     img_slices = slice_tile(img, **kwargs)
     mask_slices = slice_tile(mask, **kwargs)
     return img_slices, mask_slices

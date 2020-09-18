@@ -123,7 +123,14 @@ def channel_mask(img_meta, shp):
                 poly_shp += [poly_from_coord(geom, img_meta["transform"])]
 
     im_size = (img_meta["height"], img_meta["width"])
-    return rasterize(shapes=poly_shp, out_shape=im_size)
+    try:
+        result = rasterize(shapes=poly_shp, out_shape=im_size)
+    except ValueError as e:
+        if str(e) == 'No valid geometry objects found for rasterize':
+            result = np.zeros(im_size)
+        else: raise
+
+    return result
 
 
 def poly_from_coord(polygon, transform):

@@ -9,6 +9,7 @@ import os
 import random
 import sys
 import numpy as np
+import geopandas as gpd
 
 
 def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
@@ -34,7 +35,9 @@ def random_split(ids, split_ratio, **kwargs):
     """ Randomly split a list of paths into train / dev / test
 
     Args:
-        ids(int): IDs of data to split
+        ids(list of dict): A list of dictionaries, each with keys "img" and
+          "mask" giving paths to data that need to be split into train / dev /
+          test.
         split_ratio: Ratio of split among train:dev:test
 
     Return:
@@ -50,19 +53,20 @@ def random_split(ids, split_ratio, **kwargs):
     }
 
 
-def geographic_split(ids, geojsons, slice_meta, **kwargs):
+def geographic_split(ids, geojsons, slice_meta, crs=3857, **kwargs):
     """ Split according to specified geojson coordinates
     """
     splits = {"train": [], "dev": [], "test": []}
 
-    for slice_id in ids:
-        import pdb
-        pdb.set_trace()
-        cur_meta = slice_meta.where(slice_meta.ids == slice_id) # get the row of the pandas with the current slice id
-        slice_geo = cur_meta["geometry"]
-        for k, path in geojsons.items():
-            split_geo = gpd.read_file(path)
-            if split_geo.contains(slice_geo):
+    for k, path in geojsons.items():
+        split_geo = gpd.read_file(path)
+        split_geo = split_geo.to_crs(crs)
+
+        for slice_id in ids:
+            # get the row of the pandas with the current slice id
+            slice_geo = slice_meta[slice_meta.img_slice == slice_id["img"]]["geometry"]
+            slice_geo = slice_geo.to_crs(crs).reset_index()
+            if split_geo.contains(slice_geo)[0]:
                 splits[k].append(slice_id)
 
     return splits

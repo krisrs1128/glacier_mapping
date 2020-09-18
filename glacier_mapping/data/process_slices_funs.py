@@ -54,9 +54,10 @@ def geographic_split(ids, geojsons, slice_meta, **kwargs):
     """ Split according to specified geojson coordinates
     """
     splits = {"train": [], "dev": [], "test": []}
-    print(geojsons)
 
     for slice_id in ids:
+        import pdb
+        pdb.set_trace()
         cur_meta = slice_meta.where(slice_meta.ids == slice_id) # get the row of the pandas with the current slice id
         slice_geo = cur_meta["geometry"]
         for k, path in geojsons.items():

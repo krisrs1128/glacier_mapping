@@ -111,6 +111,8 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
         stats.update({f"mask_mean_{i}": v for i, v in enumerate(mask_mean)})
         stats.update({"img_mean": img_slice_mean})
         slice_stats.append(stats)
+        if k > 10:
+            break
 
     slice_stats = pd.DataFrame(slice_stats)
     return pd.concat([metadata, slice_stats], axis=1)

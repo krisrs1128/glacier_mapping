@@ -1,4 +1,4 @@
-filter_channel: 1
+filter_channel: 0
 filter_percentage: 0.1
 split_method: random_split
 split_ratio: [0.7,0.1,0.2]

@@ -4,6 +4,7 @@ Helpers for Geographic Generalization Experiments
 export run_dir=$DATA_DIR/expers/geographic/splits/01/
 mkdir -p $run_dir
 #python3 -m experiment_helpers.geo -d $DATA_DIR/analysis_images/ -o $run_dir
+python3 -m experiment_helpers.geo -d $DATA_DIR/expers/geographic/test_images/ -o $run_dir
 """
 import geopandas as gpd
 import pandas as pd
@@ -23,7 +24,7 @@ def extract_work_region(tiles_dir):
     output: geojson of the cascaded union of bounding boxes for the tiles in
     the directory
     """
-    tile_paths = list(pathlib.Path(tiles_dir).glob("*"))
+    tile_paths = list(pathlib.Path(tiles_dir).glob("*.tif*"))
     bboxes = []
     for path in tile_paths:
         imgf = rasterio.open(path)

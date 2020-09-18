@@ -125,8 +125,8 @@ def generate_stats(image_paths, sample_size, outpath="stats.json"):
 
     with open(outpath, "w+") as f:
         stats = {"means": means.tolist(), "stds": stds.tolist()}
-
         json.dump(stats, f)
+
     return stats
 
 

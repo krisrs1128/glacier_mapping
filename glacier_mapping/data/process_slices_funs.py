@@ -66,9 +66,12 @@ def geographic_split(ids, geojsons, slice_meta, crs=3857, **kwargs):
             # get the row of the pandas with the current slice id
             slice_geo = slice_meta[slice_meta.img_slice == slice_id["img"]]["geometry"]
             slice_geo = slice_geo.to_crs(crs).reset_index()
+            print(split_geo.contains(slice_geo))
             if split_geo.contains(slice_geo)[0]:
                 splits[k].append(slice_id)
 
+    import pdb
+    pdb.set_trace()
     return splits
 
 
@@ -116,8 +119,6 @@ def generate_stats(image_paths, sample_size, outpath="stats.json"):
     sample_size = min(sample_size, len(image_paths))
     image_paths = np.random.choice(image_paths, sample_size, replace=False)
     images = [np.load(image_path) for image_path in image_paths]
-    import pdb
-    pdb.set_trace()
     batch = np.stack(images)
     means = np.nanmean(batch, axis=(0, 1, 2))
     stds = np.nanstd(batch, axis=(0, 1, 2))

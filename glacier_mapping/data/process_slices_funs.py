@@ -51,20 +51,18 @@ def random_split(ids, split_ratio, **kwargs):
 
 
 def geographic_split(ids, geojsons, slice_meta, **kwargs):
+    """ Split according to specified geojson coordinates
     """
-    Warning: Does not use the split ratio. Only refers to the geojsons for
-    defining the split.
-    """
-    splits = {"train": [], "test": []}
+    splits = {"train": [], "dev": [], "test": []}
+    print(geojsons)
 
     for slice_id in ids:
         cur_meta = slice_meta.where(slice_meta.ids == slice_id) # get the row of the pandas with the current slice id
-        geo = cur_meta["geometry"]
-        if geojsons[0].contains(geo):
-            splits["train"].append(slice_id)
-        else:
-            if geojsons[1].contains(geo):
-                splits["test"].append(slice_id)
+        slice_geo = cur_meta["geometry"]
+        for k, path in geojsons.items():
+            split_geo = gpd.read_file(path)
+            if split_geo.contains(slice_geo):
+                splits[k].append(slice_id)
 
     return splits
 

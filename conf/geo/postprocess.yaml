@@ -2,9 +2,10 @@ filter_channel: 0
 filter_percentage: 0.1
 split_method:
   geographic_split:
-    train_geojson: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/train.geojson"
-    dev_geojson: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/test.geojson"
-    test_geojson: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/test.geojson"
+    geojsons:
+      train: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/train.geojson"
+      dev: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/test.geojson"
+      test: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/test.geojson"
 normalization_sample_size: 100
 process_funs:
   normalize:

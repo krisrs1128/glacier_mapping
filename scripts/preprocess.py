@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Preprocessing script from colab notebook
 
-python3 -m experiment_helpers.preprocess -m ../conf/geo/mask.yaml -o $DATA_DIR/expers/geographic/ -p ../conf/geo/postprocess.yaml
+python3 -m preprocess -m ../conf/geo/mask.yaml -o $DATA_DIR/expers/geographic/ -p ../conf/geo/postprocess.yaml
 """
 from addict import Dict
 from glacier_mapping.data.mask import generate_masks

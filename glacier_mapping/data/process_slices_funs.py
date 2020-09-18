@@ -209,7 +209,6 @@ def postprocess_tile(img, process_funs):
     # create fake mask input
     process_funs.extract_channel.mask_channels = 0
     mask = np.zeros((img.shape[0], img.shape[1], 1))
-
     return postprocess_(img, mask, process_funs)
 
 

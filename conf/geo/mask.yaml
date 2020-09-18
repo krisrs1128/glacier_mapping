@@ -2,15 +2,3 @@ mask_1:
   img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146036_20090814-warped.tif
   mask_paths:
     - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_2:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146038_20080827-warped.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_3:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146037_20090627-warped.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_4:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146039_20081115-warped.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp

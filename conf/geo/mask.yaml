@@ -1,48 +1,16 @@
 mask_1:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146036_20090814.tif
+  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146036_20090814-warped.tif
   mask_paths:
     - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
 mask_2:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146037_20080912.tif
+  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146038_20080827-warped.tif
   mask_paths:
     - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
 mask_3:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146038_20080827.tif
+  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146037_20090627-warped.tif
   mask_paths:
     - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
 mask_4:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146036_20091001.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_5:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146037_20090627.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_6:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146039_20051123.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_7:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146037_20071231.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_8:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146038_20060923.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_9:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146039_20051209.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_10:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146037_20080827.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_11:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146038_20061009.tif
-  mask_paths:
-    - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_12:
-  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146039_20081115.tif
+  img_path: /mnt/blobfuse/glaciers/expers/geographic/splits/01/LE07_146039_20081115-warped.tif
   mask_paths:
     - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp

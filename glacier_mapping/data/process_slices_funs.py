@@ -116,6 +116,8 @@ def generate_stats(image_paths, sample_size, outpath="stats.json"):
     sample_size = min(sample_size, len(image_paths))
     image_paths = np.random.choice(image_paths, sample_size, replace=False)
     images = [np.load(image_path) for image_path in image_paths]
+    import pdb
+    pdb.set_trace()
     batch = np.stack(images)
     means = np.nanmean(batch, axis=(0, 1, 2))
     stds = np.nanstd(batch, axis=(0, 1, 2))

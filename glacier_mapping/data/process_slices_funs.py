@@ -49,6 +49,7 @@ def random_split(ids, split_ratio, **kwargs):
         "test": ids[ix[1] : ix[2]],
     }
 
+
 def geographic_split(ids, split_ratio, geojsons, slice_meta, **kwargs):
     """
     Warning: Does not use the split ratio. Only refers to the geojsons for

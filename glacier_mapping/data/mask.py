@@ -101,7 +101,7 @@ def generate_mask(img_meta, shps):
     for k, shp in enumerate(shps):
         check_crs(img_meta["crs"], shp.crs)
         result[:, :, k] = channel_mask(img_meta, shp)
-    
+
     return result
 
 

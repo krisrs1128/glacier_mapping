@@ -9,6 +9,8 @@ import os
 import random
 import sys
 import numpy as np
+import geopandas as gpd
+import random
 
 
 def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
@@ -34,7 +36,9 @@ def random_split(ids, split_ratio, **kwargs):
     """ Randomly split a list of paths into train / dev / test
 
     Args:
-        ids(int): IDs of data to split
+        ids(list of dict): A list of dictionaries, each with keys "img" and
+          "mask" giving paths to data that need to be split into train / dev /
+          test.
         split_ratio: Ratio of split among train:dev:test
 
     Return:
@@ -49,21 +53,28 @@ def random_split(ids, split_ratio, **kwargs):
         "test": ids[ix[1] : ix[2]],
     }
 
-def geographic_split(ids, split_ratio, geojsons, slice_meta, **kwargs):
-    """
-    Warning: Does not use the split ratio. Only refers to the geojsons for
-    defining the split.
-    """
-    splits = {"train": [], "test": []}
 
-    for slice_id in ids:
-        cur_meta = slice_meta.where(slice_meta.ids == slice_id) # get the row of the pandas with the current slice id
-        geo = cur_meta["geometry"]
-        if geojsons[0].contains(geo):
-            splits["train"].append(slice_id)
-        else:
-            if geojsons[1].contains(geo):
-                splits["test"].append(slice_id)
+def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwargs):
+    """ Split according to specified geojson coordinates
+    """
+    splits = {"train": [], "dev": [], "test": []}
+
+    for k, path in geojsons.items():
+        split_geo = gpd.read_file(path)
+        split_geo = split_geo.to_crs(crs)
+
+        for slice_id in ids:
+            # get the row of the pandas with the current slice id
+            slice_geo = slice_meta[slice_meta.img_slice == slice_id["img"]]["geometry"]
+            slice_geo = slice_geo.to_crs(crs).reset_index()
+            if split_geo.contains(slice_geo)[0]:
+                if k == "train":
+                    if random.random() < dev_ratio:
+                        splits["dev"].append(slice_id)
+                    else:
+                        splits["train"].append(slice_id)
+                else:
+                        splits["test"].append(slice_id)
 
     return splits
 
@@ -118,8 +129,8 @@ def generate_stats(image_paths, sample_size, outpath="stats.json"):
 
     with open(outpath, "w+") as f:
         stats = {"means": means.tolist(), "stds": stds.tolist()}
-
         json.dump(stats, f)
+
     return stats
 
 
@@ -208,7 +219,6 @@ def postprocess_tile(img, process_funs):
     # create fake mask input
     process_funs.extract_channel.mask_channels = 0
     mask = np.zeros((img.shape[0], img.shape[1], 1))
-
     return postprocess_(img, mask, process_funs)
 
 

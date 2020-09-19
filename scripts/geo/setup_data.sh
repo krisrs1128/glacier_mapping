@@ -2,11 +2,11 @@
 echo $1
 source /home/kris/glacier_mapping/.env
 
-if [$1 == "test"];
+if [ $1 == "test" ];
 then
-    export input_dir=$DATA_DIR/analysis_images
-else
     export input_dir=$DATA_DIR/expers/geographic/test_input/
+else
+    export input_dir=$DATA_DIR/analysis_images
 fi
 
 cd $ROOT_DIR

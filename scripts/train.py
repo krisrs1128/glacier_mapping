@@ -11,7 +11,7 @@ import json
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Preprocess raw tiffs into slices")
-    parser.add_argument("-d", "--data_dir", type=str, default = "conf/masks_geo_exper.conf")
+    parser.add_argument("-d", "--data_dir", type=str)
     parser.add_argument("-c", "--train_yaml", type=str)
     parser.add_argument("-p", "--postprocess_conf", type=str, default = "conf/process_geo.conf")
     parser.add_argument("-b", "--batch_size", type=int, default = 16)
@@ -22,7 +22,6 @@ if __name__ == '__main__':
 
     data_dir = pathlib.Path(args.data_dir)
     conf = Dict(yaml.safe_load(open(args.train_yaml, "r")))
-    processed_dir = data_dir / "processed"
 
     # Train a model
     args = Dict({
@@ -32,7 +31,7 @@ if __name__ == '__main__':
         "save_every": args.save_every
     })
 
-    loaders = fetch_loaders(processed_dir, args.batch_size)
+    loaders = fetch_loaders(data_dir, args.batch_size)
     frame = Framework(
         model_opts=conf.model_opts,
         optimizer_opts=conf.optim_opts,

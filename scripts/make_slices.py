@@ -21,7 +21,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # generate masks
-    masking_paths = yaml.load(open(args.masking_yaml))
+    masking_paths = yaml.safe_load(open(args.masking_yaml))
     img_paths = [p["img_path"] for p in masking_paths.values()]
     mask_paths = [p["mask_paths"] for p in masking_paths.values()]
     output_dir = pathlib.Path(args.output_dir)

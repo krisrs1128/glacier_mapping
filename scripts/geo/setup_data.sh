@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 cd $ROOT_DIR
 export split_dir=$DATA_DIR/expers/geographic/splits/
+rm -rf $split_dir
 mkdir -p $split_dir
 
 # create train and test geojsons

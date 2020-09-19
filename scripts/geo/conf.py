@@ -12,9 +12,11 @@ if __name__ == '__main__':
     pconf = yaml.safe_load(open(args.template_conf, "r"))
     train_path = pconf["split_method"]["geographic_split"]["geojsons"]["train"]
     test_path = pconf["split_method"]["geographic_split"]["geojsons"]["test"]
+    stats_path = pconf["process_funs"]["normalize"]["stats_path"]
 
     pconf["split_method"]["geographic_split"]["geojsons"]["train"] = train_path.replace("FOLD_NUM", str(args.index_split))
     pconf["split_method"]["geographic_split"]["geojsons"]["test"] = test_path.replace("FOLD_NUM", str(args.index_split))
+    pconf["process_funs"]["normalize"]["stats_path"] = stats_path.replace("FOLD_NUM", str(args.index_split))
 
     with open(args.output_file, 'w') as f:
         yaml.dump(pconf, f, default_flow_style=False)

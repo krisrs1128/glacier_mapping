@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
+echo $1
+
+if [$1 == "test"]
+then
+    export input_dir=$DATA_DIR/analysis_images
+else
+    export input_dir=$DATA_DIR/expers/geographic/test_input/
+fi
+
 cd $ROOT_DIR
 export split_dir=$DATA_DIR/expers/geographic/splits/
-export input_dir=$DATA_DIR/analysis_images/
 rm -rf $split_dir
 mkdir -p $split_dir
 

@@ -17,5 +17,6 @@ python3 -m scripts.make_slices -m conf/geo/mask.yaml $DATA_DIR/expers/geographic
 
 # construct different folds
 for i in 1...10; do
+    python3 -m scripts.geo.conf -i $i -t conf/geo/postprocess.yaml -o $split_dir/postprocess.yaml
     python3 -m scripts.process_slices -o $split_dir/$i -p conf/geo/process_$i.yaml
 done;

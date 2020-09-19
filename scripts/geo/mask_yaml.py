@@ -8,13 +8,13 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--input_dir", type=str)
     parser.add_argument("-o", "--output_file", type=str, default="mask.yaml")
     parser.add_argument("-m", "--mask_path", type=str, default="/mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp")
-    parser.parse_args()
+    args = parser.parse_args()
 
     mask_conf = {}
-    inputs_tiles = pathlib.Path(args.input_dir).glob("*.tif*")
+    input_tiles = pathlib.Path(args.input_dir).glob("*.tif*")
     for i, path in enumerate(input_tiles):
         mask_conf[f"mask_{i}"] = {
-            "img_path": path.resolve(),
+            "img_path": str(path.resolve()),
             "mask_paths": [args.mask_path]
         }
 

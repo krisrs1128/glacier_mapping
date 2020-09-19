@@ -1,0 +1,4 @@
+mask_0:
+  img_path: /mnt/blobfuse/glaciers/analysis_images/LE07_146036_20090814.tif
+  mask_paths:
+  - /mnt/blobfuse/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp

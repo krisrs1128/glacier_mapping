@@ -1,18 +1,14 @@
-"""
-Helpers for Geographic Generalization Experiments
+"""Helpers for Geographic Generalization Experiments
 
 export run_dir=$DATA_DIR/expers/geographic/splits/01/
 mkdir -p $run_dir
-mkdir -p $run_dir
-#python3 -m experiment_helpers.geo -d $DATA_DIR/analysis_images/ -o $run_dir
-python3 -m experiment_helpers.geo -d $DATA_DIR/expers/geographic/test_input/ -o $run_dir
+python3 -m experiment_helpers.geo -d $DATA_DIR/analysis_images/ -o $run_dir
 """
 import geopandas as gpd
 import pandas as pd
 import numpy as np
 import shapely
 import random
-import shutil
 import pathlib
 import rasterio
 from shapely.ops import cascaded_union

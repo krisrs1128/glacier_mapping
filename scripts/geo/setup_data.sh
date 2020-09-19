@@ -23,7 +23,6 @@ mkdir $split_dir/1/
 python3 -m glacier_mapping.experiment_helpers.geo -d $input_dir -o $split_dir/1/ -r True
 
 for i in $( seq 2 $n_folds)
-    echo $i
     mkdir $split_dir/$i
     python3 -m glacier_mapping.experiment_helpers.geo -d $split_dir/1/ -o $split_dir/$i/
 done

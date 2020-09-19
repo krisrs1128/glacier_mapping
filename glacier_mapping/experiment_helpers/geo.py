@@ -26,9 +26,8 @@ def extract_work_region(tiles_dir):
     output: geojson of the cascaded union of bounding boxes for the tiles in
     the directory
     """
-    tile_paths = list(pathlib.Path(tiles_dir).glob("*.tif*"))
     bboxes = []
-    for path in tile_paths:
+    for path in pathlib.Path(tiles_dir).glob("*.tif*"):
         imgf = rasterio.open(path)
         bbox = shapely.geometry.box(*imgf.bounds)
         bboxes.append(bbox)
@@ -104,8 +103,7 @@ if __name__ == "__main__":
     if args.reproject:
         reproject_directory(args.input_dir, args.output_dir, 3857)
     else:
-        for f in pathlib.Path(args.input_dir).glob("*.tif*"):
-            shutil.copy(f, pathlib.Path(args.output_dir))
+        args.output_dir = args.input_dir
 
     work_region = extract_work_region(args.output_dir)
     train, test = geo_split(work_region)

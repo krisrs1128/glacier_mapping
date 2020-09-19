@@ -4,7 +4,6 @@ split_method:
   geographic_split:
     geojsons:
       train: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/train.geojson"
-      dev: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/test.geojson"
       test: "/mnt/blobfuse/glaciers/expers/geographic/splits/01/test.geojson"
 normalization_sample_size: 100
 process_funs:

@@ -10,6 +10,7 @@ import random
 import sys
 import numpy as np
 import geopandas as gpd
+import random
 
 
 def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
@@ -53,7 +54,7 @@ def random_split(ids, split_ratio, **kwargs):
     }
 
 
-def geographic_split(ids, geojsons, slice_meta, crs=3857, **kwargs):
+def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwargs):
     """ Split according to specified geojson coordinates
     """
     splits = {"train": [], "dev": [], "test": []}
@@ -67,7 +68,11 @@ def geographic_split(ids, geojsons, slice_meta, crs=3857, **kwargs):
             slice_geo = slice_meta[slice_meta.img_slice == slice_id["img"]]["geometry"]
             slice_geo = slice_geo.to_crs(crs).reset_index()
             if split_geo.contains(slice_geo)[0]:
-                splits[k].append(slice_id)
+                if k == "train":
+                    if random.random() < dev_ratio:
+                        splits["dev"].append(slice_id)
+                    else:
+                        splits["train"].append(slice_id)
 
     return splits
 

@@ -1,0 +1,12 @@
+metrics_opts:
+  IoU: {threshold: 0.4}
+  pixel_acc: {threshold: 0.4}
+  precision: {threshold: 0.4}
+  recall: {threshold: 0.4}
+model_opts:
+  args: {dropout: 0.3, inchannels: 12, net_depth: 5, outchannels: 1, spatial: true}
+  name: UnetDropout
+optim_opts:
+  args: {lr: 0.0001}
+  name: Adam
+reg_opts: {l1_reg: 0.0005}

@@ -100,12 +100,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # reproject, if requested
+    tiff_dir = args.output_dir
     if args.reproject:
         reproject_directory(args.input_dir, args.output_dir, 3857)
     else:
-        args.output_dir = args.input_dir
+        tiff_dir = args.input_dir
 
-    work_region = extract_work_region(args.output_dir)
+    work_region = extract_work_region(tiff_dir)
     train, test = geo_split(work_region)
 
     # convert to geopandas df, and svae to geojson

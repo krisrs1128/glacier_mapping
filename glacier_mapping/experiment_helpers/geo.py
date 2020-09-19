@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 import shapely
 import random
+import shutil
 import pathlib
 import rasterio
 from shapely.ops import cascaded_union
@@ -96,15 +97,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="create geographic train and test splits")
     parser.add_argument("-d", "--input_dir", type=str)
     parser.add_argument("-o", "--output_dir", type=str)
+    parser.add_argument("-r", "--reproject", type=bool, default=False)
     args = parser.parse_args()
 
-    reproject_directory(args.input_dir, args.output_dir, 3857)
+    # reproject, if requested
+    if args.reproject:
+        reproject_directory(args.input_dir, args.output_dir, 3857)
+    else:
+        for f in pathlib.Path(args.input_dir).glob("*.tif*"):
+            shutil.copy(f, pathlib.Path(args.output_dir))
+
     work_region = extract_work_region(args.output_dir)
     train, test = geo_split(work_region)
 
+    # convert to geopandas df, and svae to geojson
     work_df = create_gdf(work_region)
     train_df = create_gdf(train)
     test_df = create_gdf(test)
-    work_df.to_file(pathlib.Path(args.output_dir) / "work_region.geojson", driver='GeoJSON')
-    train_df.to_file(pathlib.Path(args.output_dir) / "train.geojson", driver='GeoJSON')
-    test_df.to_file(pathlib.Path(args.output_dir) / "test.geojson", driver='GeoJSON')
+    work_df.to_file(pathlib.Path(args.output_dir) / "work_region.geojson", driver="GeoJSON")
+    train_df.to_file(pathlib.Path(args.output_dir) / "train.geojson", driver="GeoJSON")
+    test_df.to_file(pathlib.Path(args.output_dir) / "test.geojson", driver="GeoJSON")

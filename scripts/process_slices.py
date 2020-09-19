@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     # filter all the slices to the ones that matter
     pconf = Dict(yaml.safe_load(open(args.postprocess_conf, "r")))
-    slice_meta = gpd.read_file(slice_dir / "slices.geojson")
+    slice_meta = gpd.read_file(output_dir / "slices.geojson")
     print("filtering")
     keep_ids = pf.filter_directory(
         slice_meta,

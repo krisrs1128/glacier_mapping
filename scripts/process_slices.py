@@ -17,6 +17,7 @@ import yaml
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Preprocess raw tiffs into slices")
     parser.add_argument("-o", "--output_dir", type=str)
+    parser.add_argument("-m", "--slices_meta", type=str)
     parser.add_argument("-p", "--postprocess_conf", type=str, default = "conf/process_geo.conf")
     args = parser.parse_args()
 
@@ -26,7 +27,7 @@ if __name__ == '__main__':
 
     # filter all the slices to the ones that matter
     pconf = Dict(yaml.safe_load(open(args.postprocess_conf, "r")))
-    slice_meta = gpd.read_file(slice_dir / "slices.geojson")
+    slice_meta = gpd.read_file(args.slices_meta)
     print("filtering")
     keep_ids = pf.filter_directory(
         slice_meta,

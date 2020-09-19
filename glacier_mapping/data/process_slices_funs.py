@@ -73,6 +73,8 @@ def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwar
                         splits["dev"].append(slice_id)
                     else:
                         splits["train"].append(slice_id)
+                else:
+                        splits["test"].append(slice_id)
 
     return splits
 

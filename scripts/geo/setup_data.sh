@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 echo $1
+source /home/kris/glacier_mapping/.env
 
 if [$1 == "test"]
 then

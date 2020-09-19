@@ -8,7 +8,8 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import torch
 
-def fetch_loaders(processed_dir, batch_size=32):
+def fetch_loaders(processed_dir, batch_size=32,
+                  train_folder='train', dev_folder='dev'):
     """ Function to fetch dataLoaders for the Training / Validation
 
     Args:
@@ -19,8 +20,8 @@ def fetch_loaders(processed_dir, batch_size=32):
         Returns train and val dataloaders
 
     """
-    train_dataset = GlacierDataset(processed_dir / "train")
-    val_dataset = GlacierDataset(processed_dir / "dev")
+    train_dataset = GlacierDataset(processed_dir / train_folder)
+    val_dataset = GlacierDataset(processed_dir / dev_folder)
 
     return {
         "train": DataLoader(train_dataset, batch_size=batch_size, num_workers=8),

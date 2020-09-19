@@ -1,4 +1,4 @@
-filter_channel: 1
+filter_channel: 0
 filter_percentage: 0.1
 split_method:
   random_split:
@@ -8,8 +8,10 @@ process_funs:
   normalize:
     stats_path: "/mnt/blobfuse/glaciers/processed/slices/stats_train.json"
   extract_channel:
-    mask_channels: [1]
+    mask_channels: [0]
     img_channels: [5, 4, 2]
+  impute:
+    value: 0
 slice:
   overlap: 6
   size: [512, 512]

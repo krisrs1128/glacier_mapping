@@ -5,11 +5,11 @@ mkdir -p $split_dir
 
 # create train and test geojsons
 mkdir $split_dir/1/
-python3 -m experiment_helpers.geo -d $DATA_DIR/expers/geographic/test_input/ -o $split_dir/1/ -r True
+python3 -m glacier_mapping.experiment_helpers.geo -d $DATA_DIR/expers/geographic/test_input/ -o $split_dir/1/ -r True
 
 for i in 1 .. 10; do
     mkdir $split_dir/$i
-    python3 -m experiment_helpers.geo -d $split_dir/1/ -o $split_dir/$i/
+    python3 -m glacier_mapping.experiment_helpers.geo -d $split_dir/1/ -o $split_dir/$i/
 done
 
 # slice

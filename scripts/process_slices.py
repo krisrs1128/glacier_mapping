@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     # filter all the slices to the ones that matter
     pconf = Dict(yaml.safe_load(open(args.postprocess_conf, "r")))
-    slice_meta = gpd.read_file(output_dir / "slices.geojson")
+    slice_meta = gpd.read_file(slice_dir / "slices.geojson")
     print("filtering")
     keep_ids = pf.filter_directory(
         slice_meta,
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     # global statistics: get the means and variances in the train split
     print("getting stats")
-    pconf.process_funs.normalize.stats_path = output_dir / \
+    pconf.process_funs.normalize.stats_path = \
         pathlib.Path(pconf.process_funs.normalize.stats_path)
 
     stats = pf.generate_stats(

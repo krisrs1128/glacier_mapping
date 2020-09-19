@@ -141,7 +141,6 @@ def log_images(writer, frame, batch, epoch, stage="train"):
 
     x, y = batch
     y_hat = torch.sigmoid(frame.infer(x))
-    print(x.shape)
     if epoch == 0:
         writer.add_image(f"{stage}/x", make_grid(pm(squash(x[:, :, :, :3]))), epoch)
         writer.add_image(f"{stage}/y", make_grid(pm(y)), epoch)

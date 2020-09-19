@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Preprocessing script from colab notebook
 
-python3 -m preprocess -m ../conf/geo/mask.yaml -o $DATA_DIR/expers/geographic/ -p ../conf/geo/postprocess.yaml
+python3 -m process_slices -o $DATA_DIR/expers/geographic/ -p ../conf/geo/postprocess.yaml
 """
 from addict import Dict
 from glacier_mapping.data.mask import generate_masks
@@ -16,41 +16,17 @@ import yaml
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Preprocess raw tiffs into slices")
-    parser.add_argument("-m", "--masking_yaml", type=str, default = "conf/masks_geo_exper.conf")
     parser.add_argument("-o", "--output_dir", type=str)
     parser.add_argument("-p", "--postprocess_conf", type=str, default = "conf/process_geo.conf")
     args = parser.parse_args()
 
-    # generate masks
-    masking_paths = yaml.load(open(args.masking_yaml))
-    img_paths = [p["img_path"] for p in masking_paths.values()]
-    mask_paths = [p["mask_paths"] for p in masking_paths.values()]
+    # data directories
     output_dir = pathlib.Path(args.output_dir)
-
-    generate_masks(img_paths, mask_paths, out_dir=output_dir / "masks/")
-    paths = pd.read_csv(output_dir / "masks" / "mask_metadata.csv")
     slice_dir = output_dir / "slices"
-    slice_dir.mkdir(parents=True, exist_ok=True)
-
-    metadata = []
-    for row in range(len(paths)):
-        print(f"## Slicing tiff {row +1}/{len(paths)} ...")
-        metadata_ = write_pair_slices(
-            paths.iloc[row]["img"],
-            paths.iloc[row]["mask"],
-            slice_dir,
-            f"slice_{paths.index[row]}"
-        )
-        metadata.append(metadata_)
-
-    metadata = pd.concat(metadata, axis=0)
-    out_path = pathlib.Path(slice_dir, "slices.geojson")
-    metadata.to_file(out_path, index=False, driver="GeoJSON")
-
-    pconf = Dict(yaml.safe_load(open(args.postprocess_conf, "r")))
-    slice_meta = gpd.read_file(slice_dir / "slices.geojson")
 
     # filter all the slices to the ones that matter
+    pconf = Dict(yaml.safe_load(open(args.postprocess_conf, "r")))
+    slice_meta = gpd.read_file(slice_dir / "slices.geojson")
     print("filtering")
     keep_ids = pf.filter_directory(
         slice_meta,

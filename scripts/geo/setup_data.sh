@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd $HOME_DIR
+cd $ROOT_DIR
 export split_dir=$DATA_DIR/expers/geographic/splits/
 mkdir -p $split_dir
 

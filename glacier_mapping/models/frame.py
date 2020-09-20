@@ -111,10 +111,10 @@ class Framework:
 
         """
         y_hat = torch.tensor(y_hat, dtype=torch.long, device=self.device)
-        y = torch.tensor(y, dtype=torch.long, device=self.device)
+        y = y.to(self.device)
         if self.multi_class:
             target = torch.argmax(y, dim=1)
-        else: target = y
+        else: traget = y
         loss = self.loss_fn(y_hat, target)
         for reg_type in self.reg_opts.keys():
             reg_fun = globals()[reg_type]

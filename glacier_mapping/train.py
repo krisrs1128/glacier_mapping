@@ -76,7 +76,10 @@ def validate(loader, frame, metrics_opts):
     loss, metrics = 0, []
     for x, y in loader:
         y_hat = frame.infer(x)
-        loss += frame.calc_loss(y_hat, y).item()
+        if frame.multi_class:
+            target = torch.argmax(y, dim=1)
+        else: target = y
+        loss += frame.calc_loss(y_hat, target).item()
 
         y_hat = torch.sigmoid(y_hat)
         metrics_ = frame.metrics(y_hat, y, metrics_opts)

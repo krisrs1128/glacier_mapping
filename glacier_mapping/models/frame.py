@@ -110,8 +110,8 @@ class Framework:
             Loss values
 
         """
-        y_hat = y_hat.to(self.device)
-        y = y.to(self.device)
+        y_hat = torch.tensor(y_hat, dtype=torch.long, device=self.device)
+        y = torch.tensor(y, dtype=torch.long, device=self.device)
         loss = self.loss_fn(y_hat, y)
         for reg_type in self.reg_opts.keys():
             reg_fun = globals()[reg_type]

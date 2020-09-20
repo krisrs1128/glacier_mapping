@@ -197,7 +197,8 @@ def extract_channel(img, mask, mask_channels=None, img_channels=None):
 def add_bg_channel(img, mask):
     # add a background channel
     ch = mask.shape[-1]
-    mask[:, :, ch + 1] = ~ mask.any(axis=2)
+    bg_mask = ~ mask.any(axis=2)
+    mask = np.dstack((mask, bg_mask))
     return img, mask
 
 def postprocess_tile(img, process_funs):

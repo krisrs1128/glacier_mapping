@@ -44,7 +44,10 @@ def train_epoch(loader, frame, metrics_opts):
         y_hat, _loss = frame.optimize(x, y)
         loss += _loss
 
-        y_hat = torch.sigmoid(y_hat)
+        if frame.multi_class:
+            y_hat = torch.softmax(y_hat)
+        else:
+            y_hat = torch.sigmoid(y_hat)
         metrics_ = frame.metrics(y_hat, y, metrics_opts)
         metrics.append(metrics_)
 

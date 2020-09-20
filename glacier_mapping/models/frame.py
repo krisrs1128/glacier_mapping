@@ -28,8 +28,9 @@ class Framework:
         Set Class Attrributes
         """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.multi_class = True if model_opts.args.outchannels > 1 else False
         if loss_fn is None:
-            loss_fn = torch.nn.BCEWithLogitsLoss()
+            loss_fn = torch.nn.CrossEntropyLoss() if self.multi_class else torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
 
         if model_opts.name in ["Unet", "UnetDropout"]:

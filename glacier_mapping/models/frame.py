@@ -115,7 +115,7 @@ class Framework:
         if self.multi_class:
             target = torch.argmax(y, dim=1)
         else: target = y
-        loss = self.loss_fn(y_hat, y)
+        loss = self.loss_fn(y_hat, target)
         for reg_type in self.reg_opts.keys():
             reg_fun = globals()[reg_type]
             penalty = reg_fun(

@@ -31,9 +31,9 @@ class Framework:
         self.multi_class = True if model_opts.args.outchannels > 1 else False
         if loss_fn is None:
             if self.multi_class:
-                self.loss_fn = torch.nn.CrossEntropyLoss()
+                loss_fn = torch.nn.CrossEntropyLoss()
             else:
-                self.loss_fn = torch.nn.BCEWithLogitsLoss()
+                loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
 
         if model_opts.name in ["Unet", "UnetDropout"]:

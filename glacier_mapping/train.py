@@ -160,7 +160,7 @@ def log_images(writer, frame, batch, epoch, stage="train"):
 
 def update_metrics(main_metrics, batch_metrics):
     for k, v in batch_metrics.items():
-            if k in metrics:
+            if k in main_metrics:
                 main_metrics[k] = torch.cat((main_metrics[k], v.unsqueeze(-1)), 1)
             else:
                 main_metrics[k] = v.unsqueeze(-1)

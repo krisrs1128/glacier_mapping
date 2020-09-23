@@ -10,10 +10,10 @@ import os
 import torch
 import numpy as np
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from glacier_mapping.models.metrics import *
-from glacier_mapping.models.reg import *
-from glacier_mapping.models.unet import *
-from glacier_mapping.models.unet_dropout import *
+from .models.metrics import *
+from .models.reg import *
+from .models.unet import *
+from .models.unet_dropout import *
 
 
 class Framework:

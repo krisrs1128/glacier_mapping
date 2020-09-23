@@ -199,7 +199,7 @@ def add_bg_channel(img, mask):
 
     Args:
         img: Image
-        mask:  Mask to add background to
+        mask: Mask to add background to
 
     Return:
         Image and the mask with added background"""

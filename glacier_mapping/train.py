@@ -150,7 +150,7 @@ def log_images(writer, frame, batch, epoch, stage="train"):
 
     x, y = batch
     if frame.multi_class:
-        y_hat = torch.nn.Softmax(1)(frame.infer(x))
+        y_hat = torch.nn.Softmax(3)(frame.infer(x))
     else:
         y_hat = torch.sigmoid(frame.infer(x))
     y = torch.flatten(y.permute(0, 1, 3, 2), start_dim=2)

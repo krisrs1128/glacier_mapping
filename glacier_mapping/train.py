@@ -39,17 +39,17 @@ def train_epoch(loader, frame, metrics_opts):
     :return (train_loss, metrics): A tuple containing the average epoch loss
       and the metrics on the training set.
     """
-    loss, metrics = 0, []
+    loss, metrics = 0, {}
     for x, y in loader:
         y_hat, _loss = frame.optimize(x, y)
         loss += _loss
 
-        if frame.multi_class:
-            y_hat = torch.softmax(y_hat)
-        else:
-            y_hat = torch.sigmoid(y_hat)
+        y_hat = frame.predict(y_hat)
         metrics_ = frame.metrics(y_hat, y, metrics_opts)
-        metrics.append(metrics_)
+
+        update_metrics(metrics, metrics_)
+
+    agg_metrics(metrics)
 
     return loss / len(loader.dataset), metrics
 
@@ -73,15 +73,18 @@ def validate(loader, frame, metrics_opts):
     :return (val_loss, metrics): A tuple containing the average validation loss
       and the metrics on the validation set.
     """
-    loss, metrics = 0, []
+    loss, metrics = 0, {}
     for x, y in loader:
+        channel_first = lambda x: x.permute(0, 3, 1, 2)
         y_hat = frame.infer(x)
-        loss += frame.calc_loss(y_hat, target).item()
+        loss += frame.calc_loss(channel_first(y_hat), channel_first(y)).item()
 
-        y_hat = torch.sigmoid(y_hat)
+        y_hat = frame.predict(y_hat)
         metrics_ = frame.metrics(y_hat, y, metrics_opts)
-        metrics.append(metrics_)
 
+        update_metrics(metrics, metrics_)
+
+    agg_metrics(metrics)
     return loss / len(loader.dataset), metrics
 
 
@@ -108,7 +111,7 @@ def log_batch(epoch, n_epochs, i, n, loss, batch_size):
     )
 
 
-def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
+def log_metrics(writer, metrics, avg_loss, epoch, stage="train", mask_names=None):
     """Log metrics for tensorboard
 
     A function that logs metrics from training and testing to tensorboard
@@ -120,10 +123,13 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train"):
         epoch(int): Total number of training cycles
         stage(String): Train/Val
     """
-    metrics = dict(pd.DataFrame(metrics).mean())
     writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
+    if mask_names is None:
+        mask_nums = len(list(metrics.values())[0])
+        mask_names = [str(i) for i in range(mask_nums)]
     for k, v in metrics.items():
-        writer.add_scalar(f"{stage}/{str(k)}", v, epoch)
+        for name, metric in zip(mask_names, v):
+            writer.add_scalar(f"{stage}/{name}_{str(k)}", metric, epoch)
 
 
 def log_images(writer, frame, batch, epoch, stage="train"):
@@ -143,9 +149,23 @@ def log_images(writer, frame, batch, epoch, stage="train"):
     squash = lambda x: (x - x.min()) / (x.max() - x.min())
 
     x, y = batch
-    y_hat = torch.sigmoid(frame.infer(x))
+    y_hat = frame.predict(y_hat)
+    y = torch.flatten(y.permute(0, 1, 3, 2), start_dim=2)
+    y_hat = torch.flatten(y_hat.permute(0, 1, 3, 2), start_dim=2)
     if epoch == 0:
         writer.add_image(f"{stage}/x", make_grid(pm(squash(x[:, :, :, :3]))), epoch)
-        writer.add_image(f"{stage}/y", make_grid(pm(y)), epoch)
+        writer.add_image(f"{stage}/y", make_grid(y.unsqueeze(1)), epoch)
 
-    writer.add_image(f"{stage}/y_hat", make_grid(pm(y_hat)), epoch)
+    writer.add_image(f"{stage}/y_hat", make_grid(y_hat.unsqueeze(1)), epoch)
+
+def update_metrics(main_metrics, batch_metrics):
+    for k, v in batch_metrics.items():
+            if k in metrics:
+                main_metrics[k] = torch.cat((main_metrics[k], v.unsqueeze(-1)), 1)
+            else:
+                main_metrics[k] = v.unsqueeze(-1)
+
+def agg_metrics(metrics):
+    for k, v in metrics.items():
+        metrics[k] = metrics[k].mean(1)
+        metrics[k] = metrics[k].data.cpu()

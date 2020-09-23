@@ -11,6 +11,7 @@ process_funs:
     img_channels: [5, 4, 2]
   impute:
     value: 0
+  add_bg_channel: {}
 slice:
   overlap: 6
   size: [512, 512]

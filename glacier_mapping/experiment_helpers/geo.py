@@ -22,16 +22,20 @@ def random_location(polygon):
     """
     points = []
     minx, miny, maxx, maxy = polygon.bounds
-    ux, uy = random.uniform(minx, maxx), random.uniform(miny, maxy)
-    return shapely.geometry.Point(ux, uy)
+
+    while True:
+        ux, uy = random.uniform(minx, maxx), random.uniform(miny, maxy)
+        pnt = shapely.geometry.Point(ux, uy)
+        if polygon.contains(pnt):
+            return pnt
 
 
-def grow_region(work_region, init_coord, train_perc=0.8, grow_rate=5000):
+def grow_region(work_region, init_coords, train_perc=0.8, grow_rate=4000):
     """
     Take a shapely point and buffer it into a circle of fraction train_perc of
     the work region, incrementally growing at rate grow_rate.
     """
-    region = init_coord
+    region = cascaded_union(init_coords)
 
     while True:
         region = region.buffer(grow_rate)
@@ -41,7 +45,7 @@ def grow_region(work_region, init_coord, train_perc=0.8, grow_rate=5000):
             return region.intersection(work_region)
 
 
-def geo_split(work_region, proposal_region=None, train_perc=0.8):
+def geo_split(work_region, proposal_region=None, train_perc=0.8, n_init=2):
     """
     input: - geojson specifying the work area
       - relative size of train / test splits (fraction of working area geojson to assign to train or test)
@@ -50,8 +54,11 @@ def geo_split(work_region, proposal_region=None, train_perc=0.8):
     if not proposal_region:
         proposal_region = work_region
 
-    init_coord = random_location(work_region)
-    train_region = grow_region(work_region, init_coord, train_perc)
+    init_coords = []
+    for i in range(n_init):
+        init_coords.append(random_location(proposal_region))
+
+    train_region = grow_region(work_region, init_coords, train_perc)
     test_region = work_region.difference(train_region)
     return (train_region, test_region)
 

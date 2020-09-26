@@ -80,7 +80,7 @@ def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwar
     return splits
 
 
-def reshuffle(split_ids, output_dir="output/", n_cpu=3):
+def reshuffle(split_ids, output_dir="output/"):
     """ Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.
 
     Args:
@@ -93,6 +93,7 @@ def reshuffle(split_ids, output_dir="output/", n_cpu=3):
         path = Path(output_dir, split_type)
         os.makedirs(path, exist_ok=True)
 
+    print(split_ids)
     target_locs = {k: [] for k in split_ids}
     for split_type in split_ids:
         for i in range(len(split_ids[split_type])):

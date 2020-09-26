@@ -80,9 +80,8 @@ if __name__ == "__main__":
     train, test = geo_split(work_region["geometry"][0])
 
     # convert to geopandas df, and svae to geojson
-    work_df = create_gdf(work_region)
     train_df = create_gdf(train)
     test_df = create_gdf(test)
-    work_df.to_file(pathlib.Path(args.output_dir) / "work_region.geojson", driver="GeoJSON")
+    work_region.to_file(pathlib.Path(args.output_dir) / "work_region.geojson", driver="GeoJSON")
     train_df.to_file(pathlib.Path(args.output_dir) / "train.geojson", driver="GeoJSON")
     test_df.to_file(pathlib.Path(args.output_dir) / "test.geojson", driver="GeoJSON")

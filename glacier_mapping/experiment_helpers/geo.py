@@ -16,35 +16,17 @@ import argparse
 import subprocess
 
 
-def extract_work_region(tiles_dir):
-    """
-    input: directory containing tiles
-    output: geojson of the cascaded union of bounding boxes for the tiles in
-    the directory
-    """
-    bboxes = []
-    for path in pathlib.Path(tiles_dir).glob("*.tif*"):
-        imgf = rasterio.open(path)
-        bbox = shapely.geometry.box(*imgf.bounds)
-        bboxes.append(bbox)
-    return cascaded_union(bboxes)
-
-
 def random_location(polygon):
     """
     Get a random shapely.Point within a polygon
     """
     points = []
     minx, miny, maxx, maxy = polygon.bounds
-
-    while True:
-        ux, uy = random.uniform(minx, maxx), random.uniform(miny, maxy)
-        pnt = shapely.geometry.Point(ux, uy)
-        if polygon.contains(pnt):
-            return pnt
+    ux, uy = random.uniform(minx, maxx), random.uniform(miny, maxy)
+    return shapely.geometry.Point(ux, uy)
 
 
-def grow_region(work_region, init_coord, train_perc=0.8, grow_rate=1000):
+def grow_region(work_region, init_coord, train_perc=0.8, grow_rate=5000):
     """
     Take a shapely point and buffer it into a circle of fraction train_perc of
     the work region, incrementally growing at rate grow_rate.
@@ -59,30 +41,20 @@ def grow_region(work_region, init_coord, train_perc=0.8, grow_rate=1000):
             return region.intersection(work_region)
 
 
-def geo_split(work_region, train_perc=0.8):
+def geo_split(work_region, proposal_region=None, train_perc=0.8):
     """
     input: - geojson specifying the work area
       - relative size of train / test splits (fraction of working area geojson to assign to train or test)
     output: Two geographically disjoint geojsons, one for train and one for test
     """
+    if not proposal_region:
+        proposal_region = work_region
+
     init_coord = random_location(work_region)
     train_region = grow_region(work_region, init_coord, train_perc)
     test_region = work_region.difference(train_region)
     return (train_region, test_region)
 
-
-def reproject_directory(input_dir, output_dir, dst_epsg=3857):
-    """
-    Warp all Tiffs from one directory to 3857
-    """
-    inputs = pathlib.Path(input_dir).glob("*.tif*")
-    for im_path in inputs:
-        print(f"reprojecting {str(im_path)}")
-        loaded_im = rasterio.open(im_path)
-        output_path = pathlib.Path(output_dir, f"{im_path.stem}-warped.tif")
-        subprocess.call(["gdalwarp", "-s_srs", str(loaded_im.crs), "-t_srs",
-                         f"EPSG:{dst_epsg}", str(im_path),
-                         "-wo", "NUM_THREADS=ALL_CPUS", str(output_path)])
 
 def create_gdf(polygon, crs=3857):
     return gpd.GeoDataFrame(geometry=[polygon], crs=crs)
@@ -90,23 +62,17 @@ def create_gdf(polygon, crs=3857):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="create geographic train and test splits")
-    parser.add_argument("-d", "--input_dir", type=str)
+    parser.add_argument("-s", "--slice_metadata", type=str)
     parser.add_argument("-o", "--output_dir", type=str)
-    parser.add_argument("-r", "--reproject", type=bool, default=False)
     args = parser.parse_args()
 
-    # reproject, if requested
-    tiff_dir = args.output_dir
-    if args.reproject:
-        reproject_directory(args.input_dir, args.output_dir, 3857)
-    else:
-        tiff_dir = args.input_dir
-
-    work_region = extract_work_region(tiff_dir)
-    train, test = geo_split(work_region)
+    slice_meta = gpd.read_file(args.slice_metadata)
+    work_region = cascaded_union(slice_meta["geometry"])
+    work_region = gpd.GeoDataFrame(geometry = [work_region], crs = slice_meta.crs)
+    work_region = work_region.to_crs(3857)
+    train, test = geo_split(work_region["geometry"][0])
 
     # convert to geopandas df, and svae to geojson
-    work_df = create_gdf(work_region)
     train_df = create_gdf(train)
     test_df = create_gdf(test)
     work_df.to_file(pathlib.Path(args.output_dir) / "work_region.geojson", driver="GeoJSON")

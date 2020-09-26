@@ -23,7 +23,6 @@ if __name__ == '__main__':
 
     # data directories
     output_dir = pathlib.Path(args.output_dir)
-    slice_dir = output_dir / "slices"
 
     # filter all the slices to the ones that matter
     pconf = Dict(yaml.safe_load(open(args.postprocess_conf, "r")))

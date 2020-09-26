@@ -3,7 +3,7 @@ Beaker==1.11.0
 bottle==0.12.18
 cheroot==8.4.2
 fiona==1.8.13
-gdal==2.2.2
+gdal==3.0.4
 gdal2tiles==0.1.7
 geopandas==0.8.1
 joblib==0.16.0

@@ -61,12 +61,13 @@ def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwar
 
     for k, path in geojsons.items():
         split_geo = gpd.read_file(path)
-        split_geo = split_geo.to_crs(crs)
+        split_geo = split_geo.to_crs(crs).buffer(0)
 
         for slice_id in ids:
             # get the row of the pandas with the current slice id
             slice_geo = slice_meta[slice_meta.img_slice == slice_id["img"]]["geometry"]
-            slice_geo = slice_geo.to_crs(crs).reset_index()
+            slice_geo = slice_geo.to_crs(crs).reset_index().buffer(0)
+
             if split_geo.contains(slice_geo)[0]:
                 if k == "train":
                     if random.random() < dev_ratio:
@@ -79,7 +80,7 @@ def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwar
     return splits
 
 
-def reshuffle(split_ids, output_dir="output/", n_cpu=3):
+def reshuffle(split_ids, output_dir="output/"):
     """ Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.
 
     Args:
@@ -92,6 +93,7 @@ def reshuffle(split_ids, output_dir="output/", n_cpu=3):
         path = Path(output_dir, split_type)
         os.makedirs(path, exist_ok=True)
 
+    print(split_ids)
     target_locs = {k: [] for k in split_ids}
     for split_type in split_ids:
         for i in range(len(split_ids[split_type])):

@@ -1,5 +1,8 @@
-"""
-Helpers for Geographic Generalization Experiments
+"""Helpers for Geographic Generalization Experiments
+
+export run_dir=$DATA_DIR/expers/geographic/splits/01/
+mkdir -p $run_dir
+python3 -m experiment_helpers.geo -d $DATA_DIR/analysis_images/ -o $run_dir
 """
 import geopandas as gpd
 import pandas as pd
@@ -19,9 +22,8 @@ def extract_work_region(tiles_dir):
     output: geojson of the cascaded union of bounding boxes for the tiles in
     the directory
     """
-    tile_paths = list(pathlib.Path(tiles_dir).glob("*"))
     bboxes = []
-    for path in tile_paths:
+    for path in pathlib.Path(tiles_dir).glob("*.tif*"):
         imgf = rasterio.open(path)
         bbox = shapely.geometry.box(*imgf.bounds)
         bboxes.append(bbox)
@@ -83,23 +85,30 @@ def reproject_directory(input_dir, output_dir, dst_epsg=3857):
                          "-wo", "NUM_THREADS=ALL_CPUS", str(output_path)])
 
 def create_gdf(polygon, crs=3857):
-    gdf = gpd.GeoDataFrame({"id": [0], "geometry": [polygon]})
-    return gdf.set_crs(epsg=crs)
+    return gpd.GeoDataFrame(geometry=[polygon], crs=crs)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="create geographic train and test splits")
     parser.add_argument("-d", "--input_dir", type=str)
     parser.add_argument("-o", "--output_dir", type=str)
+    parser.add_argument("-r", "--reproject", type=bool, default=False)
     args = parser.parse_args()
 
-    reproject_directory(args.input_dir, args.output_dir, 3857)
-    work_region = extract_work_region(args.output_dir)
+    # reproject, if requested
+    tiff_dir = args.output_dir
+    if args.reproject:
+        reproject_directory(args.input_dir, args.output_dir, 3857)
+    else:
+        tiff_dir = args.input_dir
+
+    work_region = extract_work_region(tiff_dir)
     train, test = geo_split(work_region)
 
+    # convert to geopandas df, and svae to geojson
     work_df = create_gdf(work_region)
     train_df = create_gdf(train)
     test_df = create_gdf(test)
-    work_df.to_file(pathlib.Path(args.output_dir) / "work_region.geojson", driver='GeoJSON')
-    train_df.to_file(pathlib.Path(args.output_dir) / "train.geojson", driver='GeoJSON')
-    test_df.to_file(pathlib.Path(args.output_dir) / "test.geojson", driver='GeoJSON')
+    work_df.to_file(pathlib.Path(args.output_dir) / "work_region.geojson", driver="GeoJSON")
+    train_df.to_file(pathlib.Path(args.output_dir) / "train.geojson", driver="GeoJSON")
+    test_df.to_file(pathlib.Path(args.output_dir) / "test.geojson", driver="GeoJSON")

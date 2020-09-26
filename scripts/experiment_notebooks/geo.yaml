@@ -1,0 +1,4 @@
+test_mode: true
+split_dir: "/mnt/blobfuse/glaciers/expers/geographic/splits/1"
+output_dir: "/mnt/blobfuse/glaciers/expers/geographic/splits/1/output/"
+slices_geojson: "/mnt/blobfuse/glaciers/expers/geographic/slices/slices.geojson"

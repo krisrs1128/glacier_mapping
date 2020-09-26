@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-echo $1
 source /home/kris/glacier_mapping/.env
 
 cd $ROOT_DIR
@@ -9,8 +8,6 @@ rm -rf $split_dir
 mkdir -p $split_dir
 
 # create train and test geojsons
-mkdir $split_dir/1/
-
 for i in $( seq 2 $n_folds)
 do
     echo $i

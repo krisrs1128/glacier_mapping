@@ -23,11 +23,14 @@ class Framework:
     """
 
     def __init__(self, loss_fn=None, model_opts=None, optimizer_opts=None,
-                 reg_opts=None,):
+                 reg_opts=None, device=None):
         """
         Set Class Attrributes
         """
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if device is None:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
         self.multi_class = True if model_opts.args.outchannels > 1 else False
         if loss_fn is None:
             if self.multi_class:

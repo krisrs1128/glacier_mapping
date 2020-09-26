@@ -8,7 +8,7 @@ rm -rf $split_dir
 mkdir -p $split_dir
 
 # create train and test geojsons
-for i in $( seq 2 $n_folds)
+for i in $( seq 1 $n_folds)
 do
     echo $i
     mkdir $split_dir/$i

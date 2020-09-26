@@ -40,6 +40,8 @@ if __name__ == '__main__':
     split_fun, split_args = next(iter(pconf.split_method.items()))
     split_fun = getattr(pf, split_fun)
     split_ids = split_fun(keep_ids, slice_meta=slice_meta, **split_args)
+    import pdb
+    pdb.set_trace()
     target_locs = pf.reshuffle(split_ids, output_dir)
 
     # global statistics: get the means and variances in the train split

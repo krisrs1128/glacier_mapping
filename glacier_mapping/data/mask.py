@@ -20,7 +20,8 @@ import yaml
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
+def generate_masks(img_paths, shps_paths, border_path='', output_base="mask",
+                   out_dir=None):
     """A wrapper of generate_mask, to make labels for each input
 
     Args:
@@ -58,9 +59,16 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
         mask = generate_mask(img.meta, shps)
         out_path = pathlib.Path(out_dir, f"{output_base}_{k:02}")
         np.save(str(out_path), mask)
+        # get borders
+        if border_path:
+            border_mask = get_border_mask(img, border_path)
+            border_path = pathlib.Path(out_dir, f"border_{k:02}.npy")
+            np.save(str(border_path), border_mask)
+
         pd.DataFrame({
                 "img_path": img_path,
                 "mask": str(out_path) + ".npy",
+                "border": str(border_path),
                 "width": img.meta["width"],
                 "height": img.meta["height"],
                 "mask_width": mask.shape[1],
@@ -69,6 +77,8 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
             index=[k],
         ).to_csv(metadata_path, header=False, mode="a")
 
+def get_border_mask(img, border_path):
+    pass
 
 def check_crs(crs_a, crs_b):
     """Verify that two CRS objects Match

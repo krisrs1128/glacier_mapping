@@ -125,7 +125,6 @@ def write_pair_slices(img_path, mask_path, out_dir, border_path='',
 
 def clip_image(img, shp_path):
     mask = np.load(shp_path)
-    mask = np.expand_dims(mask, axis=2)
     mask = np.repeat(mask, img.shape[-1], axis=2)
     img[mask == 0] = np.nan
     return img

@@ -99,7 +99,7 @@ def write_pair_slices(img_path, mask_path, out_dir, border_path='',
     imgf = rasterio.open(img_path)
     img = imgf.read().transpose(1, 2, 0)
     if border_path is not None:
-        img = clip_boaders(img, imgf, border_path)
+        img = clip_image(img, imgf, border_path)
     mask = np.load(mask_path)
     if border_path:
         img = clip_image(img, border_path)
@@ -125,8 +125,8 @@ def write_pair_slices(img_path, mask_path, out_dir, border_path='',
     slice_stats = pd.DataFrame(slice_stats)
     return pd.concat([metadata, slice_stats], axis=1)
 
-def clip_image(img, border_path):
-    mask = np.load(border_path)
+def clip_image(img, shp_path):
+    mask = np.load(shp_path)
     mask = np.expand_dims(mask, axis=2)
     mask = np.repeat(mask, img.shape[-1], axis=2)
     img[mask == 0] = np.nan

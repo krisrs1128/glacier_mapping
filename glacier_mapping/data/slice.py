@@ -98,8 +98,6 @@ def write_pair_slices(img_path, mask_path, out_dir, border_path='',
     """
     imgf = rasterio.open(img_path)
     img = imgf.read().transpose(1, 2, 0)
-    if border_path is not None:
-        img = clip_image(img, imgf, border_path)
     mask = np.load(mask_path)
     if border_path:
         img = clip_image(img, border_path)

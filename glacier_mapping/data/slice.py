@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 
 def squash(x):
-    return (x - x.min()) / x.ptp()
+    return (x - x.min(axis=2, keepdims=True)) / x.ptp(axis=2, keepdims=True)
 
 
 def slice_tile(img, size=(512, 512), overlap=6):

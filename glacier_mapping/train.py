@@ -146,7 +146,7 @@ def log_images(writer, frame, batch, epoch, stage="train"):
         Images Logged onto tensorboard
     """
     pm = lambda x: x.permute(0, 3, 1, 2)
-    squash = lambda x: x - x.min(axis=2, keepdims=True) /  x.ptp(axis=2, keepdims=True)
+    squash = lambda x: (x - x.min()) / (x.max() - x.min())
 
     x, y = batch
     if frame.multi_class:

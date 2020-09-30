@@ -1,292 +1,210 @@
 mask_0:
-  img_path: /datadrive/glaciers/analysis_images/LE07_136041_20081109.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_149037_20041024.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_1:
-  img_path: /datadrive/glaciers/analysis_images/LE07_134040_20070922.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_149034_20060726.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_10:
-  img_path: /datadrive/glaciers/analysis_images/LE07_136041_20071006.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_151034_20050822.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_11:
-  img_path: /datadrive/glaciers/analysis_images/LE07_137041_20060127.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_139041_20051208.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_12:
-  img_path: /datadrive/glaciers/analysis_images/LE07_138041_20071223.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_148035_20061108.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_13:
-  img_path: /datadrive/glaciers/analysis_images/LE07_139041_20051208.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_137041_20060127.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_14:
-  img_path: /datadrive/glaciers/analysis_images/LE07_139041_20071214.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_148036_20050902.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_15:
-  img_path: /datadrive/glaciers/analysis_images/LE07_140041_20071221.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_145039_20011020.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_16:
-  img_path: /datadrive/glaciers/analysis_images/LE07_143039_20081212.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_149035_20070915.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_17:
-  img_path: /datadrive/glaciers/analysis_images/LE07_143040_20051017.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_136041_20060731.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_18:
-  img_path: /datadrive/glaciers/analysis_images/LE07_143040_20081212.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_136040_20060731.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_19:
-  img_path: /datadrive/glaciers/analysis_images/LE07_144039_20011013.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_135040_20081102.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_2:
-  img_path: /datadrive/glaciers/analysis_images/LE07_134040_20090927.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_146038_20060923.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_20:
-  img_path: /datadrive/glaciers/analysis_images/LE07_144039_20081203.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_146039_20051123.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_21:
-  img_path: /datadrive/glaciers/analysis_images/LE07_145039_20011020.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_146036_20090814.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_22:
-  img_path: /datadrive/glaciers/analysis_images/LE07_145039_20051116.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_140041_20071221.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_23:
-  img_path: /datadrive/glaciers/analysis_images/LE07_145039_20081108.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_150035_20050916.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_24:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146036_20090814.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_147037_20060930.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_25:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146036_20091001.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_150034_20050916.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_26:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146037_20071231.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_147036_20060930.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_27:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146037_20080827.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_152035_20060917.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_28:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146037_20080912.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_152034_20060731.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_29:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146037_20090627.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_147035_20050826.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_3:
-  img_path: /datadrive/glaciers/analysis_images/LE07_135040_20081102.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_147038_20040908.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_30:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146038_20060923.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_134040_20070922.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_31:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146038_20061009.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_153036_20060924.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_32:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146038_20080827.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_144039_20011013.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_33:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146039_20051123.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_152033_20060731.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_34:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146039_20051209.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_138041_20071223.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_35:
-  img_path: /datadrive/glaciers/analysis_images/LE07_146039_20081115.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_36:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147035_20050826.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_37:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147035_20090922.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_38:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147036_20060930.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_39:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147036_20070816.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_4:
-  img_path: /datadrive/glaciers/analysis_images/LE07_135040_20081118.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_143039_20081212.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_40:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147036_20080802.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_41:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147037_20060930.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_42:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147037_20070816.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_43:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147038_20040908.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_44:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147038_20060930.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_45:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147038_20071120.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_46:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147038_20080701.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_47:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147038_20080903.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_48:
-  img_path: /datadrive/glaciers/analysis_images/LE07_147038_20091024.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_49:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148035_20061108.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_5:
-  img_path: /datadrive/glaciers/analysis_images/LE07_135040_20081204.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_146037_20071231.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_50:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148035_20090812.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_51:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148036_20050902.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_52:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148036_20061007.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_53:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148036_20071127.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_54:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148037_20071127.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_55:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148037_20080724.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_56:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148037_20080825.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_57:
-  img_path: /datadrive/glaciers/analysis_images/LE07_148037_20090929.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_58:
-  img_path: /datadrive/glaciers/analysis_images/LE07_149034_20060726.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_59:
-  img_path: /datadrive/glaciers/analysis_images/LE07_149035_20070915.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_6:
-  img_path: /datadrive/glaciers/analysis_images/LE07_136040_20060731.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_149036_20071102.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_60:
-  img_path: /datadrive/glaciers/analysis_images/LE07_149036_20071102.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_61:
-  img_path: /datadrive/glaciers/analysis_images/LE07_149036_20090920.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_62:
-  img_path: /datadrive/glaciers/analysis_images/LE07_149037_20041024.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_63:
-  img_path: /datadrive/glaciers/analysis_images/LE07_149037_20081003.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_64:
-  img_path: /datadrive/glaciers/analysis_images/LE07_149037_20090920.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_65:
-  img_path: /datadrive/glaciers/analysis_images/LE07_150035_20050916.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_66:
-  img_path: /datadrive/glaciers/analysis_images/LE07_150036_20050916.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_67:
-  img_path: /datadrive/glaciers/analysis_images/LE07_151034_20080915.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_68:
-  img_path: /datadrive/glaciers/analysis_images/LE07_151035_20060708.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_69:
-  img_path: /datadrive/glaciers/analysis_images/LE07_151035_20070913.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_7:
-  img_path: /datadrive/glaciers/analysis_images/LE07_136040_20071006.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_150036_20050916.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_70:
-  img_path: /datadrive/glaciers/analysis_images/LE07_152033_20060731.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_71:
-  img_path: /datadrive/glaciers/analysis_images/LE07_152034_20060731.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
-mask_72:
-  img_path: /datadrive/glaciers/analysis_images/LE07_152035_20060917.tif
-  mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_8:
-  img_path: /datadrive/glaciers/analysis_images/LE07_136040_20081109.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_151035_20060708.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp
 mask_9:
-  img_path: /datadrive/glaciers/analysis_images/LE07_136041_20060731.tif
+  img_path: /datadrive/glaciers/unique_tiles/LE07_148037_20071127.tif
   mask_paths:
-  - /datadrive/glaciers/raw/vector_data/2005/hkh/Glacier_2005.shp
+    - /datadrive/glaciers/vector_data/Glacier_2005.shp
+    -/datadrive/glaciers/vector_data/debris.shp
+    -/datadrive/glaciers/vector_data/clean.shp

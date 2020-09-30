@@ -6,12 +6,12 @@ split_method:
 normalization_sample_size: 100
 process_funs:
   normalize:
-    stats_path: "/mnt/blobfuse/glaciers/processed/slices/stats_train.json"
+    stats_path: "/datadrive/glaciers/processed/slices/stats_train.json"
   impute:
     value: 0
   extract_channel:
     mask_channels: [0]
-    img_channels: [5, 4, 2]
+    img_channels: [5, 4, 2, 10, 11, 12, 13, 14]
   impute:
     value: 0
 slice:

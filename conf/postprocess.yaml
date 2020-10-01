@@ -14,7 +14,6 @@ process_funs:
   extract_channel:
     mask_channels: [0]
     img_channels: [5, 4, 2, 10, 11, 12, 13, 14]
-  add_bg_channel: {}
 slice:
   overlap: 6
   size: [512, 512]

@@ -1,8 +1,8 @@
 model_opts:
   name: "UnetDropout"
   args:
-    inchannels: 3
-    outchannels: 2
+    inchannels: 8
+    outchannels: 1
     net_depth: 5
     dropout: 0.3
     spatial: True
@@ -12,16 +12,14 @@ optim_opts:
     lr: 0.0001
 metrics_opts:
   IoU:
-    threshold: 0.4
+    thresholdo: 0.4
   pixel_acc:
     threshold: 0.4
   precision:
     threshold: 0.4
   recall:
     threshold: 0.4
-  dice:
-    threshold: 0.4
 log_opts:
-  mask_names: ["glaciers", "background"]
+  mask_names: ["glaciers"]
 reg_opts:
   l1_reg: 0.0005

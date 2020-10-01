@@ -3,17 +3,17 @@ filter_percentage: 0.1
 split_method:
   geographic_split:
     geojsons:
-      train: "/mnt/blobfuse/glaciers/expers/geographic/splits/FOLD_NUM/train.geojson"
-      test: "/mnt/blobfuse/glaciers/expers/geographic/splits/FOLD_NUM/test.geojson"
+      train: "/datadrive/glaciers/expers/geographic/splits/FOLD_NUM/train.geojson"
+      test: "/datadrive/glaciers/expers/geographic/splits/FOLD_NUM/test.geojson"
 normalization_sample_size: 100
 process_funs:
   normalize:
-    stats_path: "/mnt/blobfuse/glaciers/expers/geographic/splits/FOLD_NUM/stats_train.json"
+    stats_path: "/datadrive/glaciers/expers/geographic/splits/FOLD_NUM/stats_train.json"
   impute:
     value: 0
   extract_channel:
     mask_channels: [0]
-    img_channels: [5, 4, 2]
+    img_channels: [5, 4, 2, 10, 11, 12, 13, 14]
 slice:
   overlap: 6
   size: [512, 512]

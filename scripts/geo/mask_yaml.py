@@ -15,7 +15,7 @@ if __name__ == '__main__':
     for i, path in enumerate(input_tiles):
         mask_conf[f"mask_{i}"] = {
             "img_path": str(path.resolve()),
-            "mask_paths": [args.mask_path]
+            "mask_paths": args.mask_path.split(",")
         }
 
     with open(args.output_file, 'w') as f:

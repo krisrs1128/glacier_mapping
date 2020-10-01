@@ -1,1 +1,1 @@
-Configuration files for channel importance expirement
+Configuration files for channel importance experiment

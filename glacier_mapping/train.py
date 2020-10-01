@@ -149,10 +149,8 @@ def log_images(writer, frame, batch, epoch, stage="train"):
     squash = lambda x: (x - x.min()) / (x.max() - x.min())
 
     x, y = batch
-    if frame.multi_class:
-        y_hat = torch.nn.Softmax(3)(frame.infer(x))
-    else:
-        y_hat = torch.sigmoid(frame.infer(x))
+
+    y_hat = frame.act(frame.infer(x))
     y = torch.flatten(y.permute(0, 1, 3, 2), start_dim=2)
     y_hat = torch.flatten(y_hat.permute(0, 1, 3, 2), start_dim=2)
     if epoch == 0:

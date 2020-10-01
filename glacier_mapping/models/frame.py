@@ -113,12 +113,25 @@ class Framework:
 
         Return:
             Probability of class in case of binary classification
-            # or one-hot tensor in case of multi class"""
+            or one-hot tensor in case of multi class"""
         if self.multi_class:
             y_hat = torch.argmax(y_hat, axis=3)
             y_hat = torch.nn.functional.one_hot(y_hat)
         else:
             y_hat = torch.sigmoid(y_hat)
+        return y_hat
+
+    def act(self, logits):
+        """Applies activation function based on the model
+        Args:
+            y_hat: logits output
+        Returns:
+            logits after applying activation function"""
+
+        if self.multi_class:
+            y_hat = torch.nn.Softmax(3)(logits)
+        else:
+            y_hat = torch.sigmoid(logits)
         return y_hat
 
     def calc_loss(self, y_hat, y):

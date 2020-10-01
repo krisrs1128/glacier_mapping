@@ -12,7 +12,7 @@ optim_opts:
     lr: 0.0001
 metrics_opts:
   IoU:
-    thresholdo: 0.4
+    threshold: 0.4
   pixel_acc:
     threshold: 0.4
   precision:

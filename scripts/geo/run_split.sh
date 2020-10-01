@@ -6,4 +6,4 @@ cd glacier_mapping
 source .env
 
 cd scripts
-python3 train.py -d /home/ksankaran/splits/1/ -c ../conf/train.yaml  -p /home/ksankaran/splits/1/postprocess.yaml -r geo
+python3 train.py -d ../../splits/${1}/ -c ../conf/train.yaml  -p ../../splits/${1}/postprocess.yaml -r geo

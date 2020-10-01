@@ -1,0 +1,15 @@
+#!/bin/bash
+universe = docker
+log = /home/ksankaran/logs/glacier_$(Cluster).log
+error = /home/ksankaran/logs/glacier_$(Cluster)_$(Process).err
+output = /home/ksankaran/logs/glacier_$(Cluster)_$(Process).out
+docker_image = krisrs1128/glacier_vm
+input = /staging/ksankaran/splits.tar.gz
+transfer_output_files = geo_output_$(Cluster)_$(Process).tar.gz
+executable = run_split.sh
+request_gpus = 1
+arguments = "$(Process) $(Cluster)"
+request_cpus = 1
+request_memory = 2GB
+request_disk = 1GB
+queue 1

@@ -65,6 +65,8 @@ def generate_masks(img_paths, shps_paths, border_paths=[], output_base="mask",
             border_mask = get_border_mask(img, border_paths[k])
             border_path = pathlib.Path(out_dir, f"border_{k:02}.npy")
             np.save(str(border_path), border_mask)
+        else:
+            border_path = None
 
         pd.DataFrame({
                 "img_path": img_path,

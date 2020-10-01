@@ -20,7 +20,8 @@ import yaml
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
+def generate_masks(img_paths, shps_paths, border_paths=[], output_base="mask",
+                   out_dir=None):
     """A wrapper of generate_mask, to make labels for each input
 
     Args:
@@ -35,7 +36,8 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
         out_dir = pathlib.Path("processed", "masks")
 
     pathlib.Path(out_dir).mkdir(parents=True)
-    cols = ["id", "img", "mask", "img_width", "img_height", "mask_width", "mask_height"]
+    cols = ["id", "img", "mask", "border",
+            "img_width", "img_height", "mask_width", "mask_height"]
     metadata = pd.DataFrame({k: [] for k in cols})
     metadata_path = pathlib.Path(out_dir, "mask_metadata.csv")
     if not metadata_path.exists():
@@ -58,9 +60,18 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
         mask = generate_mask(img.meta, shps)
         out_path = pathlib.Path(out_dir, f"{output_base}_{k:02}")
         np.save(str(out_path), mask)
+        # get borders
+        if border_paths:
+            border_mask = get_border_mask(img, border_paths[k])
+            border_path = pathlib.Path(out_dir, f"border_{k:02}.npy")
+            np.save(str(border_path), border_mask)
+        else:
+            border_path = None
+
         pd.DataFrame({
                 "img_path": img_path,
                 "mask": str(out_path) + ".npy",
+                "border": str(border_path),
                 "width": img.meta["width"],
                 "height": img.meta["height"],
                 "mask_width": mask.shape[1],
@@ -69,6 +80,15 @@ def generate_masks(img_paths, shps_paths, output_base="mask", out_dir=None):
             index=[k],
         ).to_csv(metadata_path, header=False, mode="a")
 
+def get_border_mask(img, border_path):
+    gdf = gpd.read_file(border_path)
+    gdf_crs = rasterio.crs.CRS.from_string(gdf.crs.to_string())
+    if gdf_crs != img.meta["crs"]:
+        gdf = gdf.to_crs(img.meta["crs"].data)
+    gdf = clip_shapefile(img.bounds, img.meta, [gdf])[0]
+    mask = generate_mask(img.meta, [gdf])
+
+    return mask
 
 def check_crs(crs_a, crs_b):
     """Verify that two CRS objects Match

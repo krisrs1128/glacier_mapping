@@ -84,8 +84,8 @@ def slice_pair(img, mask, **kwargs):
     return img_slices, mask_slices
 
 
-def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
-                      **kwargs):
+def write_pair_slices(img_path, mask_path, out_dir, border_path='',
+                      out_base="slice",**kwargs):
     """ Write sliced images and masks to numpy arrays
 
     Args:
@@ -99,6 +99,8 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
     imgf = rasterio.open(img_path)
     img = imgf.read().transpose(1, 2, 0)
     mask = np.load(mask_path)
+    if border_path:
+        img = clip_image(img, border_path)
     img_slices, mask_slices = slice_pair(img, mask, **kwargs)
     metadata = slices_metadata(imgf, img_path, mask_path, **kwargs)
 
@@ -121,6 +123,11 @@ def write_pair_slices(img_path, mask_path, out_dir, out_base="slice",
     slice_stats = pd.DataFrame(slice_stats)
     return pd.concat([metadata, slice_stats], axis=1)
 
+def clip_image(img, shp_path):
+    mask = np.load(shp_path)
+    mask = np.repeat(mask, img.shape[-1], axis=2)
+    img[mask == 0] = np.nan
+    return img
 
 def plot_slices(slice_dir, processed=False, n_cols=3, div=3000, n_examples=5):
     """Helper to plot slices in a directory

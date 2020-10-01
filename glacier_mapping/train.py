@@ -44,7 +44,7 @@ def train_epoch(loader, frame, metrics_opts):
         y_hat, _loss = frame.optimize(x, y)
         loss += _loss
 
-        y_hat = frame.predict(y_hat)
+        y_hat = frame.segment(y_hat)
         metrics_ = frame.metrics(y_hat, y, metrics_opts)
 
         update_metrics(metrics, metrics_)
@@ -74,12 +74,12 @@ def validate(loader, frame, metrics_opts):
       and the metrics on the validation set.
     """
     loss, metrics = 0, {}
+    channel_first = lambda x: x.permute(0, 3, 1, 2)
     for x, y in loader:
-        channel_first = lambda x: x.permute(0, 3, 1, 2)
         y_hat = frame.infer(x)
         loss += frame.calc_loss(channel_first(y_hat), channel_first(y)).item()
 
-        y_hat = frame.predict(y_hat)
+        y_hat = frame.segment(y_hat)
         metrics_ = frame.metrics(y_hat, y, metrics_opts)
 
         update_metrics(metrics, metrics_)
@@ -160,13 +160,21 @@ def log_images(writer, frame, batch, epoch, stage="train"):
     writer.add_image(f"{stage}/y_hat", make_grid(y_hat.unsqueeze(1)), epoch)
 
 def update_metrics(main_metrics, batch_metrics):
+    """Append --inplace-- a dict of tensors to another element by element
+       Args:
+            main_metrics (dict(troch.Tensor)): the matrix to append to
+            batch_metrics (dict(troch.Tensor)): the new value to append to main_metrics
+    """
     for k, v in batch_metrics.items():
-            if k in main_metrics:
-                main_metrics[k] = torch.cat((main_metrics[k], v.unsqueeze(-1)), 1)
-            else:
-                main_metrics[k] = v.unsqueeze(-1)
+        if k in main_metrics:
+            main_metrics[k] = torch.cat((main_metrics[k], v.unsqueeze(-1)), 1)
+        else:
+            main_metrics[k] = v.unsqueeze(-1)
 
 def agg_metrics(metrics):
+    """Aggregate --inplace-- the mean of a matrix of tensor (across rows)
+       Args:
+            metrics (dict(troch.Tensor)): the matrix to get mean of"""
     for k, v in metrics.items():
         metrics[k] = metrics[k].mean(1)
         metrics[k] = metrics[k].data.cpu()

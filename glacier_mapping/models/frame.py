@@ -105,7 +105,7 @@ class Framework:
         with torch.no_grad():
             return self.model(x).permute(0, 2, 3, 1)
 
-    def predict(self, y_hat):
+    def segment(self, y_hat):
         """Predict a class given logits
 
         Args:
@@ -187,6 +187,5 @@ class Framework:
                 y_hat = y_hat > metric["threshold"]
 
             metric_fun = globals()[k]
-            metric_value = metric_fun(y_hat, y)
-            results[k] = metric_value
+            results[k] = metric_fun(y_hat, y)
         return results

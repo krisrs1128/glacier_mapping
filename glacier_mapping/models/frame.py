@@ -115,8 +115,9 @@ class Framework:
             Probability of class in case of binary classification
             or one-hot tensor in case of multi class"""
         if self.multi_class:
+            nclass = y_hat.shape[-1]
             y_hat = torch.argmax(y_hat, axis=3)
-            y_hat = torch.nn.functional.one_hot(y_hat)
+            y_hat = torch.nn.functional.one_hot(y_hat, num_classes=nclass)
         else:
             y_hat = torch.sigmoid(y_hat)
         return y_hat

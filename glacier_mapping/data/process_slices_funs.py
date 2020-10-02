@@ -13,7 +13,7 @@ import geopandas as gpd
 import random
 
 
-def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
+def filter_directory(slice_meta, filter_perc=[0.2], filter_channel=[1]):
     """ Return Paths for Pairs passing Filter Criteria
 
     Args:
@@ -24,7 +24,8 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
         img and mask
 
     """
-    slice_meta = slice_meta[slice_meta[f"mask_mean_{filter_channel}"] > filter_perc]
+    for i, channel in enumerate(filter_channel):
+        slice_meta = slice_meta[slice_meta[f"mask_mean_{channel}"] > filter_perc[i]]
     slice_meta = slice_meta[slice_meta["img_mean"] > 0]
     return [
         {"img": d["img_slice"], "mask": d["mask_slice"]}

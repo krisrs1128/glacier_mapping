@@ -13,4 +13,3 @@ RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 RUN apt-get update
 RUN apt -y install gdal-bin libgdal-dev
 RUN pip3 install --upgrade pip
-RUN pip3 install git+https://github.com/krisrs1128/glacier_mapping.git

@@ -25,7 +25,7 @@ def fetch_loaders(processed_dir, batch_size=32,
 
     return {
         "train": DataLoader(train_dataset, batch_size=batch_size, num_workers=8, shuffle=shuffle),
-        "val": DataLoader(val_dataset, batch_size=batch_size, num_workers=3, shuffle=shuffle)
+        "val": DataLoader(val_dataset, batch_size=batch_size, num_workers=3, shuffle=False)
     }
 
 

@@ -12,10 +12,16 @@ def precision(pred, true, label=1):
     return result
 
 
-def tp_fp_fn(pred, true, label=1):
-    tp = ((pred == label) & (true == label)).sum(dim=[0, 1, 2])
-    fp = ((pred == label) & (true != label)).sum(dim=[0, 1, 2])
-    fn = ((pred != label) & (true == label)).sum(dim=[0, 1, 2])
+def tp_fp_fn(pred, true, acm=False, label=1):
+    """Retruns tp, fp, fn mean of whole batch or accumulative sum"""
+    tp = ((pred == label) & (true == label)).sum(dim=[1, 2])
+    fp = ((pred == label) & (true != label)).sum(dim=[1, 2])
+    fn = ((pred != label) & (true == label)).sum(dim=[1, 2])
+
+    if not acm:
+        tp = tp.sum(dim=0)
+        fp = fp.sum(dim=0)
+        fn = fn.sum(dim=0)
 
     return tp, fp, fn
 

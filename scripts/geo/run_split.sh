@@ -6,5 +6,4 @@ cd glacier_mapping
 source .env
 
 cd scripts
-ix=$((1+ ${1}))
-python3 train.py -d ../../splits/$ix/ -c ../conf/train.yaml  -p ../../splits/$ix/postprocess.yaml -r geo
+python3 train.py -d ../../${1}/ -c ../conf/train.yaml  -p ../../${1}/postprocess.yaml -r geo

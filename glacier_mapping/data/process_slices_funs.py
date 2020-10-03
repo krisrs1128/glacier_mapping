@@ -94,7 +94,6 @@ def reshuffle(split_ids, output_dir="output/"):
         path = Path(output_dir, split_type)
         os.makedirs(path, exist_ok=True)
 
-    print(split_ids)
     target_locs = {k: [] for k in split_ids}
     for split_type in split_ids:
         for i in range(len(split_ids[split_type])):

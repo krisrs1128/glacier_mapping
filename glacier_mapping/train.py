@@ -40,6 +40,7 @@ def train_epoch(loader, frame, metrics_opts):
       and the metrics on the training set.
     """
     loss, metrics = 0, {}
+    frame.model.train()
     for x, y in loader:
         y_hat, _loss = frame.optimize(x, y)
         loss += _loss
@@ -75,6 +76,7 @@ def validate(loader, frame, metrics_opts):
     """
     loss, metrics = 0, {}
     channel_first = lambda x: x.permute(0, 3, 1, 2)
+    frame.model.eval()
     for x, y in loader:
         y_hat = frame.infer(x)
         loss += frame.calc_loss(channel_first(y_hat), channel_first(y)).item()

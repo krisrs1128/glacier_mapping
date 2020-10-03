@@ -79,13 +79,14 @@ def validate(loader, frame, metrics_opts):
     channel_first = lambda x: x.permute(0, 3, 1, 2)
     frame.model.eval()
     for x, y in loader:
-        y_hat = frame.infer(x)
-        loss += frame.calc_loss(channel_first(y_hat), channel_first(y)).item()
+        with torch.no_grad():
+            y_hat = frame.infer(x)
+            loss += frame.calc_loss(channel_first(y_hat), channel_first(y)).item()
 
-        y_hat = frame.segment(y_hat)
-        metrics_ = frame.metrics(y_hat, y, metrics_opts)
+            y_hat = frame.segment(y_hat)
+            metrics_ = frame.metrics(y_hat, y, metrics_opts)
 
-        update_metrics(metrics, metrics_)
+            update_metrics(metrics, metrics_)
 
     agg_metrics(metrics)
     return loss / len(loader.dataset), metrics

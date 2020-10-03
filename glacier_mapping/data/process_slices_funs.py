@@ -65,7 +65,7 @@ def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwar
 
         i = 1
         for slice_id in ids:
-            if i % 10 != 0:
+            if i % 10 == 0:
                 print(f"determing split for slice {i}/{len(ids)}")
             i += 1
 

@@ -33,7 +33,7 @@ if __name__ == '__main__':
     for k, channel in enumerate(pconf.filter_channels):
         keep_ids += pf.filter_directory(
             slice_meta,
-            filter_perc=pconf.filter_percentage[k],
+            filter_perc=pconf.filter_percentages[k],
             filter_channel=channel
         )
 

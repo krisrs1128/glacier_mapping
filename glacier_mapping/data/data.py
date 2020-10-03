@@ -9,7 +9,8 @@ import numpy as np
 import torch
 
 def fetch_loaders(processed_dir, batch_size=32,
-                  train_folder='train', dev_folder='dev', shuffle=True):
+                  train_folder='train', dev_folder='dev', test_folder='',
+                  shuffle=True):
     """ Function to fetch dataLoaders for the Training / Validation
 
     Args:
@@ -22,11 +23,18 @@ def fetch_loaders(processed_dir, batch_size=32,
     """
     train_dataset = GlacierDataset(processed_dir / train_folder)
     val_dataset = GlacierDataset(processed_dir / dev_folder)
+    loader = {
+        "train": DataLoader(train_dataset, batch_size=batch_size,
+                            num_workers=8, shuffle=shuffle),
+        "val": DataLoader(val_dataset, batch_size=batch_size,
+                          num_workers=3, shuffle=False)}
 
-    return {
-        "train": DataLoader(train_dataset, batch_size=batch_size, num_workers=8, shuffle=shuffle),
-        "val": DataLoader(val_dataset, batch_size=batch_size, num_workers=3, shuffle=False)
-    }
+    if test_folder:
+        test_dataset = GlacierDataset(processed_dir / test_folder)
+        loader["test"] = DataLoader(test_dataset, batch_size=batch_size,
+                                    num_workers=3, shuffle=False)
+
+    return loader
 
 
 class GlacierDataset(Dataset):

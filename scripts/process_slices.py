@@ -28,11 +28,14 @@ if __name__ == '__main__':
     pconf = Dict(yaml.safe_load(open(args.postprocess_conf, "r")))
     slice_meta = gpd.read_file(args.slices_meta)
     print("filtering")
-    keep_ids = pf.filter_directory(
-        slice_meta,
-        filter_perc=pconf.filter_percentage,
-        filter_channel=pconf.filter_channel,
-    )
+
+    keep_ids = []
+    for k, channel in enumerate(pconf.filter_channels):
+        keep_ids += pf.filter_directory(
+            slice_meta,
+            filter_perc=pconf.filter_percentage[k],
+            filter_channel=channel
+        )
 
     # validation: get ids for the ones that will be training vs. testing.
     print("reshuffling")

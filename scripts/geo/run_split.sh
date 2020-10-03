@@ -1,7 +1,7 @@
 #!/bin/bash
-tar -zxvf splits.tar.gz
+tar -zxvf split_${1}.tar.gz
 
-git clone https://github.com/krisrs1128/glacier_mapping.git
+git clone https://github.com/krisrs1128/glacier_mapping.git@queue-splits
 cd glacier_mapping
 source .env
 

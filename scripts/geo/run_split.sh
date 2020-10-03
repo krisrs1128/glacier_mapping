@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 tar -zxvf splits.tar.gz
 
 git clone https://github.com/krisrs1128/glacier_mapping.git
@@ -6,4 +6,5 @@ cd glacier_mapping
 source .env
 
 cd scripts
-python3 train.py -d ../../splits/${1}/ -c ../conf/train.yaml  -p ../../splits/${1}/postprocess.yaml -r geo
+ix=$((1+ ${1}))
+python3 train.py -d ../../splits/$ix/ -c ../conf/train.yaml  -p ../../splits/$ix/postprocess.yaml -r geo

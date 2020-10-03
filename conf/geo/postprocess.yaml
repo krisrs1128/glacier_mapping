@@ -1,5 +1,5 @@
-filter_channel: 0
-filter_percentage: 0.1
+filter_channel: [1, 2]
+filter_percentage: [0, 0]
 split_method:
   geographic_split:
     geojsons:
@@ -7,13 +7,14 @@ split_method:
       test: "/datadrive/glaciers/expers/geographic/splits/FOLD_NUM/test.geojson"
 normalization_sample_size: 100
 process_funs:
-  normalize:
-    stats_path: "/datadrive/glaciers/expers/geographic/splits/FOLD_NUM/stats_train.json"
-  impute:
-    value: 0
+  impute: {value: 0}
+  normalize: {stats_path: /datadrive/glaciers/processed_exper/slices/stats_train.json}
   extract_channel:
-    mask_channels: [0]
-    img_channels: [5, 4, 2, 10, 11, 12, 13, 14]
+    mask_channels: [1, 2]
+    img_channels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+  add_bg_channel: {}
 slice:
   overlap: 6
   size: [512, 512]
+filter_channels: [1, 2]
+filter_percentages: [0, 0]

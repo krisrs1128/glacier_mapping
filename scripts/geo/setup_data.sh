@@ -22,5 +22,5 @@ do
     python3 -m scripts.process_slices -o $split_dir/$i -m $DATA_DIR/processed_exper/slices/slices.geojson -p $split_dir/$i/postprocess.yaml
     cd $split_dir
     tar -zcvf split_$i.tar.gz $i
-    cd ..
+    cd $ROOT_DIR
 done;

@@ -4,7 +4,7 @@ source /home/kris/glacier_mapping/.env
 cd $ROOT_DIR
 export split_dir=$DATA_DIR/expers/geographic/splits/
 export slice_meta=$DATA_DIR/processed_exper/slices/slices.geojson
-export n_folds=4
+export n_folds=9
 rm -rf $split_dir
 mkdir -p $split_dir
 

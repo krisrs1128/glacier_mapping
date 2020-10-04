@@ -19,5 +19,7 @@ metrics_opts:
     threshold: 0.4
   recall:
     threshold: 0.4
+log_opts:
+  mask_names: ["glaciers"]
 reg_opts:
   l1_reg: 0.0005

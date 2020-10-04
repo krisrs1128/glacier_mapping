@@ -211,6 +211,18 @@ def extract_channel(img, mask, mask_channels=None, img_channels=None):
 
     return img[:, :, img_channels], mask[:, :, mask_channels]
 
+def add_bg_channel(img, mask):
+    """Add a background channel
+
+    Args:
+        img: Image
+        mask: Mask to add background to
+
+    Return:
+        Image and the mask with added background"""
+    bg_mask = ~ mask.any(axis=2)
+    mask = np.dstack((mask, bg_mask))
+    return img, mask
 
 def postprocess_tile(img, process_funs):
     """Apply a list of processing functions

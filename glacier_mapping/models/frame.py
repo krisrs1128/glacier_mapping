@@ -23,13 +23,20 @@ class Framework:
     """
 
     def __init__(self, loss_fn=None, model_opts=None, optimizer_opts=None,
-                 reg_opts=None,):
+                 reg_opts=None, device=None):
         """
         Set Class Attrributes
         """
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if device is None:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
+        self.multi_class = True if model_opts.args.outchannels > 1 else False
         if loss_fn is None:
-            loss_fn = torch.nn.BCEWithLogitsLoss()
+            if self.multi_class:
+                loss_fn = torch.nn.CrossEntropyLoss()
+            else:
+                loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
 
         if model_opts.name in ["Unet", "UnetDropout"]:
@@ -98,6 +105,35 @@ class Framework:
         with torch.no_grad():
             return self.model(x).permute(0, 2, 3, 1)
 
+    def segment(self, y_hat):
+        """Predict a class given logits
+
+        Args:
+            y_hat: logits output
+
+        Return:
+            Probability of class in case of binary classification
+            or one-hot tensor in case of multi class"""
+        if self.multi_class:
+            y_hat = torch.argmax(y_hat, axis=3)
+            y_hat = torch.nn.functional.one_hot(y_hat)
+        else:
+            y_hat = torch.sigmoid(y_hat)
+        return y_hat
+
+    def act(self, logits):
+        """Applies activation function based on the model
+        Args:
+            y_hat: logits output
+        Returns:
+            logits after applying activation function"""
+
+        if self.multi_class:
+            y_hat = torch.nn.Softmax(3)(logits)
+        else:
+            y_hat = torch.sigmoid(logits)
+        return y_hat
+
     def calc_loss(self, y_hat, y):
         """ Compute loss given a prediction
 
@@ -111,7 +147,13 @@ class Framework:
         """
         y_hat = y_hat.to(self.device)
         y = y.to(self.device)
+
+        if self.multi_class:
+            y = torch.argmax(y, dim=1)
+            y = torch.tensor(y, dtype=torch.long, device=self.device)
+
         loss = self.loss_fn(y_hat, y)
+
         for reg_type in self.reg_opts.keys():
             reg_fun = globals()[reg_type]
             penalty = reg_fun(
@@ -144,7 +186,6 @@ class Framework:
             if "threshold" in metric.keys():
                 y_hat = y_hat > metric["threshold"]
 
-                metric_fun = globals()[k]
-                metric_value = metric_fun(y_hat, y)
-            results[k] = np.mean(np.asarray(metric_value))
+            metric_fun = globals()[k]
+            results[k] = metric_fun(y_hat, y)
         return results

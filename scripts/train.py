@@ -65,18 +65,19 @@ if __name__ == '__main__':
     writer.add_text("Arguments", json.dumps(vars(args)))
     writer.add_text("Configuration Parameters", json.dumps(conf))
     out_dir = f"{data_dir}/runs/{args.run_name}/models/"
+    mask_names = conf.log_opts.mask_names
 
     for epoch in range(args.epochs):
 
         # train loop
         loss_d = {}
         loss_d["train"], metrics = tr.train_epoch(loaders["train"], frame, conf.metrics_opts)
-        tr.log_metrics(writer, metrics, loss_d["train"], epoch)
+        tr.log_metrics(writer, metrics, loss_d["train"], epoch, mask_names=mask_names)
         tr.log_images(writer, frame, next(iter(loaders["train"])), epoch)
 
         # validation loop
         loss_d["val"], metrics = tr.validate(loaders["val"], frame, conf.metrics_opts)
-        tr.log_metrics(writer, metrics, loss_d["val"], epoch, "val")
+        tr.log_metrics(writer, metrics, loss_d["val"], epoch, "val", mask_names=mask_names)
         tr.log_images(writer, frame, next(iter(loaders["val"])), epoch, "val")
 
         # Save model

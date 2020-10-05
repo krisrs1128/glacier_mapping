@@ -33,7 +33,7 @@ def filter_directory(slice_meta, filter_perc=[0.2], filter_channel=[1]):
     ]
 
 
-def random_split(ids, split_ratio, **kwargs):
+def random_split(ids, split_ratio, seed=0,**kwargs):
     """ Randomly split a list of paths into train / dev / test
 
     Args:
@@ -45,7 +45,8 @@ def random_split(ids, split_ratio, **kwargs):
     Return:
         Train/Test/Dev splits
     """
-    random.shuffle(ids)
+    #TODO: Pass seed from config
+    random.Random(seed).shuffle(ids)
     sizes = len(ids) * np.array(split_ratio)
     ix = [int(s) for s in np.cumsum(sizes)]
     return {

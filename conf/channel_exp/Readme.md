@@ -1,8 +1,8 @@
-##Configurations files for channel selection experiment and Debris Vs. Glaciers experiment.
+## Configurations files for channel selection experiment and Debris Vs. Glaciers experiment.
 
 The files numbers/names correspond to the experiment number/name
 
-##Experiments for selecting channels
+## Experiments for selecting channels
 All expriemnts are carried on images with more than 10% of unified glacier class
 
 Exp Number | channels | Notes
@@ -24,7 +24,7 @@ Exp Number | channels | Notes
 14| 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14| L7 channels + NDWI + NDSI + NDVI + Elevation + Slope (Best configuration)
 15| 14,13,11,7,12,5,10 | selected via random forest from channels of higher than 5% importance
 
-##Experiments for choosing multi-class vs binary model
+## Experiments for choosing multi-class vs binary model
 All expriemnts are carried on images with more than 0% of both classes
 Exp Name | Out Channels
   --- | ---

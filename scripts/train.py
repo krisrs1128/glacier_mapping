@@ -5,6 +5,7 @@ import yaml
 from addict import Dict
 from glacier_mapping.data.data import fetch_loaders
 from glacier_mapping.models.frame import Framework
+from glacier_mapping.models.metrics import diceloss
 from torch.utils.tensorboard import SummaryWriter
 import glacier_mapping.train as tr
 import json
@@ -18,6 +19,7 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--run_name", type=str, default="demo")
     parser.add_argument("-e", "--epochs", type=int, default=200)
     parser.add_argument("-s", "--save_every", type=int, default=50)
+    parser.add_argument("-l", "--loss_type", type=str, default="dice")
     args = parser.parse_args()
 
     data_dir = pathlib.Path(args.data_dir)
@@ -32,10 +34,24 @@ if __name__ == '__main__':
     })
 
     loaders = fetch_loaders(data_dir, args.batch_size)
+
+    # TODO try to have less nested if/else
+    # get dice loss
+    if args.loss_type == 'dice':
+        if conf.model_opts.outchannels > 1:
+            loss_weight = [1 for _ in conf.model_opts.outchannels]
+            loss_weight[-1] = 0 # background
+            loss_fn = diceloss(act=torch.nn.Softmax(dim=1), w=loss_weight,
+                               outchannels=conf.model_opts.outchannels)
+        else:
+            loss_fn = diceloss()
+    else: loss_fn = None
+
     frame = Framework(
         model_opts=conf.model_opts,
         optimizer_opts=conf.optim_opts,
-        reg_opts=conf.reg_opts
+        reg_opts=conf.reg_opts,
+        loss_fn=loss_fn
     )
 
     # Setup logging

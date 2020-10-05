@@ -33,7 +33,7 @@ if __name__ == '__main__':
         "save_every": args.save_every
     })
 
-    loaders = fetch_loaders(data_dir, args.batch_size)
+    loaders = fetch_loaders(data_dir, args.batch_size, shuffle=True)
 
     # TODO:handle this error better
     # if input mask dimension different than outchannels
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     # TODO try to have less nested if/else
     # get dice loss
-    if args.loss_type == 'dice':
+    if args.loss_type == "dice":
         if conf.model_opts.outchannels > 1:
             loss_weight = [1 for _ in conf.model_opts.outchannels]
             loss_weight[-1] = 0 # background

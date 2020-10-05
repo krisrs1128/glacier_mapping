@@ -1,0 +1,17 @@
+#!/bin/bash
+universe = docker
+log = /home/ksankaran/logs/glacier_$(Cluster).log
+error = /home/ksankaran/logs/glacier_$(Cluster)_$(Process).err
+output = /home/ksankaran/logs/glacier_$(Cluster)_$(Process).out
+docker_image = krisrs1128/glacier_vm_2
+input = /staging/ksankaran/split_$(Process).tar.gz
+transfer_output_files = runs_$(Process).tar.gz
+executable = scripts/geo/run_split.sh
+request_gpus = 1
+arguments = "$(Process) $(Cluster)"
+request_cpus = 1
+request_memory = 64GB
+request_disk = 12GB
++WantGPULab = true
++wantFlocking = true
++GPUJobLength = "short"

@@ -64,7 +64,11 @@ def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwar
         split_geo = gpd.read_file(path)
         split_geo = split_geo.to_crs(crs).buffer(0)
 
+        i = 1
         for slice_id in ids:
+            print(f"determing split for slice {i}/{len(ids)}")
+            i += 1
+
             # get the row of the pandas with the current slice id
             slice_geo = slice_meta[slice_meta.img_slice == slice_id["img"]]["geometry"]
             slice_geo = slice_geo.to_crs(crs).reset_index().buffer(0)

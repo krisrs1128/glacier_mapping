@@ -24,15 +24,22 @@ if __name__ == '__main__':
     # data directories
     output_dir = pathlib.Path(args.output_dir)
 
-    # filter all the slices to the ones that matter
+    # require that all slices have above filter_percentage[k] for each channel
     pconf = Dict(yaml.safe_load(open(args.postprocess_conf, "r")))
     slice_meta = gpd.read_file(args.slices_meta)
     print("filtering")
-    keep_ids = pf.filter_directory(
-        slice_meta,
-        filter_perc=pconf.filter_percentage,
-        filter_channel=pconf.filter_channel,
-    )
+
+    keep_ids = []
+    for k, channel in enumerate(pconf.filter_channels):
+        cur_ids = pf.filter_directory(
+            slice_meta,
+            filter_perc=pconf.filter_percentages[k],
+            filter_channel=channel
+        )
+        if len(keep_ids) > 0:
+            keep_ids = [x for x in cur_ids if x in keep_ids]
+        else:
+            keep_ids += cur_ids
 
     # validation: get ids for the ones that will be training vs. testing.
     print("reshuffling")

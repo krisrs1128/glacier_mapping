@@ -45,7 +45,6 @@ def random_split(ids, split_ratio, seed=0,**kwargs):
     Return:
         Train/Test/Dev splits
     """
-    #TODO: Pass seed from config
     random.Random(seed).shuffle(ids)
     sizes = len(ids) * np.array(split_ratio)
     ix = [int(s) for s in np.cumsum(sizes)]

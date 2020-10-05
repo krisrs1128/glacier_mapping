@@ -29,17 +29,10 @@ if __name__ == '__main__':
     slice_meta = gpd.read_file(args.slices_meta)
     print("filtering")
 
-    keep_ids = []
-    for k, channel in enumerate(pconf.filter_channels):
-        cur_ids = pf.filter_directory(
-            slice_meta,
-            filter_perc=pconf.filter_percentages[k],
-            filter_channel=channel
+    keep_ids = pf.filter_directory(slice_meta,
+        filter_perc=pconf.filter_percentages,
+        filter_channel=pconf.filter_channels
         )
-        if len(keep_ids) > 0:
-            keep_ids = [x for x in cur_ids if x in keep_ids]
-        else:
-            keep_ids += cur_ids
 
     # validation: get ids for the ones that will be training vs. testing.
     print("reshuffling")

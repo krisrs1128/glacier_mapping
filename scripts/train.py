@@ -35,6 +35,12 @@ if __name__ == '__main__':
 
     loaders = fetch_loaders(data_dir, args.batch_size)
 
+    # TODO:handle this error better
+    # if input mask dimension different than outchannels
+    y_channels = [y.shape[-1] for _, y in loaders["dev"]][0]
+    if y_channels != frame.conf.model_opts.outchannels:
+        raise ValueError("Output dimension is different from model outchannels.")
+
     # TODO try to have less nested if/else
     # get dice loss
     if args.loss_type == 'dice':

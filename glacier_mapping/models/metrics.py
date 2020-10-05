@@ -67,7 +67,8 @@ class diceloss(torch.nn.Module):
         pred = self.act(pred)
         if len(w) != outchannels:
             raise ValueError("Loss weights should be equal to the output channels.")
-        if len(pred.shape) =! len(target.shape):
+        # CE expects loss to have arg-max channel. Dice expects it to have one-hot
+        if len(pred.shape) > len(target.shape):
             target = torch.nn.functional.one_hot(target, nclass=outchannels).permute(0, 3, 1, 2)
 
         intersection = (pred * target).sum(dim=[0, 2, 3])

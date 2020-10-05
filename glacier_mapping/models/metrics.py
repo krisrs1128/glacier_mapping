@@ -65,8 +65,12 @@ class diceloss(torch.nn.Module):
 
     def forward(self, pred, target):
         pred = self.act(pred)
-        if len(pred.shape) > len(target.shape):
-            target = torch.nn.functional.one_hot(target).permute(0, 3, 1, 2)
+        # TODO: make this read directly from outchannels of the model
+        outchannels = len(w)
+
+        # CE expects one channels or argmax and dice expects one-hot encoded
+        if (len(target.shape) == 3) and (len(pred.shape) == 4):
+            target = torch.nn.functional.one_hot(target, nclass=outchannels).permute(0, 3, 1, 2)
 
         intersection = (pred * target).sum(dim=[0, 2, 3])
         A_sum = (pred * pred).sum(dim=[0, 2, 3])

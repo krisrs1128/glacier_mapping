@@ -48,10 +48,10 @@ if __name__ == '__main__':
     # get dice loss
     if loss_type == "dice":
         if conf.model_opts.outchannels > 1:
-            loss_weight = [1 for _ in conf.model_opts.outchannels]
+            loss_weight = [1 for _ in conf.model_opts.args.outchannels]
             loss_weight[-1] = 0 # background
             loss_fn = diceloss(act=torch.nn.Softmax(dim=1), w=loss_weight,
-                               outchannels=conf.model_opts.outchannels)
+                               outchannels=conf.model_opts.args.outchannels)
         else:
             loss_fn = diceloss()
     else: loss_fn = None

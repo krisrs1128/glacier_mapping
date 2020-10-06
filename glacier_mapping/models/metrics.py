@@ -66,7 +66,7 @@ class diceloss(torch.nn.Module):
 
     def forward(self, pred, target):
         pred = self.act(pred)
-        if len(self.w) != outchannels:
+        if len(self.w) != self.outchannels:
             raise ValueError("Loss weights should be equal to the output channels.")
         # CE expects loss to have arg-max channel. Dice expects it to have one-hot
         if len(pred.shape) > len(target.shape):

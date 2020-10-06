@@ -17,8 +17,9 @@ def filter_directory(slice_meta, filter_perc=[0.2], filter_channel=[1]):
     """ Return Paths for Pairs passing Filter Criteria
 
     Args:
-        filter_perc(float): The minimum percentage 1's in the filter_channel needed to pass the filter.
-        filter_channel(int): The channel to do the filtering on.
+        filter_perc([float]): The minimum percentages 1's in the filter_channels
+                              needed to pass the filter.
+        filter_channel([int]): The channels to do the filtering on.
 
     Return:
         img and mask
@@ -86,7 +87,9 @@ def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwar
 
 
 def reshuffle(split_ids, output_dir="output/"):
-    """ Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.
+    """ Reshuffle Data for Training,
+    given a dictionary specifying train / dev / test split,
+    copy into train / dev / test folders.
 
     Args:
         split_ids(int): IDs of files to split

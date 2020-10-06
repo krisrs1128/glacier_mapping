@@ -126,6 +126,7 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train", mask_names=None
         avg_loss(float): The average loss across all epochs
         epoch(int): Total number of training cycles
         stage(String): Train/Val
+        mask_names(List): Names of the mask(prediction) to log mmetrics for
     """
     writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
     if mask_names is None:

@@ -14,5 +14,3 @@ process_funs:
 slice:
   overlap: 6
   size: [512, 512]
-filter_channels: [1, 2]
-filter_percentages: [0, 0]

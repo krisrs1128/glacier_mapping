@@ -20,13 +20,16 @@ if __name__ == '__main__':
     parser.add_argument("-e", "--epochs", type=int, default=200)
     parser.add_argument("-s", "--save_every", type=int, default=50)
     parser.add_argument("-l", "--loss_type", type=str, default="dice")
+    parser.add_argument("--device", type=str, default=None)
     args = parser.parse_args()
 
     data_dir = pathlib.Path(args.data_dir)
     conf = Dict(yaml.safe_load(open(args.train_yaml, "r")))
+    device = args.device
+    loss_type = args.loss_type
 
     # Train a model
-    args = Dict({
+    model_args = Dict({
         "batch_size": args.batch_size,
         "run_name": args.run_name,
         "epochs": args.epochs,
@@ -43,7 +46,7 @@ if __name__ == '__main__':
 
     # TODO try to have less nested if/else
     # get dice loss
-    if args.loss_type == "dice":
+    if loss_type == "dice":
         if conf.model_opts.outchannels > 1:
             loss_weight = [1 for _ in conf.model_opts.outchannels]
             loss_weight[-1] = 0 # background
@@ -57,7 +60,8 @@ if __name__ == '__main__':
         model_opts=conf.model_opts,
         optimizer_opts=conf.optim_opts,
         reg_opts=conf.reg_opts,
-        loss_fn=loss_fn
+        loss_fn=loss_fn,
+        device=device
     )
 
     # Setup logging

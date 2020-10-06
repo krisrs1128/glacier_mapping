@@ -29,7 +29,7 @@ if __name__ == '__main__':
     loss_type = args.loss_type
 
     # Train a model
-    model_args = Dict({
+    args = Dict({
         "batch_size": args.batch_size,
         "run_name": args.run_name,
         "epochs": args.epochs,

@@ -13,7 +13,7 @@ def precision(pred, true, label=1):
 
 
 def tp_fp_fn(pred, true, acm=False, label=1):
-    """Retruns tp, fp, fn mean of whole batch or accumulative sum"""
+    """Retruns tp, fp, fn mean of whole batch or array of summed tp, fp, fn per image"""
     tp = ((pred == label) & (true == label)).sum(dim=[1, 2])
     fp = ((pred == label) & (true != label)).sum(dim=[1, 2])
     fn = ((pred != label) & (true == label)).sum(dim=[1, 2])

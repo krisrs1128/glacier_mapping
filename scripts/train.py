@@ -2,13 +2,16 @@
 import argparse
 import pathlib
 import yaml
+import json
 from addict import Dict
+import torch
+
 from glacier_mapping.data.data import fetch_loaders
 from glacier_mapping.models.frame import Framework
 from glacier_mapping.models.metrics import diceloss
 from torch.utils.tensorboard import SummaryWriter
 import glacier_mapping.train as tr
-import json
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Preprocess raw tiffs into slices")

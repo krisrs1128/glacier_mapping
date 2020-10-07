@@ -24,7 +24,7 @@ if __name__ == '__main__':
     masking_paths = yaml.safe_load(open(args.masking_yaml))
     img_paths = [p["img_path"] for p in masking_paths.values()]
     mask_paths = [p["mask_paths"] for p in masking_paths.values()]
-    if "border_path" in masking_paths.values()[0]:
+    if "border_path" in next(iter(masking_paths)):
         border_paths = [p["border_path"] for p in masking_paths.values()]
     else:
         border_paths = []

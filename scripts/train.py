@@ -28,8 +28,11 @@ if __name__ == '__main__':
 
     data_dir = pathlib.Path(args.data_dir)
     conf = Dict(yaml.safe_load(open(args.train_yaml, "r")))
-    device = args.device
     loss_type = args.loss_type
+    device = args.device
+    if device is not None:
+        device = torch.device(device)
+
 
     # Train a model
     args = Dict({

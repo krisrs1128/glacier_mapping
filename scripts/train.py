@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # TODO:handle this error better
     # if input mask dimension different than outchannels
     outchannels = conf.model_opts.args.outchannels
-    y_channels = [y.shape[-1] for _, y in loaders["dev"]][0]
+    y_channels = [y.shape[-1] for _, y in loaders["val"]][0]
     if y_channels != outchannels:
         raise ValueError("Output dimension is different from model outchannels.")
 

@@ -40,18 +40,19 @@ if __name__ == '__main__':
 
     # TODO:handle this error better
     # if input mask dimension different than outchannels
+    outchannels = conf.model_opts.args.outchannels
     y_channels = [y.shape[-1] for _, y in loaders["dev"]][0]
-    if y_channels != frame.conf.model_opts.outchannels:
+    if y_channels != outchannels:
         raise ValueError("Output dimension is different from model outchannels.")
 
-    # TODO try to have less nested if/else
+    # TODO: try to have less nested if/else
     # get dice loss
     if loss_type == "dice":
-        if conf.model_opts.outchannels > 1:
-            loss_weight = [1 for _ in conf.model_opts.args.outchannels]
+        if outchannels > 1:
+            loss_weight = [1 for _ in outchannels]
             loss_weight[-1] = 0 # background
             loss_fn = diceloss(act=torch.nn.Softmax(dim=1), w=loss_weight,
-                               outchannels=conf.model_opts.args.outchannels)
+                               outchannels=outchannels)
         else:
             loss_fn = diceloss()
     else: loss_fn = None

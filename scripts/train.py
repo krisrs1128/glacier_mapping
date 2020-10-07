@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # get dice loss
     if loss_type == "dice":
         if outchannels > 1:
-            loss_weight = [1 for _ in outchannels]
+            loss_weight = [1 for _ in range(outchannels)]
             loss_weight[-1] = 0 # background
             loss_fn = diceloss(act=torch.nn.Softmax(dim=1), w=loss_weight,
                                outchannels=outchannels)

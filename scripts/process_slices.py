@@ -30,8 +30,8 @@ if __name__ == '__main__':
     print("filtering")
 
     keep_ids = pf.filter_directory(slice_meta,
-        filter_perc=pconf.filter_percentages,
-        filter_channel=pconf.filter_channels
+        filter_perc=pconf.filter_percentage,
+        filter_channel=pconf.filter_channel
         )
 
     # validation: get ids for the ones that will be training vs. testing.

@@ -15,9 +15,12 @@ import geopandas as gpd
 import shapely.geometry
 from shapely.ops import unary_union
 import skimage.measure
+from PIL import Image
+from skimage.io import imsave
 from skimage.util.shape import view_as_windows
 from rasterio.windows import Window
 from .data.process_slices_funs import postprocess_tile
+from .data.data import fetch_loaders
 from .models.frame import Framework
 
 
@@ -29,28 +32,27 @@ def append_name(s, args, filetype="png"):
     return f"{s}_{Path(args.input).stem}-{Path(args.model).stem}-{Path(args.process_conf).stem}.{filetype}"
 
 
-def write_geotiff(y_hat, meta, output_path):
+def predict_dir(model, data_dir, batch_size=8, **kwargs):
     """
-    Write predictions to geotiff
-
-    :param y_hat: A numpy array of predictions.
-    :type y_hat: np.ndarray
+    Make predictions for all np files in a directory
     """
-    # create empty raster with write geographic information
-    dst_file = rasterio.open(
-        output_path, 'w',
-        driver='GTiff',
-        height=y_hat.shape[0],
-        width=y_hat.shape[1],
-        count=y_hat.shape[2],
-        dtype=np.float32,
-        crs=meta["crs"],
-        transform=meta["transform"]
-    )
+    dataset = GlacierDataset(data_dir)
+    loader = DataLoader(dataset, batch_size=batch_size, **kwargs)
+    model.eval()
 
-    y_hat = 255.0 * y_hat.astype(np.float32)
-    for k in range(y_hat.shape[2]):
-        dst_file.write(y_hat[:, :, k], k + 1)
+    y_hats, i = [], 0
+    for x, _ in enumerate(loader):
+        with torch.no_grad():
+
+            batch_pred = model.infer(x)
+            for j in range(len(x)):
+                y_hats.append({
+                    "path": dataset.img_files[i],
+                    "y_hat": batch_pred[i].detach().cpu().numpy()
+                })
+                i += 1
+
+    return y_hats
 
 
 def predict_tiff(path, model, subset_size=None, conf_path="conf/postprocess.yaml"):

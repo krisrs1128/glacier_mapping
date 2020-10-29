@@ -18,7 +18,7 @@ import skimage.measure
 from skimage.util.shape import view_as_windows
 from rasterio.windows import Window
 from .data.process_slices_funs import postprocess_tile
-from .data.data import fetch_loaders
+from .data.data import GlacierDataset
 from .models.frame import Framework
 
 

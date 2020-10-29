@@ -35,7 +35,9 @@ class Framework:
         self.num_classes = model_opts.args.outchannels
         if loss_fn is None:
             if self.multi_class:
-                loss_fn = torch.nn.CrossEntropyLoss()
+                weights = [0.75, 0.22, 0.03]
+                class_weights = torch.FloatTensor(weights).cuda()
+                loss_fn = torch.nn.CrossEntropyLoss(weight=class_weights)
             else:
                 loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)

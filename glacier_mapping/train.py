@@ -128,13 +128,13 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train", mask_names=None
         stage(String): Train/Val
         mask_names(List): Names of the mask(prediction) to log mmetrics for
     """
-    writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
+    writer.add_scalar(f"Loss/{stage}", avg_loss, epoch)
     if mask_names is None:
         mask_nums = len(list(metrics.values())[0])
         mask_names = [str(i) for i in range(mask_nums)]
     for k, v in metrics.items():
         for name, metric in zip(mask_names, v):
-            writer.add_scalar(f"{stage}/{name}_{str(k)}", metric, epoch)
+            writer.add_scalar(f"{name}_{str(k)}/{stage}", metric, epoch)
 
 
 def log_images(writer, frame, batch, epoch, stage="train"):

@@ -78,7 +78,7 @@ if __name__ == '__main__':
     out_dir = f"{data_dir}/runs/{args.run_name}/models/"
     mask_names = conf.log_opts.mask_names
 
-    for epoch in range(args.epochs):
+    for epoch in range(1,args.epochs+1):
 
         # train loop
         loss_d = {}

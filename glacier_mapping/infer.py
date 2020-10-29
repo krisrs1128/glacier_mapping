@@ -14,6 +14,7 @@ import yaml
 import geopandas as gpd
 import shapely.geometry
 from shapely.ops import unary_union
+from torch.utils.data import DataLoader
 import skimage.measure
 from skimage.util.shape import view_as_windows
 from rasterio.windows import Window
@@ -30,23 +31,26 @@ def append_name(s, args, filetype="png"):
     return f"{s}_{Path(args.input).stem}-{Path(args.model).stem}-{Path(args.process_conf).stem}.{filetype}"
 
 
-def predict_dir(model, data_dir, batch_size=8, **kwargs):
+def predict_dir(model, data_dir, batch_size=16, **kwargs):
     """
     Make predictions for all np files in a directory
     """
     dataset = GlacierDataset(data_dir)
     loader = DataLoader(dataset, batch_size=batch_size, **kwargs)
     model.eval()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     y_hats, i = [], 0
-    for x, _ in enumerate(loader):
+    for x, _ in loader:
+        x = x.permute(0, 3, 1, 2).to(device)
+
         with torch.no_grad():
 
-            batch_pred = model.infer(x)
+            batch_pred = model(x).permute(0, 2, 3, 1)
             for j in range(len(x)):
                 y_hats.append({
-                    "path": dataset.img_files[i],
-                    "y_hat": batch_pred[i].detach().cpu().numpy()
+                    "x_path": dataset.img_files[i],
+                    "y_hat": batch_pred[j].detach().cpu().numpy()
                 })
                 i += 1
 

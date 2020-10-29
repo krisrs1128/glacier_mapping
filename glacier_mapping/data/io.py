@@ -14,7 +14,7 @@ def write_npys(arrays, names=None, out_dir="."):
     if not names:
         names = range(len(arrays))
 
-    for array in arrays:
+    for i, array in enumerate(arrays):
         np.save(array, out_dir / f"{names[i]}.npy")
 
 

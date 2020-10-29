@@ -1,6 +1,6 @@
 import pathlib
-from PIL import Image
 import numpy as np
+from skimage.io import imsave
 
 
 def write_npys(arrays, names=None, out_dir="."):
@@ -22,9 +22,9 @@ def convert_png(npy_paths, channels=[[0]]):
     for i, path in enumerate(npy_paths):
         for ix in channels:
             npy = np.load(npy_paths[i])
-            img = Image.fromarray(npy[:, :, ix])
             ix_str = "-".join([str(s) for s in channels])
-            img.save(npy_paths.replace(".npy", f"{ix_str}.png"))
+            out_path = npy_paths[i].replace(".npy", f"{ix_str}.png")
+            imsave(npy[:, :, ix], out_path)
 
 
 def write_geotiff(y_hat, meta, output_path):

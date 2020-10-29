@@ -15,8 +15,6 @@ import geopandas as gpd
 import shapely.geometry
 from shapely.ops import unary_union
 import skimage.measure
-from PIL import Image
-from skimage.io import imsave
 from skimage.util.shape import view_as_windows
 from rasterio.windows import Window
 from .data.process_slices_funs import postprocess_tile

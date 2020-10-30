@@ -37,16 +37,20 @@ def predict_dir(model, data_dir, batch_size=16, **kwargs):
     """
     dataset = GlacierDataset(data_dir)
     loader = DataLoader(dataset, batch_size=batch_size, **kwargs)
-    model.eval()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model = model.to(device)
+    model.eval()
+    multilogit = torch.nn.Softmax(3)
 
     y_hats, i = [], 0
     for x, _ in loader:
         x = x.permute(0, 3, 1, 2).to(device)
 
         with torch.no_grad():
-
             batch_pred = model(x).permute(0, 2, 3, 1)
+            batch_pred = multilogit(batch_pred)
+
             for j in range(len(x)):
                 y_hats.append({
                     "x_path": dataset.img_files[i],

@@ -40,6 +40,7 @@ def train_epoch(loader, frame, metrics_opts):
       and the metrics on the training set.
     """
     loss, metrics = 0, {}
+    frame.model.train()
     for x, y in loader:
         y_hat, _loss = frame.optimize(x, y)
         loss += _loss
@@ -75,14 +76,16 @@ def validate(loader, frame, metrics_opts):
     """
     loss, metrics = 0, {}
     channel_first = lambda x: x.permute(0, 3, 1, 2)
+    frame.model.eval()
     for x, y in loader:
-        y_hat = frame.infer(x)
-        loss += frame.calc_loss(channel_first(y_hat), channel_first(y)).item()
+        with torch.no_grad():
+            y_hat = frame.infer(x)
+            loss += frame.calc_loss(channel_first(y_hat), channel_first(y)).item()
 
-        y_hat = frame.segment(y_hat)
-        metrics_ = frame.metrics(y_hat, y, metrics_opts)
+            y_hat = frame.segment(y_hat)
+            metrics_ = frame.metrics(y_hat, y, metrics_opts)
 
-        update_metrics(metrics, metrics_)
+            update_metrics(metrics, metrics_)
 
     agg_metrics(metrics)
     return loss / len(loader.dataset), metrics
@@ -122,6 +125,7 @@ def log_metrics(writer, metrics, avg_loss, epoch, stage="train", mask_names=None
         avg_loss(float): The average loss across all epochs
         epoch(int): Total number of training cycles
         stage(String): Train/Val
+        mask_names(List): Names of the mask(prediction) to log mmetrics for
     """
     writer.add_scalar(f"{stage}/Loss", avg_loss, epoch)
     if mask_names is None:
@@ -153,10 +157,9 @@ def log_images(writer, frame, batch, epoch, stage="train"):
     y_hat = frame.act(frame.infer(x))
     y = torch.flatten(y.permute(0, 1, 3, 2), start_dim=2)
     y_hat = torch.flatten(y_hat.permute(0, 1, 3, 2), start_dim=2)
-    if epoch == 0:
-        writer.add_image(f"{stage}/x", make_grid(pm(squash(x[:, :, :, :3]))), epoch)
-        writer.add_image(f"{stage}/y", make_grid(y.unsqueeze(1)), epoch)
 
+    writer.add_image(f"{stage}/x", make_grid(pm(squash(x[:, :, :, :3]))), epoch)
+    writer.add_image(f"{stage}/y", make_grid(y.unsqueeze(1)), epoch)
     writer.add_image(f"{stage}/y_hat", make_grid(y_hat.unsqueeze(1)), epoch)
 
 def update_metrics(main_metrics, batch_metrics):

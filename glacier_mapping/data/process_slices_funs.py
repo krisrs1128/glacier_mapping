@@ -13,18 +13,20 @@ import geopandas as gpd
 import random
 
 
-def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
+def filter_directory(slice_meta, filter_perc=[0.2], filter_channel=[1]):
     """ Return Paths for Pairs passing Filter Criteria
 
     Args:
-        filter_perc(float): The minimum percentage 1's in the filter_channel needed to pass the filter.
-        filter_channel(int): The channel to do the filtering on.
+        filter_perc([float]): The minimum percentages 1's in the filter_channels
+                              needed to pass the filter.
+        filter_channel([int]): The channels to do the filtering on.
 
     Return:
         img and mask
 
     """
-    slice_meta = slice_meta[slice_meta[f"mask_mean_{filter_channel}"] > filter_perc]
+    for i, channel in enumerate(filter_channel):
+        slice_meta = slice_meta[slice_meta[f"mask_mean_{channel}"] > filter_perc[i]]
     slice_meta = slice_meta[slice_meta["img_mean"] > 0]
     return [
         {"img": d["img_slice"], "mask": d["mask_slice"]}
@@ -32,7 +34,7 @@ def filter_directory(slice_meta, filter_perc=0.2, filter_channel=1):
     ]
 
 
-def random_split(ids, split_ratio, **kwargs):
+def random_split(ids, split_ratio, seed=0,**kwargs):
     """ Randomly split a list of paths into train / dev / test
 
     Args:
@@ -44,7 +46,7 @@ def random_split(ids, split_ratio, **kwargs):
     Return:
         Train/Test/Dev splits
     """
-    random.shuffle(ids)
+    random.Random(seed).shuffle(ids)
     sizes = len(ids) * np.array(split_ratio)
     ix = [int(s) for s in np.cumsum(sizes)]
     return {
@@ -85,7 +87,9 @@ def geographic_split(ids, geojsons, slice_meta, dev_ratio=0.10, crs=3857, **kwar
 
 
 def reshuffle(split_ids, output_dir="output/"):
-    """ Reshuffle Data for Training, given a dictionary specifying train / dev / test split, copy into train / dev / test folders.
+    """ Reshuffle Data for Training,
+    given a dictionary specifying train / dev / test split,
+    copy into train / dev / test folders.
 
     Args:
         split_ids(int): IDs of files to split
@@ -97,7 +101,6 @@ def reshuffle(split_ids, output_dir="output/"):
         path = Path(output_dir, split_type)
         os.makedirs(path, exist_ok=True)
 
-    print(split_ids)
     target_locs = {k: [] for k in split_ids}
     for split_type in split_ids:
         for i in range(len(split_ids[split_type])):

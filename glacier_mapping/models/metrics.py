@@ -12,10 +12,16 @@ def precision(pred, true, label=1):
     return result
 
 
-def tp_fp_fn(pred, true, label=1):
-    tp = ((pred == label) & (true == label)).sum(dim=[0, 1, 2])
-    fp = ((pred == label) & (true != label)).sum(dim=[0, 1, 2])
-    fn = ((pred != label) & (true == label)).sum(dim=[0, 1, 2])
+def tp_fp_fn(pred, true, acm=False, label=1):
+    """Retruns tp, fp, fn mean of whole batch or array of summed tp, fp, fn per image"""
+    tp = ((pred == label) & (true == label)).sum(dim=[1, 2])
+    fp = ((pred == label) & (true != label)).sum(dim=[1, 2])
+    fn = ((pred != label) & (true == label)).sum(dim=[1, 2])
+
+    if not acm:
+        tp = tp.sum(dim=0)
+        fp = fp.sum(dim=0)
+        fn = fn.sum(dim=0)
 
     return tp, fp, fn
 
@@ -51,16 +57,20 @@ def IoU(pred, true, label=1):
 
 
 class diceloss(torch.nn.Module):
-    def __init__(self, act=torch.nn.Sigmoid(), smooth=0, w=[1.0]):
+    def __init__(self, act=torch.nn.Sigmoid(), smooth=0, w=[1.0], outchannels=1):
         super().__init__()
         self.act = act
         self.smooth = smooth
         self.w = w
+        self.outchannels = outchannels
 
     def forward(self, pred, target):
         pred = self.act(pred)
+        if len(self.w) != self.outchannels:
+            raise ValueError("Loss weights should be equal to the output channels.")
+        # CE expects loss to have arg-max channel. Dice expects it to have one-hot
         if len(pred.shape) > len(target.shape):
-            target = torch.nn.functional.one_hot(target).permute(0, 3, 1, 2)
+            target = torch.nn.functional.one_hot(target, num_classes=self.outchannels).permute(0, 3, 1, 2)
 
         intersection = (pred * target).sum(dim=[0, 2, 3])
         A_sum = (pred * pred).sum(dim=[0, 2, 3])

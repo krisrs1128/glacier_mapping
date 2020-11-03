@@ -42,7 +42,6 @@ def train_epoch(loader, frame, metrics_opts):
     loss, metrics = 0, {}
     frame.model.train()
     for x, y in loader:
-        frame.optimizer.zero_grad()
         y_hat, _loss = frame.optimize(x, y)
         loss += _loss
 

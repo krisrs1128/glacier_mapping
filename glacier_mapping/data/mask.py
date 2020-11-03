@@ -27,6 +27,7 @@ def generate_masks(img_paths, shps_paths, border_paths=[], output_base="mask",
     Args:
         image_paths(List): A list of Strings of the paths to the raw images
         shps_paths(List): A list of Strings of the paths to the raw polygons
+        border_paths(List): A list of Strings of the paths to the border polygon
         output_base(String): The basenames for all the output numpy files
         out_dir(String): The directory to which all the results are saved
     Returns:
@@ -81,6 +82,8 @@ def generate_masks(img_paths, shps_paths, border_paths=[], output_base="mask",
         ).to_csv(metadata_path, header=False, mode="a")
 
 def get_border_mask(img, border_path):
+    """Get mask of a border"""
+    #TODO: Use one function for any mask
     gdf = gpd.read_file(border_path)
     gdf_crs = rasterio.crs.CRS.from_string(gdf.crs.to_string())
     if gdf_crs != img.meta["crs"]:

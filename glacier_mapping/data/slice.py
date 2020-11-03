@@ -89,8 +89,9 @@ def write_pair_slices(img_path, mask_path, out_dir, border_path='',
     """ Write sliced images and masks to numpy arrays
 
     Args:
-        img_path(List): A list of Strings of the paths to the raw images
-        mask_path(List): A list of Strings of the paths to the masks
+        img_path(String): the path to the raw image tiff
+        mask_path(String): the paths to the mask array
+        border_path(String): teh path to the border array
         output_base(String): The basenames for all the output numpy files
         out_dir(String): The directory to which all the results will be stored
     Returns:
@@ -124,6 +125,13 @@ def write_pair_slices(img_path, mask_path, out_dir, border_path='',
     return pd.concat([metadata, slice_stats], axis=1)
 
 def clip_image(img, shp_path):
+    """Clip an image to the extent of an mask.
+    Args:
+        img(numpy.array): Image to clip
+        shp_path(String): A path to the mask to clip with
+    Returns:
+        The clipped images, with non-valid points as numpy.nan
+    """
     mask = np.load(shp_path)
     mask = np.repeat(mask, img.shape[-1], axis=2)
     img[mask == 0] = np.nan

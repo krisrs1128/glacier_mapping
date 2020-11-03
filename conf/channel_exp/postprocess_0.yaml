@@ -1,5 +1,5 @@
-filter_channel: 0
-filter_percentage: 0.1
+filter_channel: [0]
+filter_percentage: [0.1]
 split_method:
   random_split:
     split_ratio: [0.7, 0.1, 0.2]
@@ -9,7 +9,7 @@ process_funs:
   normalize: {stats_path: /datadrive/glaciers/processed_exper/slices/stats_train.json}
   extract_channel:
     mask_channels: [0]
-    img_channels: [5, 2, 4, 13]
+    img_channels: [10, 11, 12, 13]
   add_bg_channel: {}
 slice:
   overlap: 6

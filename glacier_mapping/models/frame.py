@@ -32,6 +32,7 @@ class Framework:
         else:
             self.device = device
         self.multi_class = True if model_opts.args.outchannels > 1 else False
+        self.num_classes = model_opts.args.outchannels
         if loss_fn is None:
             if self.multi_class:
                 loss_fn = torch.nn.CrossEntropyLoss()
@@ -116,7 +117,7 @@ class Framework:
             or one-hot tensor in case of multi class"""
         if self.multi_class:
             y_hat = torch.argmax(y_hat, axis=3)
-            y_hat = torch.nn.functional.one_hot(y_hat)
+            y_hat = torch.nn.functional.one_hot(y_hat, num_classes=self.num_classes)
         else:
             y_hat = torch.sigmoid(y_hat)
         return y_hat

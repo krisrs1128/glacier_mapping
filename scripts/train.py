@@ -55,8 +55,7 @@ if __name__ == '__main__':
     # get dice loss
     if loss_type == "dice":
         if outchannels > 1:
-            loss_weight = [1 for _ in range(outchannels)]
-            loss_weight[-1] = 0 # background
+            loss_weight = [0.1, 0.3, 0.6] # Background, clean ice, debris
             loss_fn = diceloss(act=torch.nn.Softmax(dim=1), w=loss_weight,
                                outchannels=outchannels)
         else:
@@ -88,8 +87,10 @@ if __name__ == '__main__':
 
         # validation loop
         loss_d["val"], metrics = tr.validate(loaders["val"], frame, conf.metrics_opts)
+        
         tr.log_metrics(writer, metrics, loss_d["val"], epoch, "val", mask_names=mask_names)
-        tr.log_images(writer, frame, next(iter(loaders["val"])), epoch, "val")
+        if epoch % args.save_every == 0:
+            tr.log_images(writer, frame, next(iter(loaders["val"])), epoch, "val")
 
         # Save model
         writer.add_scalars("Loss", loss_d, epoch)

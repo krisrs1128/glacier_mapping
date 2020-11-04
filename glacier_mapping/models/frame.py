@@ -35,13 +35,13 @@ class Framework:
         self.num_classes = model_opts.args.outchannels
         if loss_fn is None:
             if self.multi_class:
-                weights = [0.75, 0.22, 0.03]
+                weights = [0.03, 0.12, 0.85]
                 class_weights = torch.FloatTensor(weights).cuda()
+                #loss_fn = torch.nn.CrossEntropyLoss()
                 loss_fn = torch.nn.CrossEntropyLoss(weight=class_weights)
             else:
                 loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
-
         if model_opts.name in ["Unet", "UnetDropout"]:
             model_def = globals()[model_opts.name]
         else:
@@ -51,7 +51,7 @@ class Framework:
         optimizer_def = getattr(torch.optim, optimizer_opts.name)
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
         self.lrscheduler = ReduceLROnPlateau(self.optimizer, "min",
-                                             verbose=True, patience=500,
+                                             verbose=True, patience=200,
                                              min_lr=1e-6)
         self.reg_opts = reg_opts
 

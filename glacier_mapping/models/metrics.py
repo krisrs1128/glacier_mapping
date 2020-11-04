@@ -57,7 +57,7 @@ def IoU(pred, true, label=1):
 
 
 class diceloss(torch.nn.Module):
-    def __init__(self, act=torch.nn.Sigmoid(), smooth=0, w=[1.0], outchannels=1):
+    def __init__(self, act=torch.nn.Sigmoid(), smooth=1.0, w=[1.0], outchannels=1):
         super().__init__()
         self.act = act
         self.smooth = smooth

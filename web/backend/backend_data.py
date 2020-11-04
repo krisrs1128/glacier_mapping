@@ -27,14 +27,13 @@ def reproject_directory(input_dir, output_dir, dst_epsg=4326):
                          "-wo", "NUM_THREADS=ALL_CPUS", str(output_path)])
 
 
-
 def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     """
     Build a VRT Indexing all Tiffs in a directory
     """
-    inputs = glob.glob(f"{input_dir}*.tif*")
-    merged_file = output_path.replace("vrt", "tiff")
-    subprocess.call(["gdalmerge", "-o", merged_file] + inputs)
+    inputs = [f for f in input_dir.glob("*.tif*")]
+    merged_file = output_path.replace(".vrt", "-merged")
+    subprocess.call(["gdal_merge.py", "-o", merged_file] + inputs)
 
     vrt_opts = gdal.BuildVRTOptions(**kwargs)
     gdal.BuildVRT(output_path, merged_file, options=vrt_opts)
@@ -45,13 +44,16 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--input_dir", type=str)
     parser.add_argument("-o", "--output_dir", type=str, default="./")
     parser.add_argument("-n", "--output_name", type=str, default="output.vrt")
-    parser.add_argument("-t", "--tile", default=False)
+    parser.add_argument("-r", "--reproject", type=bool, default=False)
     parser.add_argument("-b", "--bandList", nargs="+", default=list(range(1, 13)))
-    parser.add_argument("-z", "--zoomLevels", nargs="+", default="8-14")
     args = parser.parse_args()
+    input_dir = pathlib.Path(args.input_dir)
 
-    reproject_directory(args.input_dir, args.output_dir)
+    if args.reproject:
+        warped_dir = input_dir / "warped"
+        warped_dir.mkdir(exist_ok=True)
+        reproject_directory(input_dir, warped_dir)
+        input_dir = warped_dir
+
     vrt_path = pathlib.Path(args.output_dir, args.output_name)
-    vrt_from_dir(args.output_dir, str(vrt_path), bandList=args.bandList, VRTNodata=0)
-    if args.tile:
-        tiles(vrt_path, args.output_dir, args.zoomLevels)
+    vrt_from_dir(input_dir, str(vrt_path), bandList=args.bandList, VRTNodata=0)

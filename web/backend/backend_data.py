@@ -21,10 +21,11 @@ def reproject_directory(input_dir, output_dir, dst_epsg=4326):
     for im_path in inputs:
         print(f"reprojecting {str(im_path)}")
         loaded_im = rasterio.open(im_path)
-        output_path = pathlib.Path(output_dir, f"{im_path.stem}-warped.tif")
+        output_path = pathlib.Path(output_dir, f"{im_path.stem}-warped.tiff")
         subprocess.call(["gdalwarp", "-s_srs", str(loaded_im.crs), "-t_srs",
                          f"EPSG:{dst_epsg}", str(im_path),
                          "-wo", "NUM_THREADS=ALL_CPUS", str(output_path)])
+
 
 
 def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
@@ -32,24 +33,11 @@ def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     Build a VRT Indexing all Tiffs in a directory
     """
     inputs = glob.glob(f"{input_dir}*.tif*")
+    merged_file = output_path.replace("vrt", "tiff")
+    subprocess.call(["gdalmerge", "-o", merged_file] + inputs)
+
     vrt_opts = gdal.BuildVRTOptions(**kwargs)
-    gdal.BuildVRT(output_path, inputs, options=vrt_opts)
-
-
-def tiles(input_vrt, output_dir, zoom_levels="8-14"):
-    """
-    Generate PNG tiles from a VRT
-    """
-    path = pathlib.Path(input_vrt)
-    intermediate = f"{path.parent}/{path.resolve().stem}-byte.vrt"
-    subprocess.call(["gdal_translate", "-ot", "Byte", input_vrt, f'{intermediate}'])
-    gdal2tiles.generate_tiles(
-        f"{intermediate}",
-        output_dir,
-        zoom=zoom_levels,
-        verbose=True,
-        tile_size=1056
-    )
+    gdal.BuildVRT(output_path, merged_file, options=vrt_opts)
 
 
 if __name__ == "__main__":

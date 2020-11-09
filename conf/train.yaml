@@ -24,4 +24,4 @@ metrics_opts:
 log_opts:
   mask_names: ["Background", "Clean Ice", "Debris"]
   #reg_opts:
-        #  l1_reg: 0.0005python3 -m scripts.test -d ./data/ -c ./conf/train.yaml -n 100 --device cuda
+        #  l1_reg: 0.0005

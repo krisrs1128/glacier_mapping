@@ -58,7 +58,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output_dir", type=str, default="./")
     parser.add_argument("-n", "--output_name", type=str, default="output.vrt")
     parser.add_argument("-t", "--tile", default=False)
-    parser.add_argument("-b", "--bandList", nargs="+", default=list(range(1, 13)))
+    parser.add_argument("-b", "--bandList", nargs="+", default=list(range(1, 15)))
     parser.add_argument("-z", "--zoomLevels", nargs="+", default="8-14")
     args = parser.parse_args()
 

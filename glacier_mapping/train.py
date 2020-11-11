@@ -159,8 +159,9 @@ def log_images(writer, frame, batch, epoch, stage="train"):
     y = torch.flatten(y.permute(0, 1, 3, 2), start_dim=2)
     y_hat = torch.flatten(y_hat.permute(0, 1, 3, 2), start_dim=2)
 
-    writer.add_image(f"{stage}/x", make_grid(pm(squash(x[:, :, :, :3]))), epoch)
-    writer.add_image(f"{stage}/y", make_grid(y.unsqueeze(1)), epoch)
+    if epoch == 1:
+        writer.add_image(f"{stage}/x", make_grid(pm(squash(x[:, :, :, :3]))), epoch)
+        writer.add_image(f"{stage}/y", make_grid(y.unsqueeze(1)), epoch)
     writer.add_image(f"{stage}/y_hat", make_grid(y_hat.unsqueeze(1)), epoch)
 
 def update_metrics(main_metrics, batch_metrics):

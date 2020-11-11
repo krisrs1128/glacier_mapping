@@ -57,12 +57,13 @@ def IoU(pred, true, label=1):
 
 
 class diceloss(torch.nn.Module):
-    def __init__(self, act=torch.nn.Sigmoid(), smooth=1.0, w=[1.0], outchannels=1):
+    def __init__(self, act=torch.nn.Sigmoid(), smooth=1.0, w=[1.0], outchannels=1, label_smoothing=0):
         super().__init__()
         self.act = act
         self.smooth = smooth
         self.w = w
         self.outchannels = outchannels
+        self.label_smoothing = label_smoothing
 
     def forward(self, pred, target):
         pred = self.act(pred)
@@ -71,7 +72,7 @@ class diceloss(torch.nn.Module):
         # CE expects loss to have arg-max channel. Dice expects it to have one-hot
         if len(pred.shape) > len(target.shape):
             target = torch.nn.functional.one_hot(target, num_classes=self.outchannels).permute(0, 3, 1, 2)
-
+        target = target * (1 - self.label_smoothing) + self.label_smoothing / self.outchannels
         intersection = (pred * target).sum(dim=[0, 2, 3])
         A_sum = (pred * pred).sum(dim=[0, 2, 3])
         B_sum = (target * target).sum(dim=[0, 2, 3])

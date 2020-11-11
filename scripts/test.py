@@ -1,3 +1,4 @@
+# python3 -m scripts.test -d ./processed/ -c ./conf/train.yaml -n 500 -r demo --device cuda
 import argparse
 import pathlib
 import yaml

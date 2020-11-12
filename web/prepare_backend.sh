@@ -11,6 +11,7 @@ python3 -m web.backend.backend_data -d $DATA_DIR/unique_tiles/ -o $DATA_DIR/web/
 python3 -m web.backend.backend_data -d $DATA_DIR/unique_tiles/warped/ -o $DATA_DIR/web/basemap/ -n output-245.vrt --bandList 5 4 2
 
 python3 -m web.backend.backend_data -d $DATA_DIR/web/tests/ -o $DATA_DIR/web/tests/ -n output-full.vrt --reproject True;
+
 python3 -m web.backend.backend_data -d $DATA_DIR/web/tests/warped/ -o $DATA_DIR/web/tests/ -n output-245.vrt --bandList 5 4 2
 
 cd $DATA_DIR/web/basemap/

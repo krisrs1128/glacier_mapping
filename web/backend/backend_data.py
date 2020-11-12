@@ -27,16 +27,25 @@ def reproject_directory(input_dir, output_dir, dst_epsg=4326):
                          "-wo", "NUM_THREADS=ALL_CPUS", str(output_path)])
 
 
+def subset_channels(input_dir, output_dir, channels=[5, 4, 2]):
+    inputs = pathlib.Path(input_dir).glob("*.tif*")
+    ch_str = "".join([str(s) for s in channels])
+    ch_list = sum([["-b", str(s)] for s in channels], [])
+
+    for im_path in inputs:
+        print(f"subsetting channels for {str(im_path)}")
+        loaded_im = rasterio.open(im_path)
+        output_path = pathlib.Path(output_dir, f"{im_path.stem}-{ch_str}.tiff")
+        subprocess.call(["gdal_translate" im_path output_path, "-ot", "Byte"] + ch_list)
+
+
 def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     """
     Build a VRT Indexing all Tiffs in a directory
     """
     inputs = [f for f in input_dir.glob("*.tif*")]
-    merged_file = output_path.replace(".vrt", "-merged")
-    subprocess.call(["gdal_merge.py", "-o", merged_file] + inputs)
-
     vrt_opts = gdal.BuildVRTOptions(**kwargs)
-    gdal.BuildVRT(output_path, merged_file, options=vrt_opts)
+    gdal.BuildVRT(output_path, inputs, options=vrt_opts)
 
 
 if __name__ == "__main__":
@@ -54,6 +63,12 @@ if __name__ == "__main__":
         warped_dir.mkdir(exist_ok=True)
         reproject_directory(input_dir, warped_dir)
         input_dir = warped_dir
+
+    if len(args.reproject) < 15:
+        subset_dir = input_dir / "subset_channels"
+        subset_dir.mkdir(exist_ok=True)
+        subset_channels(input_dir, subset_dir)
+        input_dir = subset_dir
 
     vrt_path = pathlib.Path(args.output_dir, args.output_name)
     vrt_from_dir(input_dir, str(vrt_path), bandList=args.bandList, VRTNodata=0)

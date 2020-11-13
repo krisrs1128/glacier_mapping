@@ -74,4 +74,4 @@ if __name__ == "__main__":
         input_dir = subset_dir
 
     vrt_path = pathlib.Path(args.output_dir, args.output_name)
-    vrt_from_dir(input_dir, str(vrt_path), bandList=args.bandList, VRTNodata=0)
+    vrt_from_dir(input_dir, str(vrt_path))

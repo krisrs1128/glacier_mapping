@@ -39,7 +39,7 @@ def subset_channels(input_dir, output_dir, channels=[5, 4, 2]):
         subprocess.call(
             ["gdal_translate", im_path, output_path, "-ot", "Byte"] +
             ch_list +
-            "-a_nodata", "0"
+            ["-a_nodata", "0"]
         )
 
 

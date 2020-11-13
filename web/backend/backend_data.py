@@ -65,9 +65,11 @@ if __name__ == "__main__":
         reproject_directory(input_dir, warped_dir)
         input_dir = warped_dir
 
+    print(args.bandList)
     if len(args.bandList) < 15:
         subset_dir = input_dir / "subset_channels"
         subset_dir.mkdir(exist_ok=True)
+        print(subset_dir)
         subset_channels(input_dir, subset_dir)
         input_dir = subset_dir
 

@@ -8,9 +8,7 @@ import glob
 import pathlib
 import subprocess
 import argparse
-import gdal2tiles
 import rasterio
-from osgeo import gdal
 
 
 def reproject_directory(input_dir, output_dir, dst_epsg=4326):
@@ -48,8 +46,7 @@ def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     Build a VRT Indexing all Tiffs in a directory
     """
     inputs = [f for f in input_dir.glob("*.tif*")]
-    vrt_opts = gdal.BuildVRTOptions(**kwargs)
-    gdal.BuildVRT(output_path, inputs, options=vrt_opts)
+    subprocess.call(["gdalbuildvrt" "-o", output_path] + inputs)
 
 
 if __name__ == "__main__":

@@ -46,7 +46,7 @@ def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     Build a VRT Indexing all Tiffs in a directory
     """
     inputs = [f for f in input_dir.glob("*.tif*")]
-    subprocess.call(["gdalbuildvrt" "-o", output_path] + inputs)
+    subprocess.call(["gdalbuildvrt", "-o", output_path] + inputs)
 
 
 if __name__ == "__main__":

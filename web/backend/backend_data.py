@@ -35,7 +35,7 @@ def subset_channels(input_dir, output_dir, channels=[5, 4, 2]):
         loaded_im = rasterio.open(im_path)
         output_path = pathlib.Path(output_dir, f"{im_path.stem}-{ch_str}.tiff")
         subprocess.call(
-            ["gdal_translate", im_path, output_path, "-ot", "Byte"] +
+            ["gdal_translate", im_path, output_path] +
             ch_list +
             ["-a_nodata", "0"]
         )

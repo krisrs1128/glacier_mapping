@@ -27,7 +27,7 @@ def reproject_directory(input_dir, output_dir, dst_epsg=4326):
 
 def subset_channels(input_dir, output_dir, channels=[5, 4, 2]):
     ch_str = "".join([str(s) for s in channels])
-    inputs = pathlib.Path(input_dir).glob(f"*{ch_str}.tif*")
+    inputs = pathlib.Path(input_dir).glob("*.tif*")
     ch_list = sum([["-b", str(s)] for s in channels], [])
 
     for im_path in inputs:
@@ -66,7 +66,8 @@ if __name__ == "__main__":
         input_dir = warped_dir
 
     if len(args.bandList) < 15:
-        subset_dir = input_dir / "subset_channels"
+        ch_str = "".join([str(s) for s in args.bandList])
+        subset_dir = input_dir / "subset_channels" / ch_str
         subset_dir.mkdir(exist_ok=True)
         subset_channels(input_dir, subset_dir, args.bandList)
         input_dir = subset_dir

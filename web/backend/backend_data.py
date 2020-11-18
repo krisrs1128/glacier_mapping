@@ -70,7 +70,7 @@ if __name__ == "__main__":
         subset_dir = input_dir / "subset_channels"
         subset_dir.mkdir(exist_ok=True)
         print(subset_dir)
-        subset_channels(input_dir, subset_dir)
+        subset_channels(input_dir, subset_dir, args.bandList)
         input_dir = subset_dir
 
     vrt_path = pathlib.Path(args.output_dir, args.output_name)

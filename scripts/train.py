@@ -78,7 +78,7 @@ if __name__ == '__main__':
     out_dir = f"{data_dir}/runs/{args.run_name}/models/"
     mask_names = conf.log_opts.mask_names
 
-    for epoch in range(1,args.epochs+1):
+    for epoch in range(args.epochs):
 
         # train loop
         loss_d = {}
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
         # Save model
         writer.add_scalars("Loss", loss_d, epoch)
-        if epoch % args.save_every == 0:
+        if (epoch+1) % args.save_every == 0:
             frame.save(out_dir, epoch)
 
         print(f"{epoch}/{args.epochs} | train: {loss_d['train']} | val: {loss_d['val']}")

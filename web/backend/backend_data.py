@@ -8,9 +8,7 @@ import glob
 import pathlib
 import subprocess
 import argparse
-import gdal2tiles
 import rasterio
-from osgeo import gdal
 
 
 def reproject_directory(input_dir, output_dir, dst_epsg=4326):
@@ -21,35 +19,34 @@ def reproject_directory(input_dir, output_dir, dst_epsg=4326):
     for im_path in inputs:
         print(f"reprojecting {str(im_path)}")
         loaded_im = rasterio.open(im_path)
-        output_path = pathlib.Path(output_dir, f"{im_path.stem}-warped.tif")
+        output_path = pathlib.Path(output_dir, f"{im_path.stem}-warped.tiff")
         subprocess.call(["gdalwarp", "-s_srs", str(loaded_im.crs), "-t_srs",
                          f"EPSG:{dst_epsg}", str(im_path),
                          "-wo", "NUM_THREADS=ALL_CPUS", str(output_path)])
+
+
+def subset_channels(input_dir, output_dir, channels=[5, 4, 2]):
+    ch_str = "".join([str(s) for s in channels])
+    inputs = pathlib.Path(input_dir).glob("*.tif*")
+    ch_list = sum([["-b", str(s)] for s in channels], [])
+
+    for im_path in inputs:
+        print(f"subsetting channels for {str(im_path)}")
+        loaded_im = rasterio.open(im_path)
+        output_path = pathlib.Path(output_dir, f"{im_path.stem}-{ch_str}.tiff")
+        subprocess.call(
+            ["gdal_translate", im_path, output_path] +
+            ch_list +
+            ["-a_nodata", "0"]
+        )
 
 
 def vrt_from_dir(input_dir, output_path="./output.vrt", **kwargs):
     """
     Build a VRT Indexing all Tiffs in a directory
     """
-    inputs = glob.glob(f"{input_dir}*.tif*")
-    vrt_opts = gdal.BuildVRTOptions(**kwargs)
-    gdal.BuildVRT(output_path, inputs, options=vrt_opts)
-
-
-def tiles(input_vrt, output_dir, zoom_levels="8-14"):
-    """
-    Generate PNG tiles from a VRT
-    """
-    path = pathlib.Path(input_vrt)
-    intermediate = f"{path.parent}/{path.resolve().stem}-byte.vrt"
-    subprocess.call(["gdal_translate", "-ot", "Byte", input_vrt, f'{intermediate}'])
-    gdal2tiles.generate_tiles(
-        f"{intermediate}",
-        output_dir,
-        zoom=zoom_levels,
-        verbose=True,
-        tile_size=1056
-    )
+    inputs = [f for f in input_dir.glob("*.tif*")]
+    subprocess.call(["gdalbuildvrt", "-o", output_path] + inputs)
 
 
 if __name__ == "__main__":
@@ -57,13 +54,23 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--input_dir", type=str)
     parser.add_argument("-o", "--output_dir", type=str, default="./")
     parser.add_argument("-n", "--output_name", type=str, default="output.vrt")
-    parser.add_argument("-t", "--tile", default=False)
-    parser.add_argument("-b", "--bandList", nargs="+", default=list(range(1, 13)))
-    parser.add_argument("-z", "--zoomLevels", nargs="+", default="8-14")
+    parser.add_argument("-r", "--reproject", type=bool, default=False)
+    parser.add_argument("-b", "--bandList", nargs="+", default=list(range(1, 16)))
     args = parser.parse_args()
+    input_dir = pathlib.Path(args.input_dir)
 
-    reproject_directory(args.input_dir, args.output_dir)
+    if args.reproject:
+        warped_dir = input_dir / "warped"
+        warped_dir.mkdir(exist_ok=True)
+        reproject_directory(input_dir, warped_dir)
+        input_dir = warped_dir
+
+    if len(args.bandList) < 15:
+        ch_str = "".join([str(s) for s in args.bandList])
+        subset_dir = input_dir / "subset_channels" / ch_str
+        subset_dir.mkdir(exist_ok=True)
+        subset_channels(input_dir, subset_dir, args.bandList)
+        input_dir = subset_dir
+
     vrt_path = pathlib.Path(args.output_dir, args.output_name)
-    vrt_from_dir(args.output_dir, str(vrt_path), bandList=args.bandList)
-    if args.tile:
-        tiles(vrt_path, args.output_dir, args.zoomLevels)
+    vrt_from_dir(input_dir, str(vrt_path))

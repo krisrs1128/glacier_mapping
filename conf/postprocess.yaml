@@ -8,12 +8,12 @@ process_funs:
   impute:
     value: 0
   normalize:
-    stats_path: "/datadrive/glaciers/processed_exper/slices/stats_train.json"
+    stats_path: "/datadrive/glaciers/processed/slices/stats_train.json"
   impute:
     value: 0
   extract_channel:
-    mask_channels: [0]
-    img_channels: [5, 4, 2]
+    mask_channels: [1,2]
+    img_channels: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
   add_bg_channel: {}
 slice:
   overlap: 6

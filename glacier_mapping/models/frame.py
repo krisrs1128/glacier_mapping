@@ -39,7 +39,6 @@ class Framework:
             else:
                 loss_fn = torch.nn.BCEWithLogitsLoss()
         self.loss_fn = loss_fn.to(self.device)
-
         if model_opts.name in ["Unet", "UnetDropout"]:
             model_def = globals()[model_opts.name]
         else:
@@ -49,7 +48,7 @@ class Framework:
         optimizer_def = getattr(torch.optim, optimizer_opts.name)
         self.optimizer = optimizer_def(self.model.parameters(), **optimizer_opts.args)
         self.lrscheduler = ReduceLROnPlateau(self.optimizer, "min",
-                                             verbose=True, patience=500,
+                                             verbose=True, patience=10,
                                              min_lr=1e-6)
         self.reg_opts = reg_opts
 

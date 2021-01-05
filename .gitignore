@@ -22,3 +22,4 @@ wandb/
 web-tool/compiled
 web-tool/node_modules
 web-tool/package-lock.json
+processed/

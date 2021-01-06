@@ -1,5 +1,21 @@
-mask_1:
-  img_path: /content/demo_ICIMOD_2005_train_2-0000000000-0000008960.tif
+mask_0:
+  img_path: /datadrive/glaciers/unique_tiles/LE07_149037_20041024.tif
   mask_paths:
-    - /content/shps/debris.shp
-    - /content/shps/Glacier_2005.shp
+  - /datadrive/glaciers/vector_data/Glacier_2005.shp
+  - /datadrive/glaciers/vector_data/clean.shp
+  - /datadrive/glaciers/vector_data/debris.shp
+  border_path: /datadrive/glaciers/vector_data/hkh.shp
+mask_1:
+  img_path: /datadrive/glaciers/unique_tiles/LE07_149034_20060726.tif
+  mask_paths:
+  - /datadrive/glaciers/vector_data/Glacier_2005.shp
+  - /datadrive/glaciers/vector_data/clean.shp
+  - /datadrive/glaciers/vector_data/debris.shp
+  border_path: /datadrive/glaciers/vector_data/hkh.shp
+mask_2:
+  img_path: /datadrive/glaciers/unique_tiles/LE07_146038_20060923.tif
+  mask_paths:
+  - /datadrive/glaciers/vector_data/Glacier_2005.shp
+  - /datadrive/glaciers/vector_data/clean.shp
+  - /datadrive/glaciers/vector_data/debris.shp
+  border_path: /datadrive/glaciers/vector_data/hkh.shp

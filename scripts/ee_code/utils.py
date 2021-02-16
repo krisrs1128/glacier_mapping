@@ -33,12 +33,14 @@ def fetch_task(source, slc_failure_date, gdrive_folder):
     return export_image(img, folder = gdrive_folder)
 
 def export_image(ee_image, folder, crs = 'EPSG:32644'):
-    task = ee.batch.Export.image.toDrive(image = ee_image.float(),
-                                     region = ee_image.geometry(),
-                                     description = ee_image.getInfo()['properties']['system:index'],
-                                     folder = folder,
-                                     scale = 30,
-                                     crs = crs)
+    task = ee.batch.Export.image.toDrive(
+      image = ee_image.float(),
+        region = ee_image.geometry(),
+        description = ee_image.getInfo()['properties']['system:index'],
+        folder = folder,
+        scale = 30,
+        crs = crs
+    )
     task.start()
     return task
 
@@ -96,10 +98,6 @@ def gapfill(source, fill, kernel_size = 10, upscale = True):
     scaled = fill.multiply(scale).add(offset).updateMask(count.gte(min_neighbours))
     return source.unmask(scaled, True)
 
-def get_image_info(ee_image):
-    print(ee_image)
-    print(json.dumps(ee_image.getInfo(), indent=2))
-
 def display_task_info(tasks, f_stop):
     task_info = []
     for task in tasks:
@@ -119,5 +117,4 @@ def display_task_info(tasks, f_stop):
 def parse_args():
     parser = argparse.ArgumentParser(description="Download satellite images from google earth engine using python API")
     parser.add_argument("-c", "--conf", type=str)
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()

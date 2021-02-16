@@ -51,7 +51,10 @@ def add_index(ee_image, bands, band_name):
 def get_fill_image(ee_image):
     source_wrs_row = ee_image.get("WRS_ROW")
     source_wrs_path = ee_image.get("WRS_PATH")
-    fill = ee.ImageCollection('LANDSAT/LE07/C01/T1_RT').filterDate("2000-01-01", "2000-12-31").filter(ee.Filter.eq('WRS_ROW', source_wrs_row)).filter(ee.Filter.eq('WRS_PATH', source_wrs_path))
+    fill = ee.ImageCollection('LANDSAT/LE07/C01/T1_RT')\
+             .filterDate("2000-01-01", "2000-12-31")\
+             .filter(ee.Filter.eq('WRS_ROW', source_wrs_row))\
+             .filter(ee.Filter.eq('WRS_PATH', source_wrs_path))
     fill_img = ee.Image(fill.sort('CLOUD_COVER').first())
     return fill_img
 

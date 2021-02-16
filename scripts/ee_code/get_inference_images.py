@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     tasks = []
     for (path, row) in conf.infer.wrs_path_row:
-        collection = ee.ImageCollection('LANDSAT/LE07/C01/T1_RT')\
+        collection = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')\
           .filterDate(start_date, end_date)\
           .filter(ee.Filter.eq('WRS_ROW', int(row)))\
           .filter(ee.Filter.eq('WRS_PATH', int(path)))

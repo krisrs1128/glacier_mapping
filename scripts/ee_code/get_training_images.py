@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     tasks = []
     for image_id in conf.train.image_ids:
-        source = ee.Image('LANDSAT/LE07/C01/T1_RT/' + image_id)
+        source = ee.Image('LANDSAT/LE07/C01/T1_SR/' + image_id)
         tasks += [ut.fetch_task(source, slc_failure_date, conf.train.gdrive_folder)]
 
     f_stop = threading.Event()

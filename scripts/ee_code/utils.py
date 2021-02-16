@@ -3,14 +3,38 @@
 import ee
 import argparse
 import json
-from addict import Dict
 from collections import Counter
 from datetime import datetime
 import threading
 
+def fetch_task(source, slc_failure_date, gdrive_folder):
+    source_date_acquired = source.getInfo()['properties']['DATE_ACQUIRED']
+    source_date_acquired = datetime.strptime(source_date_acquired, '%Y-%m-%d')
+
+    # Check if the image is affected by SLC failure and correct them
+    if source_date_acquired >= slc_failure_date:
+        fill = get_fill_image(source)
+        img = gapfill(source, fill)
+    else:
+        img = source
+
+    # Generate additional features
+    indices = {"ndvi": ["B4", "B3"], "ndsi": ["B2", "B5"], "ndwi": ["B4", "B5"]}
+    for k, v in indices.items():
+      img = add_index(img, v, k)
+
+    # Add slope and elevation
+    elevation = ee.Image('CGIAR/SRTM90_V4').select('elevation')
+    slope = ee.Terrain.slope(elevation);
+    img = ee.Image.cat([img, elevation, slope]);
+
+    # Export image
+    img = img.toFloat();
+    return export_image(img, folder = gdrive_folder)
+
 def export_image(ee_image, folder, crs = 'EPSG:32644'):
-    task = ee.batch.Export.image.toDrive(image = ee_image.float(),  
-                                     region = ee_image.geometry(),  
+    task = ee.batch.Export.image.toDrive(image = ee_image.float(),
+                                     region = ee_image.geometry(),
                                      description = ee_image.getInfo()['properties']['system:index'],
                                      folder = folder,
                                      scale = 30,
@@ -80,7 +104,7 @@ def display_task_info(tasks, f_stop):
     task_info = []
     for task in tasks:
         task_info.append(task.status()['state'])
-    if (len(set(task_info)) == 1) and ( (task_info[0] == "COMPLETED") or 
+    if (len(set(task_info)) == 1) and ( (task_info[0] == "COMPLETED") or
                                         (task_info[0] == "CANCEL_REQUESTED") or
                                         (task_info[0] == "CANCELLED") ):
         f_stop.set()

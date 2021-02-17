@@ -4,12 +4,12 @@ import ee
 import argparse
 import json
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timezone
 import threading
 
 def fetch_task(source, slc_failure_date, gdrive_folder):
-    source_date_acquired = source.getInfo()['properties']['DATE_ACQUIRED']
-    source_date_acquired = datetime.strptime(source_date_acquired, '%Y-%m-%d')
+    source_date_acquired = source.getInfo()['properties']['system:time_start']
+    source_date_acquired = datetime.fromtimestamp(source_date_acquired / 1000, timezone.utc)
 
     # Check if the image is affected by SLC failure and correct them
     if source_date_acquired >= slc_failure_date:
@@ -19,6 +19,8 @@ def fetch_task(source, slc_failure_date, gdrive_folder):
         img = source
 
     # Add features and export
+    import pdb
+    pdb.set_trace()
     img = append_features(img)
     desc = img.getInfo()["properties"]["system:index"]
     return export_image(img, folder = gdrive_folder, description = desc)
@@ -31,9 +33,8 @@ def append_features(img):
 
     # Add slope and elevation
     elevation = ee.Image('CGIAR/SRTM90_V4').select('elevation')
-    slope = ee.Terrain.slope(elevation);
-    img = ee.Image.cat([img, elevation, slope]);
-    return img
+    slope = ee.Terrain.slope(elevation)
+    return ee.Image.cat([img, elevation, slope])
 
 
 def export_image(ee_image, folder, crs = 'EPSG:32644', description=""):
@@ -64,9 +65,8 @@ def get_fill_image(ee_image):
     return fill_img
 
 def gapfill(source, fill, kernel_size = 10, upscale = True):
-    min_scale = 1/3;
-    max_scale = 3;
-    min_neighbours = 64;
+    min_scale, max_scale = 1/3, 3
+    min_neighbours = 64
     # Apply the USGS L7 Phase-2 Gap filling protocol, using a single kernel size.
     kernel = ee.Kernel.square(kernel_size * 30, "meters", False)
     # Find the pixels common to both scenes.

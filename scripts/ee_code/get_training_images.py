@@ -7,16 +7,16 @@ Example Usage:
 python3 -m get_training_images --conf gdrive.yaml
 """
 from addict import Dict
-from datetime import datetime
+from datetime import datetime, timezone
 import ee
 import threading
-import utils import as ut
+import utils as ut
 import yaml
 
 if __name__ == '__main__':
     args = ut.parse_args()
     conf = Dict(yaml.safe_load(open(args.conf, "r")))
-    slc_failure_date = datetime.strptime(conf.slc_failure_date, "%Y-%m-%d")
+    slc_failure_date = datetime.strptime(conf.slc_failure_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     ee.Initialize()
 
     tasks = []

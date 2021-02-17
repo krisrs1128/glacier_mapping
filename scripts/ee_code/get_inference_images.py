@@ -4,6 +4,9 @@
 Get source image for given path row and between given dates
 
 Fetches image with lowest cloud cover between two time points
+
+Example Usage
+python3 -m get_inference_images --conf gdrive.yaml
 """
 from addict import Dict
 from datetime import datetime

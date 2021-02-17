@@ -4,6 +4,7 @@
 """
 Get temporal composite by geometry
 
+Example Usage
 python3 -m composite --conf le7_2010.yaml
 """""
 import ee

@@ -18,6 +18,12 @@ def fetch_task(source, slc_failure_date, gdrive_folder):
     else:
         img = source
 
+    # Add features and export
+    img = append_features(img)
+    desc = img.getInfo()["properties"]["system:index"]
+    return export_image(img, folder = gdrive_folder, description = desc)
+
+def append_features(img):
     # Generate additional features
     indices = {"ndvi": ["B4", "B3"], "ndsi": ["B2", "B5"], "ndwi": ["B4", "B5"]}
     for k, v in indices.items():
@@ -27,19 +33,18 @@ def fetch_task(source, slc_failure_date, gdrive_folder):
     elevation = ee.Image('CGIAR/SRTM90_V4').select('elevation')
     slope = ee.Terrain.slope(elevation);
     img = ee.Image.cat([img, elevation, slope]);
+    return img
 
-    # Export image
-    img = img.toFloat();
-    return export_image(img, folder = gdrive_folder)
 
-def export_image(ee_image, folder, crs = 'EPSG:32644'):
+def export_image(ee_image, folder, crs = 'EPSG:32644', description=""):
+    print(folder)
     task = ee.batch.Export.image.toDrive(
-      image = ee_image.float(),
-        region = ee_image.geometry(),
-        description = ee_image.getInfo()['properties']['system:index'],
-        folder = folder,
-        scale = 30,
-        crs = crs
+        image=ee_image.float(),
+        region=ee_image.geometry(),
+        description=description,
+        folder=folder,
+        scale=30,
+        crs=crs
     )
     task.start()
     return task

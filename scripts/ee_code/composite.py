@@ -5,8 +5,18 @@
 Get temporal composite by geometry
 
 Example Usage
-python3 -m composite --conf le7_2010.yaml
-"""""
+python3 -m composite --conf khumbu_2010.yaml
+
+where khumbu_2010.yaml has the form
+
+slc_failure_date: '2003-05-31'
+gdrive_folder: '2010_09_12'
+geojson: 'khumbu.geojson'
+start_date: '2010-09-01'
+end_date: '2010-12-31'
+
+and 'khumbu.geojson' is a geojson file outlining the khumbu basin.
+"""
 import ee
 import yaml
 from datetime import datetime

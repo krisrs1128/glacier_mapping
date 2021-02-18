@@ -19,8 +19,6 @@ def fetch_task(source, slc_failure_date, gdrive_folder):
         img = source
 
     # Add features and export
-    import pdb
-    pdb.set_trace()
     img = append_features(img)
     desc = img.getInfo()["properties"]["system:index"]
     return export_image(img, folder = gdrive_folder, description = desc)
@@ -37,8 +35,7 @@ def append_features(img):
     return ee.Image.cat([img, elevation, slope])
 
 
-def export_image(ee_image, folder, crs = 'EPSG:32644', description=""):
-    print(folder)
+def export_image(ee_image, folder, crs='EPSG:4326', description=""):
     task = ee.batch.Export.image.toDrive(
         image=ee_image.float(),
         region=ee_image.geometry(),
@@ -57,12 +54,11 @@ def add_index(ee_image, bands, band_name):
 def get_fill_image(ee_image):
     source_wrs_row = ee_image.get("WRS_ROW")
     source_wrs_path = ee_image.get("WRS_PATH")
-    fill = ee.ImageCollection('LANDSAT/LE07/C01/T1_RT')\
+    fill = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')\
              .filterDate("2000-01-01", "2000-12-31")\
              .filter(ee.Filter.eq('WRS_ROW', source_wrs_row))\
              .filter(ee.Filter.eq('WRS_PATH', source_wrs_path))
-    fill_img = ee.Image(fill.sort('CLOUD_COVER').first())
-    return fill_img
+    return ee.Image(fill.sort('CLOUD_COVER').first())
 
 def gapfill(source, fill, kernel_size = 10, upscale = True):
     min_scale, max_scale = 1/3, 3

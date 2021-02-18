@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import threading
 
 def fetch_task(source, slc_failure_date, gdrive_folder):
-    source_date_acquired = source.getInfo()['properties']['system:time_start']
+    source_date_acquired = source.getInfo()["properties"]["system:time_start"]
     source_date_acquired = datetime.fromtimestamp(source_date_acquired / 1000, timezone.utc)
 
     # Check if the image is affected by SLC failure and correct them
@@ -30,12 +30,12 @@ def append_features(img):
       img = add_index(img, v, k)
 
     # Add slope and elevation
-    elevation = ee.Image('CGIAR/SRTM90_V4').select('elevation')
+    elevation = ee.Image("CGIAR/SRTM90_V4").select("elevation")
     slope = ee.Terrain.slope(elevation)
     return ee.Image.cat([img, elevation, slope])
 
 
-def export_image(ee_image, folder, crs='EPSG:4326', description=""):
+def export_image(ee_image, folder, crs="EPSG:4326", description=""):
     task = ee.batch.Export.image.toDrive(
         image=ee_image.float(),
         region=ee_image.geometry(),
@@ -54,11 +54,11 @@ def add_index(ee_image, bands, band_name):
 def get_fill_image(ee_image):
     source_wrs_row = ee_image.get("WRS_ROW")
     source_wrs_path = ee_image.get("WRS_PATH")
-    fill = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')\
+    fill = ee.ImageCollection("LANDSAT/LE07/C01/T1_SR")\
              .filterDate("2000-01-01", "2000-12-31")\
-             .filter(ee.Filter.eq('WRS_ROW', source_wrs_row))\
-             .filter(ee.Filter.eq('WRS_PATH', source_wrs_path))
-    return ee.Image(fill.sort('CLOUD_COVER').first())
+             .filter(ee.Filter.eq("WRS_ROW", source_wrs_row))\
+             .filter(ee.Filter.eq("WRS_PATH", source_wrs_path))
+    return ee.Image(fill.sort("CLOUD_COVER").first())
 
 def gapfill(source, fill, kernel_size = 10, upscale = True):
     min_scale, max_scale = 1/3, 3
@@ -75,19 +75,19 @@ def gapfill(source, fill, kernel_size = 10, upscale = True):
     regress = regress.select(regress.bandNames().sort())
     ratio = 5
     if upscale:
-        fit = regress.reduceResolution(ee.Reducer.median(), False, 500).reproject(regress.select(0).projection().scale(ratio, ratio)).reduceNeighborhood(ee.Reducer.linearFit().forEach(source.bandNames()), kernel, 'kernel', False).unmask().reproject(regress.select(0).projection().scale(ratio, ratio))
+        fit = regress.reduceResolution(ee.Reducer.median(), False, 500).reproject(regress.select(0).projection().scale(ratio, ratio)).reduceNeighborhood(ee.Reducer.linearFit().forEach(source.bandNames()), kernel, "kernel", False).unmask().reproject(regress.select(0).projection().scale(ratio, ratio))
     else:
-        fit = regress.reduceNeighborhood(ee.Reducer.linearFit().forEach(source.bandNames()), kernel, 'kernel', False)
+        fit = regress.reduceNeighborhood(ee.Reducer.linearFit().forEach(source.bandNames()), kernel, "kernel", False)
     offset = fit.select(".*_offset")
     scale = fit.select(".*_scale")
     # Find the secondary scaling factors using just means and stddev
     reducer = ee.Reducer.mean().combine(ee.Reducer.stdDev(), "", True)
     if upscale:
-        src_stats = source.reduceResolution(ee.Reducer.median(), False, 500).reproject(regress.select(0).projection().scale(ratio, ratio)).reduceNeighborhood(reducer, kernel, 'kernel', False).reproject(regress.select(0).projection().scale(ratio, ratio))
-        fill_stats = fill.reduceResolution(ee.Reducer.median(), False, 500).reproject(regress.select(0).projection().scale(ratio, ratio)).reduceNeighborhood(reducer, kernel, 'kernel', False).reproject(regress.select(0).projection().scale(ratio, ratio))
+        src_stats = source.reduceResolution(ee.Reducer.median(), False, 500).reproject(regress.select(0).projection().scale(ratio, ratio)).reduceNeighborhood(reducer, kernel, "kernel", False).reproject(regress.select(0).projection().scale(ratio, ratio))
+        fill_stats = fill.reduceResolution(ee.Reducer.median(), False, 500).reproject(regress.select(0).projection().scale(ratio, ratio)).reduceNeighborhood(reducer, kernel, "kernel", False).reproject(regress.select(0).projection().scale(ratio, ratio))
     else:
-        src_stats = source.reduceNeighborhood(reducer, kernel, 'kernel', False)
-        fill_stats = fill.reduceNeighborhood(reducer, kernel, 'kernel', False)
+        src_stats = source.reduceNeighborhood(reducer, kernel, "kernel", False)
+        fill_stats = fill.reduceNeighborhood(reducer, kernel, "kernel", False)
     scale2 = src_stats.select(".*stdDev").divide(fill_stats.select(".*stdDev"))
     offset2 = src_stats.select(".*mean").subtract(fill_stats.select(".*mean").multiply(scale2))
     invalid = scale.lt(min_scale).Or(scale.gt(max_scale))
@@ -97,15 +97,15 @@ def gapfill(source, fill, kernel_size = 10, upscale = True):
     invalid2 = scale.lt(min_scale).Or(scale.gt(max_scale))
     scale = scale.where(invalid2, 1)
     offset = offset.where(invalid2, src_stats.select(".*mean").subtract(fill_stats.select(".*mean")))
-    # Apply the scaling and mask off pixels that didn't have enough neighbors.
-    count = common.reduceNeighborhood(ee.Reducer.count(), kernel, 'kernel', True)
+    # Apply the scaling and mask off pixels that didn"t have enough neighbors.
+    count = common.reduceNeighborhood(ee.Reducer.count(), kernel, "kernel", True)
     scaled = fill.multiply(scale).add(offset).updateMask(count.gte(min_neighbours))
     return source.unmask(scaled, True)
 
 def display_task_info(tasks, f_stop):
     task_info = []
     for task in tasks:
-        task_info.append(task.status()['state'])
+        task_info.append(task.status()["state"])
     if (len(set(task_info)) == 1) and ( (task_info[0] == "COMPLETED") or
                                         (task_info[0] == "CANCEL_REQUESTED") or
                                         (task_info[0] == "CANCELLED") ):

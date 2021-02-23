@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -36,15 +35,16 @@ if __name__ == '__main__':
     ee.Initialize()
 
     feature_ = json.load(open(conf.geojson, "r"))
-    feature = ee.Feature(feature_)
+    feature = ee.Geometry(feature_["features"][0]["geometry"])
 
-    collection = ee.ImageCollection("LANDSAT/LE07/C01/T1_SR")\
+    collection = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')\
+      .filterBounds(feature)\
       .map(ut.append_features)\
-      .filterDate(start_date, end_date)\
-      .filter(feature)\
-      .median()
+      .filterDate(start_date, end_date)
 
-    composite = ee.Algorithms.Landsat.simpleComposite(collection);
+    composite = collection.median()\
+      .clip(feature)
+
     tasks = [ut.export_image(composite, conf.gdrive_folder, description="composite")]
     f_stop = threading.Event()
     ut.display_task_info(tasks, f_stop)

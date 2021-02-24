@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Get temporal composite by geometry
 
@@ -9,21 +7,20 @@ python3 -m composite --conf khumbu_2010.yaml
 where khumbu_2010.yaml has the form
 
 slc_failure_date: '2003-05-31'
-gdrive_folder: '2010_09_12'
-geojson: 'khumbu.geojson'
+composites: '2010_fall'
+filename: 'dudh_koshi_2010'
+geojson: 'dudh_koshi.geojson'
 start_date: '2010-09-01'
 end_date: '2010-12-31'
 
 and 'khumbu.geojson' is a geojson file outlining the khumbu basin.
 """
-import ee
-import yaml
 from datetime import datetime
-import geopandas as gpd
-import threading
-import utils as ut
 import json
 from addict import Dict
+import yaml
+import ee
+import utils as ut
 
 
 if __name__ == '__main__':
@@ -45,6 +42,4 @@ if __name__ == '__main__':
     composite = collection.median()\
       .clip(feature)
 
-    tasks = [ut.export_image(composite, conf.gdrive_folder, description="composite")]
-    f_stop = threading.Event()
-    ut.display_task_info(tasks, f_stop)
+    tasks = [ut.export_image(composite, conf.gdrive_folder, conf.filename)]

@@ -3,6 +3,7 @@
 import ee
 import argparse
 import json
+import yaml
 from collections import Counter
 from datetime import datetime, timezone
 import threading
@@ -35,7 +36,7 @@ def append_features(img):
     return ee.Image.cat([img, elevation, slope])
 
 
-def export_image(ee_image, folder, crs="EPSG:4326", description=""):
+def export_image(ee_image, folder, description="", crs="EPSG:4326"):
     task = ee.batch.Export.image.toDrive(
         image=ee_image.float(),
         region=ee_image.geometry(),
@@ -122,3 +123,17 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Download satellite images from google earth engine using python API")
     parser.add_argument("-c", "--conf", type=str)
     return parser.parse_args()
+
+
+def generate_conf(years, folder_name="composites"):
+    for year in years:
+        params = {
+            "gdrive_folder": folder_name,
+            "slc_failure_date": "2003-05-31",
+            "composites": f"{year}_fall",
+            "filename": f"dudh_koshi_{year}",
+            "geojson": f"dudh_koshi.geojson",
+            "start_date": f"{year}-09-01",
+            "end_date": f"{year}-12-31"
+        }
+        yaml.dump(params, open(f"composite-{year}.yaml", "w"))

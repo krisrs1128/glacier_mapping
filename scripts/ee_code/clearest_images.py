@@ -26,10 +26,10 @@ if __name__ == '__main__':
 
     collection = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')\
       .filterBounds(feature)\
+      .filter(ee.Filter.lt('CLOUD_COVER', 0.08))\
       .map(ut.append_features)\
       .filterDate(start_date, end_date)
 
-    clearest = collection.sort("CLOUD_COVER").first()\
-        .clip(feature)
-
+    clearest = collection.mosaic()
+    clearest = ut.get_fill_image(clearest).clip(feature)
     tasks = [ut.export_image(clearest, conf.gdrive_folder, conf.filename)]

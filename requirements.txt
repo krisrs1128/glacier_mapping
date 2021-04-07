@@ -1,6 +1,6 @@
 addict==2.2.1
 Beaker==1.11.0
-bottle==0.12.18
+bottle==0.12.19
 cheroot==8.4.2
 fiona==1.8.13
 gdal2tiles==0.1.7

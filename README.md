@@ -70,3 +70,7 @@ Labels : [ICIMOD](http://www.icimod.org/)
 * [(2000, Bhutan)](http://rds.icimod.org/Home/DataDetail?metadataId=9357&searchlist=True): Used as it's
 * [(2010, Nepal)](http://rds.icimod.org/Home/DataDetail?metadataId=9348&searchlist=True): Polygons older/newer than 2 years from 2010 are filtered out. Original collection is for 1980-2010
 * [(2010, Bhutan)](http://rds.icimod.org/Home/DataDetail?metadataId=9358&searchlist=True): Used as it's
+
+## License
+
+Code open source for anyone to use as it's under [MIT License](https://opensource.org/licenses/MIT)

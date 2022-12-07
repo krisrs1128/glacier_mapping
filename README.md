@@ -15,7 +15,7 @@ Bhutan and Nepal. Shapefile labels of the glaciers are provided by
 ### Overview
 
 The full preprocessing and training can be viewed at
-`https://colab.research.google.com/drive/12P6lmHrTDaIEQ06M08_-4V0PVQ9Gz0mT#scrollTo=2Gukuvq1gx37`
+[https://colab.research.google.com/drive/1ZkDtLB_2oQpSFDejKZ4YQ5MXW4c531R6?usp=sharing](https://colab.research.google.com/drive/1ZkDtLB_2oQpSFDejKZ4YQ5MXW4c531R6?usp=sharing)
 Besides the raw tiffs and shapefiles, the required inputs are,
 
 * `conf/masking_paths.yaml`: Says how to burn shapefiles into image masks.

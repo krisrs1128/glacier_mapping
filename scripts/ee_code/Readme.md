@@ -1,22 +1,17 @@
-#### Folder Structure blobfuse
+#### Files:
 
-    EEImages/
-    	2000/
-			Nepal/
-			Bhutan/
-    	2010/
-    		Nepal/
-    		Bhutan/
-      	2005/
-        		HKH/
+    get_training_images.py
+    	Used to download the images used for training.
+    	The image ids are specified in gdrive.yaml, train:image_ids
+    	The satellite images after querying are saved in gdrive.yaml, train:gdrive_folder
+    	Usage: python3 get_training_images.py -c gdrive.yaml
 
-- 2010 and 2005 GEE images are corrected using 2000 images on corresonding tiles
-- The tiff files have slope and elevation as a seperate channel
-
-#### Files present
-
-	landsat-7-2005-hkh (Download images in 2005 for entire HKH reason)
-  	landsat-7-images-used-for-labelling-2000-nepal (Download actual images used for labelling in 2000 for Nepal with elevation and slopes)
-	landsat-7-images-used-for-labelling-2010-nepal (Download actual images used for labelling in 2010 for Nepal)
-	landsat-7-remaining-images-2000-bhutan (Download images in 2000 for Bhutan with elevation and slopes)
-	landsat-7-remaining-images-2000-nepal (Download images in 2000 for Nepal with elevation and slopes)
+    get_inference_images.py
+    	Used to download new images for a certain region given WRS path/row and date.
+    	The wrs path/row for Landsat-7 images in the HKH region are specified in gdrive.yaml, infer:wrs_path_row
+    	Downloads the images with least cloudcover within the region between dates infer:start_date and infer:end_date
+    	The satellite images after querying are saved in gdrive.yaml, infer:gdrive_folder
+    	Usage: python3 get_inference_images.py -c gdrive.yaml
+    	
+    utils.py
+    	Contains function wrapper to perform operations on GEE
